@@ -35,7 +35,6 @@ class Crudites
 	public static function connect($name=null, $db_host=null, $db_port=null, $db_name=null, $charset=null, $db_user=null, $db_pass=null)
 	{
 		$selected_database = $name ?? DEFAULT_DATABASE;
-
 		if(is_null($db_host) || is_null($db_port) || is_null($db_name) || is_null($charset) || is_null($db_user) || is_null($db_pass))
 		{
 			if(isset(self::$databases[$selected_database]))
