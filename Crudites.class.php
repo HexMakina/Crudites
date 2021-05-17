@@ -28,21 +28,24 @@ class Crudites
     	return $conx->inspect($table_name);
     }
 		catch(\Exception $e){
+			vd($e);
 			throw new CruditesException('TABLE_INTROSPECTION');
 		}
 	}
 
-	public static function connect($name=null, $db_host=null, $db_port=null, $db_name=null, $charset=null, $db_user=null, $db_pass=null)
+	// public static function connect($name=null, $db_host=null, $db_port=null, $db_name=null, $charset=null, $db_user=null, $db_pass=null)
+	public static function connect($props=null, $name=null)
 	{
 		$selected_database = $name ?? DEFAULT_DATABASE;
-		if(!isset($db_host,$db_port,$db_name,$charset,$db_user,$db_pass))
+
+		if(!isset($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']))
 		{
 			if(isset(self::$databases[$selected_database]))
 				return self::$databases[$selected_database]->contentConnection();
 
 			throw new CruditesException('CONNECTION_MISSING');
 		}
-		return (self::$databases[$name] = new Connection($db_host,$db_port,$db_name,$charset,$db_user,$db_pass));
+		return (self::$databases[$name] = new Connection($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']));
 	}
 
 	//------------------------------------------------------------  DataRetrieval
