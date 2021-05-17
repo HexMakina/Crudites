@@ -48,8 +48,7 @@ class CruditesException extends \Exception
         break;
 
       default:
-
-        $ret = 'FUBAR #'.$state.'-'.$code;
+        $ret = 'FUBAR #'.$state.'-'.$code.'-'.$message;
       break;
     }
 
