@@ -9,18 +9,18 @@ class Insert extends BaseQuery
 {
 	private $query_fields = [];
 	private $query_values = [];
-	
+
 	public function __construct(TableManipulationInterface $table, $assoc_data = [])
 	{
 		if(!is_array($assoc_data) || empty($assoc_data))
 			throw new \Exception('INSERT_DATA_INVALID_OR_MISSING');
-		
+
     $this->table = $table;
     $this->connection = $table->connection();
-		
+
 		if(empty($assoc_data))
 			return $this;
-		
+
 		$this->values($assoc_data);
 	}
 
@@ -43,8 +43,6 @@ class Insert extends BaseQuery
 
   public function generate() : string
 	{
-    // vdt($this->query_fields, 'insert query field');
-    // vdt($this->bindings, 'insert query bindings');
     if(empty($this->query_fields) || count($this->bindings) !== count($this->query_fields))
      throw new CruditesException('INSERT_FIELDS_BINDINGS_MISMATCH');
 
@@ -53,12 +51,12 @@ class Insert extends BaseQuery
 
 		return sprintf('INSERT INTO `%s` (%s) VALUES (%s)', $this->table, $fields, $values);
 	}
-		
-	//------------------------------------------------------------ Auto Increment
+
+	//------------------------------------------------------------ Auto Increment Value
 	public function inserted_id()
 	{
 		return $this->inserted_id;
 	}
-  
+
 }
 ?>
