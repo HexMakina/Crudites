@@ -20,7 +20,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
 
   static private $types_rx = [
     self::TYPE_BOOLEAN => 'tinyint\(1\)|boolean', // is_boolean MUST be tested before is_integer
-    self::TYPE_INTEGER => 'int\([\d]+\)|int unsigned',
+    self::TYPE_INTEGER => 'int\([\d]+\)|int unsigned|int',
     self::TYPE_ENUM => 'enum\(\'(.+)\'\)',
 
     self::TYPE_YEAR => '^year',
