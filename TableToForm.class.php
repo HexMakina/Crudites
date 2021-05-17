@@ -90,7 +90,15 @@ class TableToForm
     }
     elseif($field->is_enum())
     {
-      throw new \Exception('ENUM IS NOT HANDLED BY OTTO-FORM');
+      $enum_values = [];
+      foreach($field->enum_values() as $e_val)
+        $enum_values[$e_val] = $e_val;
+
+      $selected = $attributes['value'] ?? '';
+      // foreach($field->)
+      $ret .= Form::select($field->name(), $enum_values,$selected); //
+
+      // throw new \Exception('ENUM IS NOT HANDLED BY TableToFom');
     }
     elseif($field->is_string())
     {
