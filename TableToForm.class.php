@@ -68,8 +68,8 @@ class TableToForm
     }
     elseif($field->is_boolean())
     {
-      $selected = $attributes['value'] ?? '';
-      $ret .= Form::select($field->name(), [0 => 0, 1 => 1],$selected); //
+      $option_list = $attributes['values'] ?? [0 => 0, 1 => 1];
+      $ret .= Form::select($field->name(), $option_list ,$field_value); //
     }
     elseif($field->is_integer())
     {
