@@ -64,7 +64,6 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
   {
     $this->table_name = is_string($table) ? $table : $table->name();
     $this->name = $name;
-// vdt("name: $name");
     $this->import_describe($specs);
   }
 
@@ -215,7 +214,6 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
 
   public function import_describe($specs)
   {
-    // vd($specs);
     foreach($specs as $k => $v)
     {
       switch($k)
@@ -223,6 +221,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
         case 'Type':
           foreach(self::$types_rx as $type => $rx)
           {
+
             if(preg_match("/$rx/i", $v, $m) === 1)
             {
               $this->type($type);
