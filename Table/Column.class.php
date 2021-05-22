@@ -6,6 +6,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
 {
   const TYPE_BOOLEAN = 'boolean';
   const TYPE_INTEGER = 'integer';
+  const TYPE_FLOAT = 'float';
 
   const TYPE_TEXT = 'text';
   const TYPE_STRING = 'char';
@@ -21,6 +22,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
   static private $types_rx = [
     self::TYPE_BOOLEAN => 'tinyint\(1\)|boolean', // is_boolean MUST be tested before is_integer
     self::TYPE_INTEGER => 'int\([\d]+\)|int unsigned|int',
+    self::TYPE_FLOAT => 'float|double',
     self::TYPE_ENUM => 'enum\(\'(.+)\'\)',
 
     self::TYPE_YEAR => '^year',
@@ -183,12 +185,14 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     return is_null($setter) ? ($this->type_length ?? -1) : ($this->type_length=$setter);
   }
 
-  public function is_text() : bool      {  return $this->type === self::TYPE_TEXT;}
-  public function is_string() : bool    {  return $this->type === self::TYPE_STRING;}
+  public function is_text() : bool        {  return $this->type === self::TYPE_TEXT;}
+  public function is_string() : bool      {  return $this->type === self::TYPE_STRING;}
 
-  public function is_boolean() : bool  {  return $this->type === self::TYPE_BOOLEAN;}
-  public function is_integer() : bool  {  return $this->type === self::TYPE_INTEGER;}
-  public function is_enum() : bool     {  return $this->type === self::TYPE_ENUM;}
+  public function is_boolean() : bool     {  return $this->type === self::TYPE_BOOLEAN;}
+  public function is_integer() : bool     {  return $this->type === self::TYPE_INTEGER;}
+  public function is_float() : bool       {  return $this->type === self::TYPE_FLOAT;}
+
+  public function is_enum() : bool        {  return $this->type === self::TYPE_ENUM;}
 
   public function is_year() : bool        {  return $this->type === self::TYPE_YEAR;}
   public function is_date() : bool        {  return $this->type === self::TYPE_DATE;}

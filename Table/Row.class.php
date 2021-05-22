@@ -129,9 +129,12 @@ class Row
       $persist_query = $this->table->update($this->alterations, $pk_match);
     }
 
-
-		try{$persist_query->run();}
-		catch(CruditesException $e){vdt($e);return [$e->getMessage()];}
+		try{
+      $persist_query->run();
+    }
+		catch(CruditesException $e){
+      return [$e->getMessage()];
+    }
 
 		if(!$persist_query->is_success())
       return ['KADRO_CRUDITES_ERR_ROW_PERSISTENCE'];
@@ -203,11 +206,11 @@ class Row
 					if($column->length() < strlen($field_value))
 						$errors[$column_name] = 'ERR_FIELD_TOO_LONG';
 				}
-				elseif($column->is_integer())
-				{
-					if(!is_numeric($field_value))
-						$errors[$column_name] = 'ERR_FIELD_FORMAT';
-				}
+        elseif($column->is_integer() || $column->is_float())
+        {
+          if(!is_numeric($field_value))
+            $errors[$column_name] = 'ERR_FIELD_FORMAT';
+        }
 				elseif($column->is_enum())
 				{
 					if(!in_array($field_value, $column->enum_values()))
@@ -215,9 +218,7 @@ class Row
 				}
 				else
 				{
-
           ddt($column);
-
           throw new CruditesException('FIELD_TYPE_UNKNOWN');
 				}
 			}

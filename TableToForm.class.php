@@ -80,10 +80,22 @@ class TableToForm
       $attributes['size'] = $attributes['maxlength'] = 4;
       $ret .= Form::input($field->name(),$field_value,$attributes,$errors);
     }
-    elseif($field->is_date_or_time())
+    elseif($field->is_date())
     {
-      $ret .= Form::input($field->name(),$field_value,$attributes,$errors);
+      $ret .= Form::date($field->name(),$field_value,$attributes,$errors);
     }
+    elseif($field->is_time())
+    {
+      $ret .= Form::time($field->name(),$field_value,$attributes,$errors);
+    }
+    elseif($field->is_datetime())
+    {
+      $ret .= Form::datetime($field->name(),$field_value,$attributes,$errors);
+    }
+    // elseif($field->is_date_or_time())
+    // {
+    //   $ret .= Form::input($field->name(),$field_value,$attributes,$errors);
+    // }
     elseif($field->is_text())
     {
       $ret .= Form::textarea($field->name(),$field_value,$attributes,$errors);
