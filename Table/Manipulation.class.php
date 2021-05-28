@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace HexMakina\Crudites\Table;
 
@@ -7,6 +7,8 @@ use \HexMakina\Crudites\Queries\{BaseQuery,Insert,SelectJoin,Update,Delete};
 
 class Manipulation extends Description implements TableManipulationInterface
 {
+
+  // creates a new Row based on the table 
   public function produce($dat_ass=[]) : Row
   {
     return new Row($this, $dat_ass);
@@ -26,7 +28,7 @@ class Manipulation extends Description implements TableManipulationInterface
 
   public function select($columns=null, $table_alias=null) : BaseQuery
 	{
-    
+
 		$table_alias = $table_alias ?? $this->name();
     $select = (new SelectJoin($columns ?? [$table_alias.'.*'], $this, $table_alias))->connection($this->connection());
     return $select;

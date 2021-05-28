@@ -4,10 +4,10 @@ namespace HexMakina\Crudites;
 
 use \HexMakina\Crudites\Queries\BaseQuery;
 
-// return $Query->is_create() ? 'KADRO_CRUDITES_INSTANCE_CREATED' :
-//       ($Query->is_retrieve() ? 'KADRO_CRUDITES_INSTANCE_RETRIEVED' :
-//       ($Query->is_update() ? 'KADRO_CRUDITES_INSTANCE_UPDATED' :
-//       ($Query->is_delete() ? 'KADRO_CRUDITES_INSTANCE_DESTROYED' : 'ERR_UNKOWN_QUERY_TYPE')));
+// return $Query->is_create() ? 'CRUDITES_INSTANCE_CREATED' :
+//       ($Query->is_retrieve() ? 'CRUDITES_INSTANCE_RETRIEVED' :
+//       ($Query->is_update() ? 'CRUDITES_INSTANCE_UPDATED' :
+//       ($Query->is_delete() ? 'CRUDITES_INSTANCE_DESTROYED' : 'ERR_UNKOWN_QUERY_TYPE')));
 
 // TODO ? move to Models\Abilities
 trait Traceability // YOUR MOTHER'S A TRACER!

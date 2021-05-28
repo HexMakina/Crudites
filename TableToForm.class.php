@@ -47,6 +47,7 @@ class TableToForm
   public static function field(ModelInterface $model,$field_name,$attributes=[],$errors=[]) : string
   {
     $field_value = $attributes['value'] ?? self::compute_field_value($model,$field_name);
+    $attributes['name'] = $attributes['name'] ?? $field_name;
 
     $table = get_class($model)::table();
 
@@ -57,10 +58,12 @@ class TableToForm
 
     $field = $table->column($field_name);
 
-    if(!$field->is_nullable())
-    {
+
+    if(isset($attributes['required']) && $attributes['required'] === false)
+      unset($attributes['required']);
+
+    elseif(!$field->is_nullable())
       $attributes[] = 'required';
-    }
 
     if($field->is_auto_incremented())
     {
@@ -69,7 +72,7 @@ class TableToForm
     elseif($field->is_boolean())
     {
       $option_list = $attributes['values'] ?? [0 => 0, 1 => 1];
-      $ret .= Form::select($field->name(), $option_list ,$field_value); //
+      $ret .= Form::select($field->name(), $option_list ,$field_value, $attributes); //
     }
     elseif($field->is_integer())
     {
@@ -90,26 +93,22 @@ class TableToForm
     }
     elseif($field->is_datetime())
     {
-
       $ret .= Form::datetime($field->name(),$field_value,$attributes,$errors);
     }
-    // elseif($field->is_date_or_time())
-    // {
-    //   $ret .= Form::input($field->name(),$field_value,$attributes,$errors);
-    // }
     elseif($field->is_text())
     {
       $ret .= Form::textarea($field->name(),$field_value,$attributes,$errors);
     }
     elseif($field->is_enum())
     {
+
       $enum_values = [];
       foreach($field->enum_values() as $e_val)
         $enum_values[$e_val] = $e_val;
 
-      $selected = $attributes['value'] ?? '';
+      $selected = $attributes['value'] ?? $field_value ?? '';
       // foreach($field->)
-      $ret .= Form::select($field->name(), $enum_values,$selected); //
+      $ret .= Form::select($field->name(), $enum_values, $selected, $attributes); //
 
       // throw new \Exception('ENUM IS NOT HANDLED BY TableToFom');
     }
