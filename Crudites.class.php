@@ -23,7 +23,8 @@ class Crudites
 
 	public static function inspect($table_name, $database_name=null)
 	{
-    try{
+    try
+		{
 			$conx = self::$databases[$database_name ?? DEFAULT_DATABASE];
     	return $conx->inspect($table_name);
     }
@@ -61,7 +62,6 @@ class Crudites
 	{
 		$pk_name = implode('_', array_keys($Query->table()->primary_keys()));
 
-    dd($pk_name);
 		$ret = [];
 		try
 		{
@@ -78,6 +78,19 @@ class Crudites
 		}
 
 		return $ret;
+	}
+
+	public static function raw($sql, $dat_ass=[])
+	{
+		$conx = self::connect();
+		if(empty($dat_ass))
+			$res = $conx->query($sql);
+		else
+		{
+			$conx->prepare($sql);
+			$res = $stmt->execute($dat_ass);
+		}
+		return $res;
 	}
 
 	public static function distinct_for($table, $column_name, $filter_by_value=null)
@@ -128,7 +141,10 @@ class Crudites
     $Query->statement("UPDATE ".$table->name()." SET $boolean_column_name = !$boolean_column_name WHERE id=:id");
     $Query->bindings([':id' => $id]);
 
-		try{$Query->run();}
+		try
+		{
+			$Query->run();
+		}
 		catch(CruditesException $e)
 		{
 			vdt($e->getMessage());
@@ -142,8 +158,5 @@ class Crudites
 	{
 		return is_string($table) ? self::inspect($table) : $table;
 	}
-
-
-
 }
 ?>
