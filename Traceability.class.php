@@ -19,16 +19,14 @@ trait Traceability // YOUR MOTHER'S A TRACER!
 
   public function track($query_code, int $query_by) : bool
   {
-    
+		if(!$this->traceable())
+			return true;
+
     $trace['query_type'] = $query_code;
     $trace['query_table'] = get_class($this)::table_name();
     $trace['query_id'] = $this->get_id();
     $trace['query_by'] = $query_by;
 
-    if(!$this->traceable())
-      return true;
-    
-    
     // TODO transactions
     try{
       $res = self::tracking_table()->insert($trace)->run();
@@ -44,7 +42,7 @@ trait Traceability // YOUR MOTHER'S A TRACER!
     {
       return false;
     }
-    
+
     return false;
   }
 
@@ -59,6 +57,6 @@ trait Traceability // YOUR MOTHER'S A TRACER!
   {
     return Crudites::inspect('kadro_action_logger');
   }
-  
+
 }
 ?>

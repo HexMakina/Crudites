@@ -20,13 +20,15 @@ class Database implements DatabaseInterface
     $this->connection = $connection;
     $this->name = $connection->database_name();
 
+    if(is_null($information_schema))
+      return 1;
+
     $statement = sprintf('SELECT TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION, COLUMN_NAME, POSITION_IN_UNIQUE_CONSTRAINT, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = "%s" ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION', $this->name);
 
     $q = (new Select())->connection($information_schema ?? $connection);
 
     $q->statement($statement);
     $res = $q->ret_ass();
-
 
     foreach($res as $key_usage)
     {
@@ -56,6 +58,7 @@ class Database implements DatabaseInterface
           $this->unique_by_table[$table_name][$column_name] = [0 => $constraint_name] + $columns;
         unset($this->unique_by_table[$table_name][$constraint_name]);
       }
+    return 2;
   }
 
   public function contentConnection() : ConnectionInterface

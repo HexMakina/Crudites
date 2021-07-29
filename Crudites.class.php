@@ -14,6 +14,7 @@ use \HexMakina\Crudites\CruditesException;
 
 class Crudites
 {
+	static private $connections = [];
 	static private $databases = [];
 
 	public static function setInspector($database_name, DatabaseInterface $inspector)
@@ -41,16 +42,20 @@ class Crudites
 	// public static function connect($name=null, $db_host=null, $db_port=null, $db_name=null, $charset=null, $db_user=null, $db_pass=null)
 	public static function connect($props=null, $name=null)
 	{
-		$selected_database = $name ?? DEFAULT_DATABASE;
+		$database_name = $name ?? DEFAULT_DATABASE;
 
 		if(!isset($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']))
 		{
-			if(isset(self::$databases[$selected_database]))
-				return self::$databases[$selected_database]->contentConnection();
+			if(isset(self::$databases[$database_name]))
+				return self::$databases[$database_name]->contentConnection();
 
 			throw new CruditesException('CONNECTION_MISSING');
 		}
-		return (self::$databases[$name] = new Connection($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']));
+		// 20210729: this stored connection in database array.. so wrong..
+		// return (self::$databases[$database_name] = new Connection($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']));
+		$conx = new Connection($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']);;
+		self::$databases[$database_name] = new Database($conx);
+		return $conx;
 	}
 
 	//------------------------------------------------------------  DataRetrieval
