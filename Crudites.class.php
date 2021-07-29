@@ -23,13 +23,17 @@ class Crudites
 
 	public static function inspect($table_name, $database_name=null)
 	{
+		if(!isset($database_name) && !defined('DEFAULT_DATABASE'))
+		{
+			throw new CruditesException('DATABASE_NAME_UNKNOWN');
+		}
+
     try
 		{
 			$conx = self::$databases[$database_name ?? DEFAULT_DATABASE];
     	return $conx->inspect($table_name);
     }
 		catch(\Exception $e){
-			vd($e);
 			throw new CruditesException('TABLE_INTROSPECTION');
 		}
 	}
