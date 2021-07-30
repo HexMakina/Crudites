@@ -165,22 +165,6 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     {
       switch($k)
       {
-        // case 'Type':
-        //   foreach(self::$types_rx as $type => $rx)
-        //   {
-        //     if(preg_match("/$rx/i", $v, $m) === 1)
-        //     {
-        //       $this->type($type);
-        //
-        //       if($this->is_enum())
-        //         $this->enum_values(explode('\',\'',$m[1]));
-        //       elseif(preg_match('/([\d]+)/', $v, $m) === 1)
-        //         $this->length((int)$m[0]);
-        //       break;
-        //     }
-        //   }
-        // break;
-
         case 'Null':          $this->is_nullable($v !== 'NO');
         break;
 

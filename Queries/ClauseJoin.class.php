@@ -38,8 +38,8 @@ class ClauseJoin
 
   public function has_single_foreign_key()
   {
-    $bond = $this->$table->foreign_keys_by_table()[$join_table->name()] ?? null;
-    if(count($bond) === 1)
+    $bond = $this->table->foreign_keys_by_table()[$this->join_table->name()] ?? null;
+    if(!is_null($bond) && count($bond) === 1)
       return [$bond->table_name(), $bond->name(), $this->join_table_alias, $bond->foreign_column_name()];
 
     return false;
