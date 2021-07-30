@@ -12,6 +12,9 @@ trait Traceability // YOUR MOTHER IS A TRACER!
     return true;
   }
 
+  abstract public function get_id();
+  abstract public static function table_name();
+
   public function track($query_code, int $query_by) : bool
   {
     if(!$this->traceable())
