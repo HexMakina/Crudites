@@ -29,14 +29,14 @@ class Row
     return PHP_EOL .'load: '.json_encode($this->load) . PHP_EOL.'alterations: '.json_encode(array_keys($this->alterations));
   }
 
-	public function __debugInfo()
-	{
+  public function __debugInfo()
+  {
     $dbg = get_object_vars($this);
-		unset($dbg['table']);
-		$dbg['(string)table_name'] = (string)$this->table;
+    unset($dbg['table']);
+    $dbg['(string)table_name'] = (string)$this->table;
 
-		return $dbg;
-	}
+    return $dbg;
+  }
 
   public function table() : TableManipulationInterface
   {
@@ -132,7 +132,7 @@ class Row
 
     if($this->is_new())
     {
-  		$persist_query = $this->table->insert($this->export());
+      $persist_query = $this->table->insert($this->export());
     }
     else
     {
@@ -140,14 +140,14 @@ class Row
       $persist_query = $this->table->update($this->alterations, $pk_match);
     }
 
-		try{
+    try{
       $persist_query->run();
     }
-		catch(CruditesException $e){
+    catch(CruditesException $e){
       return [$e->getMessage()];
     }
 
-		if(!$persist_query->is_success())
+    if(!$persist_query->is_success())
       return ['CRUDITES_ERR_ROW_PERSISTENCE'];
 
     if($persist_query->is_create() && !is_null($aipk = $persist_query->table()->auto_incremented_primary_key()))
@@ -166,10 +166,10 @@ class Row
     if(!empty($pk_match = $this->table()->primary_keys_match($dat_ass)))
     {
       $this->last_query = $this->table->delete($pk_match);
-  		try{
+      try{
         $this->last_query->run();
       }
-  		catch(CruditesException $e){
+      catch(CruditesException $e){
         return false;
       }
 
@@ -183,14 +183,14 @@ class Row
   /**
   * @return array containing all invalid data, indexed by field name, or empty if all valid
   */
-	public function validate() : array
-	{
+  public function validate() : array
+  {
     $errors = [];
     $ass_merge = $this->export();
 
     // vdt($this->table);
-		foreach($this->table->columns() as $column_name => $column)
-		{
+    foreach($this->table->columns() as $column_name => $column)
+    {
       if($column->is_auto_incremented())
         continue;
 
@@ -198,45 +198,20 @@ class Row
         continue;
 
       $field_value = $ass_merge[$column_name] ?? null;
-			if(is_null($field_value))
-			{
+
+      if(is_null($field_value))
+      {
         if(!$column->is_nullable() && is_null($column->default()))
-				  $errors[$column_name] = 'ERR_FIELD_REQUIRED';
-			}
-			elseif(!$column->type()->is_text())
-			{
-				if($column->type()->is_date_or_time())
-				{
-					if(date_create($field_value) === false)
-						$errors[$column_name] = 'ERR_FIELD_FORMAT';
-				}
-        elseif($column->type()->is_year())
-        {
-					if(preg_match('/^[0-9]{4}$/', $field_value) !== 1)
-						$errors[$column_name] = 'ERR_FIELD_FORMAT';
-        }
-				elseif($column->type()->is_string())
-				{
-					if($column->type()->length() < strlen($field_value))
-						$errors[$column_name] = 'ERR_FIELD_TOO_LONG';
-				}
-        elseif($column->type()->is_integer() || $column->type()->is_float())
-        {
-          if(!is_numeric($field_value))
-            $errors[$column_name] = 'ERR_FIELD_FORMAT';
-        }
-				elseif($column->type()->is_enum())
-				{
-					if(!in_array($field_value, $column->type()->enum_values()))
-						$errors[$column_name] = 'ERR_FIELD_VALUE_RESTRICTED_BY_ENUM';
-				}
-				else
-				{
-          // ddt($column);
-          throw new CruditesException('FIELD_TYPE_UNKNOWN');
-				}
-			}
-		}
+          $errors[$column_name] = 'ERR_FIELD_REQUIRED';
+      }
+      elseif(!$column->type()->is_text())
+      {
+        $res = $column->validate_value($field_value);
+
+        if($res !== true)
+          $errors[$column_name] = $res;
+      }
+    }
     return $errors;
-	}
+  }
 }

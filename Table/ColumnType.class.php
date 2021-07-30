@@ -88,4 +88,42 @@ class ColumnType
   {
     return $this->length ?? -1;
   }
+
+
+  public function validate_value($field_value)
+  {
+    $ret = true;
+
+    if($this->is_date_or_time())
+    {
+      if(date_create($field_value) === false)
+        $ret = 'ERR_FIELD_FORMAT';
+    }
+    elseif($this->is_year())
+    {
+      if(preg_match('/^[0-9]{4}$/', $field_value) !== 1)
+        $ret = 'ERR_FIELD_FORMAT';
+    }
+    elseif($this->is_string())
+    {
+      if($this->length() < strlen($field_value))
+        $ret = 'ERR_FIELD_TOO_LONG';
+    }
+    elseif($this->is_integer() || $this->is_float())
+    {
+      if(!is_numeric($field_value))
+        $ret = 'ERR_FIELD_FORMAT';
+    }
+    elseif($this->is_enum())
+    {
+      if(!in_array($field_value, $this->enum_values()))
+        $ret = 'ERR_FIELD_VALUE_RESTRICTED_BY_ENUM';
+    }
+    else
+    {
+      throw new CruditesException('FIELD_TYPE_UNKNOWN');
+    }
+
+    return $ret;
+  }
 }
