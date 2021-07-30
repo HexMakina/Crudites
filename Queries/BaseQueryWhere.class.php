@@ -23,7 +23,7 @@ abstract class BaseQueryWhere extends BaseQuery
 
 	protected $where = null;
 
-	public function and_where($where_condition, $whereings=[])
+	public function and_where($where_condition, $where_bindings=[])
 	{
 		$this->where = $this->where ?? [];
 
