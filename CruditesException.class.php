@@ -6,10 +6,6 @@ use \HexMakina\Crudites\Queries\BaseQuery;
 
 class CruditesException extends \Exception
 {
-  private $sql_state=null;
-  private $sql_code=null;
-  private $sql_message=null;
-
   public function __construct($message, $code=0, $previous = null)
   {
     parent::__construct('CRUDITES_ERR_'.$message, $code, $previous);
