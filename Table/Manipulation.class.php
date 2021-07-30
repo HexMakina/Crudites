@@ -26,7 +26,7 @@ class Manipulation extends Description implements TableManipulationInterface
     return (new Insert($this, $values))->connection($this->connection());
   }
 
-  public function select($columns=null, $table_alias=null) : BaseQueryWhere
+  public function select($columns=null, $table_alias=null) : Select
 	{
 
 		$table_alias = $table_alias ?? $this->name();

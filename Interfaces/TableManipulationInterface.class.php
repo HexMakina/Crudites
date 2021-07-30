@@ -13,7 +13,7 @@ interface TableManipulationInterface extends TableDescriptionInterface
 
   // query generators
   public function insert($values=[]) : Insert;
-  public function select($columns=null, $table_alias=null) : BaseQueryWhere;
+  public function select($columns=null, $table_alias=null) : Select;
   public function update($modifications = [], $conditions = []) : Update;
   public function delete($conditions=[]) : Delete;
 
