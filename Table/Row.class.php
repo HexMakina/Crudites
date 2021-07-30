@@ -129,34 +129,28 @@ class Row
       return $errors;
 
     $persist_query = null;
-
-    if($this->is_new())
+    try
     {
-      $persist_query = $this->table->insert($this->export());
+      if($this->is_new())
+      {
+        $persist_query = $this->table->insert($this->export());
+        $persist_query->run();
+        if($persist_query->is_success() && !is_null($aipk = $persist_query->table()->auto_incremented_primary_key()))
+          $this->alterations[$aipk->name()]=$persist_query->inserted_id();
+      }
+      else
+      {
+        $pk_match = $this->table()->primary_keys_match($this->load);
+        $persist_query = $this->table->update($this->alterations, $pk_match);
+        $persist_query->run();
+      }
     }
-    else
+    catch(CruditesException $e)
     {
-      $pk_match = $this->table()->primary_keys_match($this->load);
-      $persist_query = $this->table->update($this->alterations, $pk_match);
-    }
-
-    try{
-      $persist_query->run();
-    }
-    catch(CruditesException $e){
       return [$e->getMessage()];
     }
 
-    if(!$persist_query->is_success())
-      return ['CRUDITES_ERR_ROW_PERSISTENCE'];
-
-    // if($persist_query->is_create() && !is_null($aipk = $persist_query->table()->auto_incremented_primary_key()))
-    if($this->is_new() && !is_null($aipk = $persist_query->table()->auto_incremented_primary_key()))
-    {
-      $this->alterations[$aipk->name()]=$persist_query->inserted_id();
-    }
-
-    return [];
+    return $persist_query->is_success() ? [] : ['CRUDITES_ERR_ROW_PERSISTENCE'];
   }
 
   public function wipe() : bool
