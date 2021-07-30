@@ -15,6 +15,7 @@ interface TableDescriptionInterface
 
   public function add_primary_key(TableColumnInterface $column);
   public function primary_keys($with_values=null) : array;
+  public function primary_keys_match($dat_ass) : array;
 
   public function add_foreign_key(TableColumnInterface $column);
   public function foreign_keys_by_name() : array;
