@@ -8,25 +8,40 @@ use HexMakina\Crudites\Interfaces\{ConnectionInterface,DatabaseInterface,TableMa
 class Database implements DatabaseInterface
 {
   private $connection = null;
+  private $introspection_connection = null;
 
   private $table_cache = [];
   private $fk_by_table = [];
   private $unique_by_table = [];
 
-  protected $name = null;
-
   public function __construct(ConnectionInterface $connection, ConnectionInterface $information_schema = null)
   {
     $this->connection = $connection;
-    $this->name = $connection->database_name();
+    $this->introspection_connection = $information_schema ?? $this->connection;
 
-    if(is_null($information_schema))
-      return 1;
+    $this->introspect();
+  }
 
-    $statement = sprintf('SELECT TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION, COLUMN_NAME, POSITION_IN_UNIQUE_CONSTRAINT, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = "%s" ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION', $this->name);
+  public function name()
+  {
+    return $this->contentConnection()->database_name();
+  }
 
-    $q = (new Select())->connection($information_schema ?? $connection);
+  public function contentConnection() : ConnectionInterface
+  {
+    return $this->connection;
+  }
 
+  public function introspect(ConnectionInterface $information_schema = null)
+  {
+    if(!is_null($information_schema))
+      $this->introspection_connection = $information_schema;
+
+    if(is_null($this->introspection_connection))
+      return null;
+
+    $statement = sprintf('SELECT TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION, COLUMN_NAME, POSITION_IN_UNIQUE_CONSTRAINT, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = "%s" ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION', $this->name());
+    $q = (new Select())->connection($this->introspection_connection);
     $q->statement($statement);
     $res = $q->ret_ass();
 
@@ -58,12 +73,6 @@ class Database implements DatabaseInterface
           $this->unique_by_table[$table_name][$column_name] = [0 => $constraint_name] + $columns;
         unset($this->unique_by_table[$table_name][$constraint_name]);
       }
-    return 2;
-  }
-
-  public function contentConnection() : ConnectionInterface
-  {
-    return $this->connection;
   }
 
   public function inspect($table_name) : TableManipulationInterface

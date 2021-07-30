@@ -14,47 +14,90 @@ use \HexMakina\Crudites\CruditesException;
 
 class Crudites
 {
-	static private $connections = [];
-	static private $databases = [];
+	static private $database = null;
 
-	public static function setInspector($database_name, DatabaseInterface $inspector)
-  {
-    self::$databases[$database_name] = $inspector;
-  }
+	static private $databases = []; // TODO DEPRECATED KISS goodbye multi databases support
 
-	public static function inspect($table_name, $database_name=null)
+	// TODO DEPRECATED KISS goodbye multi databases support
+	// public static function setInspector($database_name, DatabaseInterface $inspector)
+  // {
+  //   self::$databases[$database_name] = $inspector;
+  // }
+
+	public static function setDatabase(DatabaseInterface $db)
 	{
-		if(!isset($database_name) && !defined('DEFAULT_DATABASE'))
-		{
-			throw new CruditesException('DATABASE_NAME_UNKNOWN');
-		}
+		self::$database = $db;
+		// self::$databases[$db->name()] = $db; // TODO DEPRECATED KISS goodbye multi databases support
+	}
 
-    try
+	public static function inspect($table_name)
+	{
+		if(is_null(self::$database))
+			throw new CruditesException('NO_DATABASE');
+		try
 		{
-			$conx = self::$databases[$database_name ?? DEFAULT_DATABASE];
-    	return $conx->inspect($table_name);
-    }
-		catch(\Exception $e){
+			return self::$database->inspect($table_name);
+		}
+		catch(\Exception $e)
+		{
 			throw new CruditesException('TABLE_INTROSPECTION');
 		}
 	}
 
-	// public static function connect($name=null, $db_host=null, $db_port=null, $db_name=null, $charset=null, $db_user=null, $db_pass=null)
-	public static function connect($props=null, $name=null)
-	{
-		$database_name = $name ?? DEFAULT_DATABASE;
+	// TODO DEPRECATED KISS goodbye multi databases support
+	// public static function inspect($table_name, $database_name=null)
+	// {
+	// 	if(!isset($database_name) && !defined('DEFAULT_DATABASE'))
+	// 	{
+	// 		throw new CruditesException('DATABASE_NAME_UNKNOWN');
+	// 	}
+	//
+  //   try
+	// 	{
+	//
+	// 		$conx = self::$databases[$database_name ?? DEFAULT_DATABASE];
+  //   	return $conx->inspect($table_name);
+	//
+	//
+  //   }
+	// 	catch(\Exception $e){
+	// 		throw new CruditesException('TABLE_INTROSPECTION');
+	// 	}
+	// }
 
+	// public static function connect($name=null, $db_host=null, $db_port=null, $db_name=null, $charset=null, $db_user=null, $db_pass=null)
+	// TODO DEPRECATED KISS goodbye multi databases support
+	// public static function connect($props=null, $name=null)
+	// {
+	// 	$database_name = $name ?? DEFAULT_DATABASE;
+	//
+	// 	if(!isset($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']))
+	// 	{
+	// 		if(isset(self::$databases[$database_name]))
+	// 			return self::$databases[$database_name]->contentConnection();
+	//
+	// 		throw new CruditesException('CONNECTION_MISSING');
+	// 	}
+	// 	// 20210729: this stored connection in database array.. so wrong..
+	// 	// return (self::$databases[$database_name] = new Connection($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']));
+	// 	$conx = new Connection($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']);;
+	// 	self::$databases[$database_name] = new Database($conx);
+	// 	return $conx;
+	// }
+
+	public static function connect($props=null)
+	{
+		// no props, means connection already exists, verify and return
 		if(!isset($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']))
 		{
-			if(isset(self::$databases[$database_name]))
-				return self::$databases[$database_name]->contentConnection();
+			if(is_null(self::$database))
+				throw new CruditesException('CONNECTION_MISSING');
 
-			throw new CruditesException('CONNECTION_MISSING');
+			return self::$database->contentConnection();
 		}
-		// 20210729: this stored connection in database array.. so wrong..
-		// return (self::$databases[$database_name] = new Connection($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']));
+
 		$conx = new Connection($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']);;
-		self::$databases[$database_name] = new Database($conx);
+		// self::$databases[$database_name] = new Database($conx);
 		return $conx;
 	}
 
@@ -76,7 +119,7 @@ class Crudites
 		{
 			if($Query->run()->is_success())
 			{
-				foreach($res->ret_ass() as $rec)
+				foreach($Query->ret_ass() as $rec)
 					$ret[$rec[$pk_name]] = $rec;
 			}
 		}
@@ -96,7 +139,7 @@ class Crudites
 			$res = $conx->query($sql);
 		else
 		{
-			$conx->prepare($sql);
+			$stmt = $conx->prepare($sql);
 			$res = $stmt->execute($dat_ass);
 		}
 		return $res;
