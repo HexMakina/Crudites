@@ -8,7 +8,6 @@ use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
 class Insert extends BaseQuery
 {
 	private $query_fields = [];
-	private $query_values = [];
 
 	public function __construct(TableManipulationInterface $table, $assoc_data = [])
 	{
