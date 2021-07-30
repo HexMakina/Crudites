@@ -13,11 +13,11 @@ class Connection extends \PDO implements Interfaces\ConnectionInterface
 {
   private $database_name = null;
 
-	static private $driver_options = [
-				\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, // mandatory in CRUDITES error handler
-				\PDO::ATTR_CASE => \PDO::CASE_NATURAL,
-				\PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
-			];
+  static private $driver_options = [
+  \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, // mandatory in CRUDITES error handler
+  \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
+  \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
+  ];
 
   public function __construct($db_host, $db_port, $db_name, $charset='utf8', $username='', $password='')
   {
@@ -56,7 +56,7 @@ class Connection extends \PDO implements Interfaces\ConnectionInterface
   private function validate_dsn($dsn)
   {
     $matches = null;
-		if(preg_match('/^([a-z]+)\:/', $dsn, $matches) !== 1)
+    if(preg_match('/^([a-z]+)\:/', $dsn, $matches) !== 1)
       throw new \PDOException('DSN Error: bad format');
 
     $dsn_driver = $matches[1];
