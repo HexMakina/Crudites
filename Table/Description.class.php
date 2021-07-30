@@ -200,10 +200,4 @@ class Description implements TableDescriptionInterface
 
     return null;
   }
-
-  // TableDescriptionInterface implementation
-  // public function map_class($setter=null)
-  // {
-  //   return is_null($setter) ? $this->ORM_class_name : ($this->ORM_class_name = $setter);
-  // }
 }
