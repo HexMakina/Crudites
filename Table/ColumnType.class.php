@@ -35,14 +35,13 @@ class ColumnType
     self::TYPE_STRING => 'char\((\d+)\)$'
   ];
 
-  private $column = null;
   private $name = null;
 
   private $enum_values = null;
   private $length = null;
 
 
-  public function __construct($column, $specs_type)
+  public function __construct($specs_type)
   {
     foreach(self::$types_rx as $type => $rx)
     {

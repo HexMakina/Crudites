@@ -9,9 +9,6 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
 
   private $table_name = null;
 
-  private $type = null;
-  private $type_length = null;
-
   private $ColumnType = null;
 
   private $index = false;
@@ -27,7 +24,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
   private $unique_group_name = null;
 
   private $default_value = null;
-  private $enum_values = null; // enums
+
   private $nullable = false;
 
   private $extra = null;
@@ -36,7 +33,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
   {
     $this->table_name = is_string($table) ? $table : $table->name();
     $this->name = $name;
-    $this->ColumnType = new ColumnType($this, $specs['Type']);
+    $this->ColumnType = new ColumnType($specs['Type']);
     $this->import_describe($specs);
 
   }
