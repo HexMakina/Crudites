@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Interfaces;
 
-use \HexMakina\Crudites\Queries\{BaseQuery};
+use \HexMakina\Crudites\Queries\{BaseQueryWhere, Insert, Update, Delete};
 use \HexMakina\Crudites\Table\Row;
 
 interface TableManipulationInterface extends TableDescriptionInterface
