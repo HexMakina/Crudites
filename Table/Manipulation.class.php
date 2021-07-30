@@ -3,7 +3,7 @@
 namespace HexMakina\Crudites\Table;
 
 use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
-use \HexMakina\Crudites\Queries\{BaseQuery,Insert,SelectJoin,Update,Delete};
+use \HexMakina\Crudites\Queries\{BaseQueryWhere,Insert,SelectJoin,Update,Delete};
 
 class Manipulation extends Description implements TableManipulationInterface
 {
@@ -34,12 +34,12 @@ class Manipulation extends Description implements TableManipulationInterface
     return $select;
 	}
 
-  public function update($modifications = [], $conditions = []) : BaseQueryWhere
+  public function update($modifications = [], $conditions = []) : Update
   {
     return (new Update($this, $modifications, $conditions))->connection($this->connection());
   }
 
-  public function delete($conditions=[]) : BaseQueryWhere
+  public function delete($conditions=[]) : Delete
   {
     return (new Delete($this, $conditions))->connection($this->connection());
   }
