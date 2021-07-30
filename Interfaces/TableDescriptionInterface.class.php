@@ -20,6 +20,7 @@ interface TableDescriptionInterface
   public function add_foreign_key(TableColumnInterface $column);
   public function foreign_keys_by_name() : array;
   public function foreign_keys_by_table() : array;
+  public function single_foreign_key_to($other_table);
 
   public function add_unique_key($constraint_name, $columns);
   public function unique_keys_by_name() : array;

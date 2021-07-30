@@ -150,7 +150,8 @@ class SelectJoin extends Select
 					$bonding_column = current($bondable_tables[$table_name]);
 					$joins []= [$bonding_column->table_name(), $bonding_column->name(), $bonding_column->foreign_table_alias(), $bonding_column->foreign_column_name()];
 
-					$relation_type = $relation_type ?? (($parent_column->is_nullable() || $bonding_column->is_nullable()) ? 'LEFT OUTER' : 'INNER');
+          // $relation_type = $relation_type ?? (($parent_column->is_nullable() || $bonding_column->is_nullable()) ? 'LEFT OUTER' : 'INNER');
+					$relation_type = $relation_type ?? (($bonding_column->is_nullable()) ? 'LEFT OUTER' : 'INNER');
 				}
 			}
 		}
