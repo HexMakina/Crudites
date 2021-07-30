@@ -6,7 +6,7 @@ interface TableColumnInterface
 {
   public function name() : string;
 
-  public function type($setter=null);
+  public function type();
   // public function length($setter=null) : int;
 
   public function is_primary() : bool;
