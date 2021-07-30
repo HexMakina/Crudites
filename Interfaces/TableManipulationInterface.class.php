@@ -12,9 +12,9 @@ interface TableManipulationInterface extends TableDescriptionInterface
   public function restore($dat_ass) : Row;
 
   // query generators
-  public function insert($values=[]) : BaseQuery;
-  public function select($columns=null, $table_alias=null) : BaseQuery;
-  public function update($modifications = [], $conditions = []) : BaseQuery;
-  public function delete($conditions=[]) : BaseQuery;
+  public function insert($values=[]) : Insert;
+  public function select($columns=null, $table_alias=null) : BaseQueryWhere;
+  public function update($modifications = [], $conditions = []) : Update;
+  public function delete($conditions=[]) : Delete;
 
 }
