@@ -162,7 +162,7 @@ abstract class BaseQuery
   // returns itself
   // DEBUG dies on \Exception
 
-  public function run()
+  public function run() : BaseQuery
   {
     if(is_null($this->connection()))
       throw new CruditesException('NO_CONNECTION');

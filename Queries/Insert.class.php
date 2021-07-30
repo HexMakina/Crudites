@@ -58,10 +58,12 @@ class Insert extends BaseQuery
 		return $this->inserted_id;
   }
 
-  public function run()
+  public function run() : BaseQuery
   {
     parent::run();
+
     if($this->is_success())
       $this->inserted_id = $this->connection()->lastInsertId();
+
   }
 }
