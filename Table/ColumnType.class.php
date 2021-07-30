@@ -121,7 +121,7 @@ class ColumnType
     }
     else
     {
-      throw new CruditesException('FIELD_TYPE_UNKNOWN');
+      $ret = 'ERR_FIELD_TYPE_UNKNOWN';
     }
 
     return $ret;
