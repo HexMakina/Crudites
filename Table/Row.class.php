@@ -3,7 +3,6 @@
 namespace HexMakina\Crudites\Table;
 
 use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
-use \HexMakina\Crudites\Queries\BaseQuery;
 use \HexMakina\Crudites\CruditesException;
 
 class Row
@@ -234,7 +233,7 @@ class Row
 				}
 				else
 				{
-          ddt($column);
+          // ddt($column);
           throw new CruditesException('FIELD_TYPE_UNKNOWN');
 				}
 			}
