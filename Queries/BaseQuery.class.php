@@ -61,7 +61,7 @@ abstract class BaseQuery
   }
 
 
-  abstract public function generate();
+  abstract public function generate() : string;
 
   // returns one of C, R, U, D
   // TODO ? make them abstract ? forces knowledge of these methods..
