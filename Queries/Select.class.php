@@ -38,10 +38,10 @@ class Select extends BaseQueryWhere
       $this->selection = $select_fields;
   }
 
-  public function is_retrieve()
-  {
-    return true;
-  }
+  // public function is_retrieve()
+  // {
+  //   return true;
+  // }
 
   public function table_label($table_name=null)
   {

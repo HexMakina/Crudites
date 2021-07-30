@@ -15,7 +15,7 @@ class Delete extends BaseQueryWhere
       $this->aw_fields_eq($conditions);
   }
 
-  public function is_delete(){		return true;}
+  // public function is_delete(){		return true;}
 
   public function generate() : string
   {

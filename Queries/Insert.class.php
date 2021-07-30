@@ -8,6 +8,7 @@ use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
 class Insert extends BaseQuery
 {
 	private $query_fields = [];
+  private $inserted_id = null;
 
 	public function __construct(TableManipulationInterface $table, $assoc_data = [])
 	{
@@ -23,7 +24,7 @@ class Insert extends BaseQuery
 		$this->values($assoc_data);
 	}
 
-  public function is_create(){		return true;}
+  // public function is_create(){		return true;}
 
   public function values($assoc_data)
   {
@@ -55,5 +56,12 @@ class Insert extends BaseQuery
 	public function inserted_id()
 	{
 		return $this->inserted_id;
-	}
+  }
+
+  public function run()
+  {
+    parent::run();
+    if($this->is_success())
+      $this->inserted_id = $this->connection()->lastInsertId();
+  }
 }

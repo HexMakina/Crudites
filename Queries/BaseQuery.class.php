@@ -28,7 +28,7 @@ abstract class BaseQuery
 
   protected $prepared_statement = null;
 
-  protected $inserted_id = null;
+  // protected $inserted_id = null;
   protected $row_count = null;
 
   protected $error_code = null;
@@ -37,7 +37,7 @@ abstract class BaseQuery
   public function __debugInfo()
   {
     $dbg = [];
-    if(isset($table))
+    if(isset($this->table))
       $dbg['table_name()'] = $this->table_name();
 
     $dbg = array_merge($dbg, get_object_vars($this));
@@ -65,22 +65,20 @@ abstract class BaseQuery
 
   // returns one of C, R, U, D
   // TODO ? make them abstract ? forces knowledge of these methods..
-  public function is_create(){    return false;}
-  public function is_retrieve(){  return false;}
-  public function is_update(){    return false;}
-  public function is_delete(){    return false;}
+  // public function is_create(){    return false;}
+  // public function is_retrieve(){  return false;}
+  // public function is_update(){    return false;}
+  // public function is_delete(){    return false;}
 
-  public function query_code()
-  {
-    if($this->is_create())        return self::CODE_CREATE;
-    elseif($this->is_retrieve())  return self::CODE_RETRIEVE;
-    elseif($this->is_update())    return self::CODE_UPDATE;
-    elseif($this->is_delete())    return self::CODE_DELETE;
-
-    throw new CruditesException('UNKOWN_QUERY_CODE');
-  }
-
-  public function is_alteration(){return ($this->is_create() || $this->is_update() || $this->is_delete());}
+  // public function query_code()
+  // {
+  //   if($this->is_create())        return self::CODE_CREATE;
+  //   elseif($this->is_retrieve())  return self::CODE_RETRIEVE;
+  //   elseif($this->is_update())    return self::CODE_UPDATE;
+  //   elseif($this->is_delete())    return self::CODE_DELETE;
+  //
+  //   throw new CruditesException('UNKOWN_QUERY_CODE');
+  // }
 
   //------------------------------------------------------------  GET/SETTERS
   public function statement($setter = null) : string
@@ -182,10 +180,11 @@ abstract class BaseQuery
         if($this->prepared_statement->errorCode() === self::STATE_SUCCESS)
         {
           $this->state = self::STATE_SUCCESS;
+          // careful: https://www.php.net/manual/en/pdostatement.rowcount.php
           $this->row_count = $this->prepared_statement->rowCount();
 
-          if($this->is_create())
-            $this->inserted_id = $this->connection->lastInsertId();
+          // if($this->is_create())
+          //   $this->inserted_id = $this->connection->lastInsertId();
         }
       }
     }

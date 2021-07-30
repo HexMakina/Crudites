@@ -150,7 +150,8 @@ class Row
     if(!$persist_query->is_success())
       return ['CRUDITES_ERR_ROW_PERSISTENCE'];
 
-    if($persist_query->is_create() && !is_null($aipk = $persist_query->table()->auto_incremented_primary_key()))
+    // if($persist_query->is_create() && !is_null($aipk = $persist_query->table()->auto_incremented_primary_key()))
+    if($this->is_new() && !is_null($aipk = $persist_query->table()->auto_incremented_primary_key()))
     {
       $this->alterations[$aipk->name()]=$persist_query->inserted_id();
     }
