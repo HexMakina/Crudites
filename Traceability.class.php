@@ -35,7 +35,7 @@ trait Traceability // YOUR MOTHER'S A TRACER!
       {
         $trace['query_type'] = BaseQuery::CODE_UPDATE;
         unset($trace['query_by']);
-        $res = self::tracking_table()->delete($trace)->run();
+        self::tracking_table()->delete($trace)->run();
       }
       return true;
     }
@@ -43,14 +43,11 @@ trait Traceability // YOUR MOTHER'S A TRACER!
     {
       return false;
     }
-
-    return false;
   }
 
   public function traces($sort='DESC')
   {
     $q = self::tracking_table()->select()->aw_fields_eq(['query_table' => get_class($this)::table_name(), 'query_id' => $this->get_id()])->order_by(['query_on', $sort]);
-    // vd($q);
     return $q->ret_ass();
   }
 
@@ -58,5 +55,4 @@ trait Traceability // YOUR MOTHER'S A TRACER!
   {
     return Crudites::inspect('kadro_action_logger');
   }
-
 }
