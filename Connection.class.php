@@ -62,7 +62,7 @@ class Connection extends \PDO implements Interfaces\ConnectionInterface
     $dsn_driver = $matches[1];
     $available_drivers = \PDO::getAvailableDrivers();
     if(!in_array($dsn_driver, $available_drivers, true))
-      throw new \PDOException(sprintf('DSN Error: "%s" was given, "%s" are available', $dns_driver, implode(', ', \PDO::getAvailableDrivers())));
+      throw new \PDOException(sprintf('DSN Error: "%s" was given, "%s" are available', $dsn_driver, implode(', ', \PDO::getAvailableDrivers())));
 
     return true;
   }
