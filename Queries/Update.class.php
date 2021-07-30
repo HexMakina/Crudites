@@ -38,7 +38,7 @@ class Update extends BaseQueryWhere
 
       if($value === '' && $column->is_nullable())
         $value = NULL;
-      elseif(empty($value) && $column->is_boolean()) //empty '', 0, false
+      elseif(empty($value) && $column->type()->is_boolean()) //empty '', 0, false
         $value = 0;
 
       $this->alterations []= $this->bind($field_name, $value);

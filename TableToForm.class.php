@@ -69,41 +69,41 @@ class TableToForm
     {
       $ret .= Form::hidden($field->name(),$field_value);
     }
-    elseif($field->is_boolean())
+    elseif($field->type()->is_boolean())
     {
       $option_list = $attributes['values'] ?? [0 => 0, 1 => 1];
       $ret .= Form::select($field->name(), $option_list ,$field_value, $attributes); //
     }
-    elseif($field->is_integer())
+    elseif($field->type()->is_integer())
     {
       $ret .= Form::input($field->name(),$field_value,$attributes,$errors);
     }
-    elseif($field->is_year())
+    elseif($field->type()->is_year())
     {
       $attributes['size'] = $attributes['maxlength'] = 4;
       $ret .= Form::input($field->name(),$field_value,$attributes,$errors);
     }
-    elseif($field->is_date())
+    elseif($field->type()->is_date())
     {
       $ret .= Form::date($field->name(),$field_value,$attributes,$errors);
     }
-    elseif($field->is_time())
+    elseif($field->type()->is_time())
     {
       $ret .= Form::time($field->name(),$field_value,$attributes,$errors);
     }
-    elseif($field->is_datetime())
+    elseif($field->type()->is_datetime())
     {
       $ret .= Form::datetime($field->name(),$field_value,$attributes,$errors);
     }
-    elseif($field->is_text())
+    elseif($field->type()->is_text())
     {
       $ret .= Form::textarea($field->name(),$field_value,$attributes,$errors);
     }
-    elseif($field->is_enum())
+    elseif($field->type()->is_enum())
     {
 
       $enum_values = [];
-      foreach($field->enum_values() as $e_val)
+      foreach($field->type()->enum_values() as $e_val)
         $enum_values[$e_val] = $e_val;
 
       $selected = $attributes['value'] ?? $field_value ?? '';
@@ -112,9 +112,9 @@ class TableToForm
 
       // throw new \Exception('ENUM IS NOT HANDLED BY TableToFom');
     }
-    elseif($field->is_string())
+    elseif($field->type()->is_string())
     {
-      $max_length = $field->length();
+      $max_length = $field->type()->length();
       $attributes['size'] = $attributes['maxlength'] = $max_length;
       $ret .= Form::input($field->name(),$field_value,$attributes,$errors);
     }

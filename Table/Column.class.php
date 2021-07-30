@@ -4,36 +4,6 @@ namespace HexMakina\Crudites\Table;
 
 class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
 {
-  const TYPE_BOOLEAN = 'boolean';
-  const TYPE_INTEGER = 'integer';
-  const TYPE_FLOAT = 'float';
-
-  const TYPE_TEXT = 'text';
-  const TYPE_STRING = 'char';
-
-  const TYPE_DATETIME = 'datetime';
-  const TYPE_DATE = 'date';
-  const TYPE_TIMESTAMP = 'timestamp';
-  const TYPE_TIME = 'time';
-  const TYPE_YEAR = 'year';
-
-  const TYPE_ENUM = 'enum';
-
-  static private $types_rx = [
-    self::TYPE_BOOLEAN => 'tinyint\(1\)|boolean', // is_boolean MUST be tested before is_integer
-    self::TYPE_INTEGER => 'int\([\d]+\)|int unsigned|int',
-    self::TYPE_FLOAT => 'float|double',
-    self::TYPE_ENUM => 'enum\(\'(.+)\'\)',
-
-    self::TYPE_YEAR => '^year',
-    self::TYPE_DATE => '^date$',
-    self::TYPE_DATETIME => '^datetime$',
-    self::TYPE_TIMESTAMP => '^timestamp$',
-    self::TYPE_TIME => '^time$',
-
-    self::TYPE_TEXT => '.*text',
-    self::TYPE_STRING => 'char\((\d+)\)$'
-  ];
 
   private $name = null;
 
@@ -41,6 +11,8 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
 
   private $type = null;
   private $type_length = null;
+
+  private $ColumnType = null;
 
   private $index = false;
 
@@ -60,11 +32,13 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
 
   private $extra = null;
 
-  public function __construct($table, $name, $specs=null)
+  public function __construct($table, $name, $specs)
   {
     $this->table_name = is_string($table) ? $table : $table->name();
     $this->name = $name;
+    $this->ColumnType = new ColumnType($this, $specs['Type']);
     $this->import_describe($specs);
+
   }
 
   //------------------------------------------------------------  getters:field:info
@@ -73,16 +47,16 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     return $this->name;
   }
 
-	public function __debugInfo()
-	{
+  public function __debugInfo()
+  {
     $dbg = get_object_vars($this);
 
-		foreach($dbg as $k => $v)
-			if(!isset($dbg[$k]))
-				unset($dbg[$k]);
+    foreach($dbg as $k => $v)
+      if(!isset($dbg[$k]))
+        unset($dbg[$k]);
 
-		return $dbg;
-	}
+    return $dbg;
+  }
 
   public function name() : string
   {
@@ -103,7 +77,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
   {
     $ret = $this->default_value;
 
-    if(!is_null($this->default_value) && ($this->is_integer() || $this->is_boolean()))
+    if(!is_null($this->default_value) && ($this->type()->is_integer() || $this->type()->is_boolean()))
       $ret = (int)$ret;
 
     return $ret;
@@ -148,8 +122,8 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
   public function foreign_table_alias() : string
   {
     $ret = $this->foreign_table_name();
-		if(preg_match('/(.+)_('.$this->foreign_column_name().')$/', $this->name(), $m))
-			$ret = $m[1];
+    if(preg_match('/(.+)_('.$this->foreign_column_name().')$/', $this->name(), $m))
+      $ret = $m[1];
 
     return $ret;
   }
@@ -174,43 +148,19 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
   }
 
   //------------------------------------------------------------  getters:field:info:type
-  public function type($setter=null)
+  // public function type($setter=null)
+  // {
+  //   return is_null($setter) ? $this->type : ($this->type=$setter);
+  // }
+  public function type()
   {
-    return is_null($setter) ? $this->type : ($this->type=$setter);
+    return $this->ColumnType;
   }
 
-  public function length($setter=null) : int
-  {
-    return is_null($setter) ? ($this->type_length ?? -1) : ($this->type_length=$setter);
-  }
-
-  public function is_text() : bool        {  return $this->type === self::TYPE_TEXT;}
-  public function is_string() : bool      {  return $this->type === self::TYPE_STRING;}
-
-  public function is_boolean() : bool     {  return $this->type === self::TYPE_BOOLEAN;}
-  public function is_integer() : bool     {  return $this->type === self::TYPE_INTEGER;}
-  public function is_float() : bool       {  return $this->type === self::TYPE_FLOAT;}
-
-  public function is_enum() : bool        {  return $this->type === self::TYPE_ENUM;}
-
-  public function is_year() : bool        {  return $this->type === self::TYPE_YEAR;}
-  public function is_date() : bool        {  return $this->type === self::TYPE_DATE;}
-  public function is_time() : bool        {  return $this->type === self::TYPE_TIME;}
-  public function is_timestamp() : bool   {  return $this->type === self::TYPE_TIMESTAMP;}
-  public function is_datetime() : bool    {  return $this->type === self::TYPE_DATETIME;}
-
-  public function is_date_or_time() : bool
-  {
-    return in_array($this->type, [self::TYPE_DATE, self::TYPE_TIME, self::TYPE_TIMESTAMP, self::TYPE_DATETIME]);
-  }
-
-  public function enum_values($setter=null) : array
-  {
-    if(!is_null($setter))
-      $this->enum_values = $setter;
-
-    return $this->enum_values ?? [];
-  }
+  // public function length($setter=null) : int
+  // {
+  //   return is_null($setter) ? ($this->type_length ?? -1) : ($this->type_length=$setter);
+  // }
 
   public function import_describe($specs)
   {
@@ -218,22 +168,21 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     {
       switch($k)
       {
-        case 'Type':
-          foreach(self::$types_rx as $type => $rx)
-          {
-
-            if(preg_match("/$rx/i", $v, $m) === 1)
-            {
-              $this->type($type);
-
-              if($this->is_enum())
-                $this->enum_values(explode('\',\'',$m[1]));
-              elseif(preg_match('/([\d]+)/', $v, $m) === 1)
-                $this->length((int)$m[0]);
-              break;
-            }
-          }
-        break;
+        // case 'Type':
+        //   foreach(self::$types_rx as $type => $rx)
+        //   {
+        //     if(preg_match("/$rx/i", $v, $m) === 1)
+        //     {
+        //       $this->type($type);
+        //
+        //       if($this->is_enum())
+        //         $this->enum_values(explode('\',\'',$m[1]));
+        //       elseif(preg_match('/([\d]+)/', $v, $m) === 1)
+        //         $this->length((int)$m[0]);
+        //       break;
+        //     }
+        //   }
+        // break;
 
         case 'Null':          $this->is_nullable($v !== 'NO');
         break;

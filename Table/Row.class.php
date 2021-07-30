@@ -194,7 +194,7 @@ class Row
       if($column->is_auto_incremented())
         continue;
 
-      if($column->is_boolean())
+      if($column->type()->is_boolean())
         continue;
 
       $field_value = $ass_merge[$column_name] ?? null;
@@ -203,31 +203,31 @@ class Row
         if(!$column->is_nullable() && is_null($column->default()))
 				  $errors[$column_name] = 'ERR_FIELD_REQUIRED';
 			}
-			elseif(!$column->is_text())
+			elseif(!$column->type()->is_text())
 			{
-				if($column->is_date_or_time())
+				if($column->type()->is_date_or_time())
 				{
 					if(date_create($field_value) === false)
 						$errors[$column_name] = 'ERR_FIELD_FORMAT';
 				}
-        elseif($column->is_year())
+        elseif($column->type()->is_year())
         {
 					if(preg_match('/^[0-9]{4}$/', $field_value) !== 1)
 						$errors[$column_name] = 'ERR_FIELD_FORMAT';
         }
-				elseif($column->is_string())
+				elseif($column->type()->is_string())
 				{
-					if($column->length() < strlen($field_value))
+					if($column->type()->length() < strlen($field_value))
 						$errors[$column_name] = 'ERR_FIELD_TOO_LONG';
 				}
-        elseif($column->is_integer() || $column->is_float())
+        elseif($column->type()->is_integer() || $column->type()->is_float())
         {
           if(!is_numeric($field_value))
             $errors[$column_name] = 'ERR_FIELD_FORMAT';
         }
-				elseif($column->is_enum())
+				elseif($column->type()->is_enum())
 				{
-					if(!in_array($field_value, $column->enum_values()))
+					if(!in_array($field_value, $column->type()->enum_values()))
 						$errors[$column_name] = 'ERR_FIELD_VALUE_RESTRICTED_BY_ENUM';
 				}
 				else
