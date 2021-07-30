@@ -205,7 +205,6 @@ class Row
 			}
 			elseif(!$column->is_text())
 			{
-				$matches = []; // pregmatch cometh
 				if($column->is_date_or_time())
 				{
 					if(date_create($field_value) === false)
