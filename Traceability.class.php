@@ -22,6 +22,7 @@ trait Traceability // YOUR MOTHER'S A TRACER!
 		if(!$this->traceable())
 			return true;
 
+		$trace = [];
     $trace['query_type'] = $query_code;
     $trace['query_table'] = get_class($this)::table_name();
     $trace['query_id'] = $this->get_id();
