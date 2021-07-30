@@ -31,7 +31,6 @@ class SelectJoin extends Select
 			{
 
 				$select_also = [];
-				$select_only = [];
 
 				// TODO this sucks.. 'created_by' & 'kadro_operator' have *NOTHING* to do in SelectJoin, must create mecanism for such exception
 				if($fk_column->foreign_table_name() == 'kadro_operator' && $fk_column->name() == 'created_by')
@@ -96,8 +95,6 @@ class SelectJoin extends Select
 		$other_table_name = $other_table->name();
 
 		$joins = [];
-
-		$bonding_column = null;
 
     // 1. ? this->table.other_table_id -> $other_table.id
 		// 2. ? this_table.id -> $other_table.this_table_id)
