@@ -8,15 +8,15 @@ use \HexMakina\Crudites\Interfaces\{TableManipulationInterface};
 class SelectJoin extends Select
 {
 	protected $joined_tables = [];
-	protected $tables_classes = [];
+	// protected $tables_classes = [];
 
 
-	public function map_class($class_name, $table)
-	{
-		$this->tables_classes[$class_name] = $this->tables_classes[$class_name] ?? [];
-		$this->tables_classes[$class_name] []= $table;
-	}
-
+	// public function map_class($class_name, $table)
+	// {
+	// 	$this->tables_classes[$class_name] = $this->tables_classes[$class_name] ?? [];
+	// 	$this->tables_classes[$class_name] []= $table;
+	// }
+  //
   public function eager($table_aliases=[])
   {
 		if(isset($table_aliases[$this->table_name()]))
