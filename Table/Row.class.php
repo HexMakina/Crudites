@@ -207,7 +207,7 @@ class Row
       }
       elseif(!$column->type()->is_text())
       {
-        $res = $column->validate_value($field_value);
+        $res = $column->type()->validate_value($field_value);
 
         if($res !== true)
           $errors[$column_name] = $res;

@@ -52,7 +52,7 @@ class ColumnType
 
         if($this->is_enum())
           $this->enum_values = explode('\',\'',$m[1]);
-        elseif(preg_match('/([\d]+)/', $v, $m) === 1)
+        elseif(preg_match('/([\d]+)/', $specs_type, $m) === 1)
           $this->length = (int)$m[0];
         break;
       }
