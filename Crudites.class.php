@@ -16,24 +16,16 @@ class Crudites
 {
 	static private $database = null;
 
-	static private $databases = []; // TODO DEPRECATED KISS goodbye multi databases support
-
-	// TODO DEPRECATED KISS goodbye multi databases support
-	// public static function setInspector($database_name, DatabaseInterface $inspector)
-  // {
-  //   self::$databases[$database_name] = $inspector;
-  // }
-
 	public static function setDatabase(DatabaseInterface $db)
 	{
 		self::$database = $db;
-		// self::$databases[$db->name()] = $db; // TODO DEPRECATED KISS goodbye multi databases support
 	}
 
 	public static function inspect($table_name)
 	{
 		if(is_null(self::$database))
 			throw new CruditesException('NO_DATABASE');
+
 		try
 		{
 			return self::$database->inspect($table_name);
@@ -43,47 +35,6 @@ class Crudites
 			throw new CruditesException('TABLE_INTROSPECTION');
 		}
 	}
-
-	// TODO DEPRECATED KISS goodbye multi databases support
-	// public static function inspect($table_name, $database_name=null)
-	// {
-	// 	if(!isset($database_name) && !defined('DEFAULT_DATABASE'))
-	// 	{
-	// 		throw new CruditesException('DATABASE_NAME_UNKNOWN');
-	// 	}
-	//
-  //   try
-	// 	{
-	//
-	// 		$conx = self::$databases[$database_name ?? DEFAULT_DATABASE];
-  //   	return $conx->inspect($table_name);
-	//
-	//
-  //   }
-	// 	catch(\Exception $e){
-	// 		throw new CruditesException('TABLE_INTROSPECTION');
-	// 	}
-	// }
-
-	// public static function connect($name=null, $db_host=null, $db_port=null, $db_name=null, $charset=null, $db_user=null, $db_pass=null)
-	// TODO DEPRECATED KISS goodbye multi databases support
-	// public static function connect($props=null, $name=null)
-	// {
-	// 	$database_name = $name ?? DEFAULT_DATABASE;
-	//
-	// 	if(!isset($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']))
-	// 	{
-	// 		if(isset(self::$databases[$database_name]))
-	// 			return self::$databases[$database_name]->contentConnection();
-	//
-	// 		throw new CruditesException('CONNECTION_MISSING');
-	// 	}
-	// 	// 20210729: this stored connection in database array.. so wrong..
-	// 	// return (self::$databases[$database_name] = new Connection($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']));
-	// 	$conx = new Connection($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']);;
-	// 	self::$databases[$database_name] = new Database($conx);
-	// 	return $conx;
-	// }
 
 	public static function connect($props=null)
 	{
@@ -96,8 +47,7 @@ class Crudites
 			return self::$database->contentConnection();
 		}
 
-		$conx = new Connection($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']);;
-		// self::$databases[$database_name] = new Database($conx);
+		$conx = new Connection($props['host'],$props['port'],$props['name'],$props['char'],$props['user'],$props['pass']);
 		return $conx;
 	}
 
