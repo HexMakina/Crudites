@@ -65,5 +65,6 @@ class Insert extends BaseQuery
     if($this->is_success())
       $this->inserted_id = $this->connection()->lastInsertId();
 
+    return $this;
   }
 }
