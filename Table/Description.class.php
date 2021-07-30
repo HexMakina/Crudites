@@ -135,8 +135,8 @@ class Description implements TableDescriptionInterface
   }
 
   /*
-   * @return empty array on mismatch
-   * @return assoc array of column_name => $value on match
+   * @return array, empty on mismatch
+   * @return array, assoc of column_name => $value on match
    * @throws CruditesException if no pk defined
    */
 
@@ -148,7 +148,7 @@ class Description implements TableDescriptionInterface
     if(!is_array($dat_ass) && count($this->primary_keys()) === 1)
       $dat_ass = [current($this->primary_keys())->name() => $dat_ass];
 
-    $match_dat_ass = [];
+    $valid_dat_ass = [];
     foreach($this->primary_keys as $pk_name => $pk_field)
     {
       // empty ensures non existing keys, null and empty values
@@ -182,13 +182,13 @@ class Description implements TableDescriptionInterface
   // TableDescriptionInterface implementation
   public function foreign_keys_by_name() : array
   {
-    return is_array($this->foreign_keys_by_name)? $this->foreign_keys_by_name : [];
+    return $this->foreign_keys_by_name;
   }
 
   // TableDescriptionInterface implementation
   public function foreign_keys_by_table() : array
   {
-    return is_array($this->foreign_keys_by_table)? $this->foreign_keys_by_table : [];
+    return $this->foreign_keys_by_table;
   }
 
   public function single_foreign_key_to($other_table)
