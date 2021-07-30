@@ -3,7 +3,7 @@
 namespace HexMakina\Crudites;
 
 use \HexMakina\ORM\Interfaces\ModelInterface;
-use \HexMakina\Format\HTML\Form;
+use \HexMakina\Format\HTML\{Form,Element};
 
 class TableToForm
 {
@@ -20,27 +20,27 @@ class TableToForm
 
   public static function label($model,$field_name,$attributes=[],$errors=[])
   {
-    $label_content = '';
+    $label_content = $field_name;
 
     if(isset($attributes['label']))
     {
       $label_content = $attributes['label'];
       unset($attributes['label']);
     }
-    else
-    {
-      $field_label = sprintf('MODEL_%s_FIELD_%s', get_class($model)::model_type(),$field_name);
-      if(!defined("L::$field_label"))
-      {
-          $field_label = sprintf('MODEL_common_FIELD_%s',$field_name);
-        if(!defined("L::$field_label"))
-          $field_label = $field_name;
-      }
+    // else
+    // {
+    //   $field_label = sprintf('MODEL_%s_FIELD_%s', get_class($model)::model_type(),$field_name);
+    //   if(!defined("L::$field_label"))
+    //   {
+    //       $field_label = sprintf('MODEL_common_FIELD_%s',$field_name);
+    //     if(!defined("L::$field_label"))
+    //       $field_label = $field_name;
+    //   }
+    //
+    //   $label_content = L($field_label);
+    // }
 
-      $label_content = L($field_label);
-    }
-
-    $ret = Form::label($field_name,$label_content, $attributes, $errors);
+    $ret = Form::label($field_name, $label_content, $attributes, $errors);
     return $ret;
   }
 
