@@ -134,8 +134,8 @@ abstract class BaseQueryWhere extends BaseQuery
 
 	/**
 	* @param array $filters_content with 2 indexes: 'term', the search string, 'fields', the search fields
-	* @param RelationalTable $search_table table to filter
-	* @param $filters_operator inclusive or exclusive search
+	* @param $search_table String to filter
+	* @param $filters_operator Object, inclusive or exclusive search
 	*/
 	public function aw_filter_content($filters_content, $search_table=null, $filters_operator = null) // sub array filters[$content]
 	{
