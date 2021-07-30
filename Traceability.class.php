@@ -5,7 +5,7 @@ namespace HexMakina\Crudites;
 use \HexMakina\Crudites\Queries\BaseQuery;
 
 // TODO ? move to Models\Abilities
-trait Traceability // YOUR MOTHER'S A TRACER!
+trait Traceability // YOUR MOTHER IS A TRACER!
 {
   public function traceable() : bool
   {
