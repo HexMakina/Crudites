@@ -21,7 +21,7 @@ class Manipulation extends Description implements TableManipulationInterface
     return $row;
   }
 
-  public function insert($values=[]) : BaseQuery
+  public function insert($values=[]) : Insert
   {
     return (new Insert($this, $values))->connection($this->connection());
   }
