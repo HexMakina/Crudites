@@ -26,7 +26,7 @@ class Manipulation extends Description implements TableManipulationInterface
     return (new Insert($this, $values))->connection($this->connection());
   }
 
-  public function select($columns=null, $table_alias=null) : BaseQuery
+  public function select($columns=null, $table_alias=null) : BaseQueryWhere
 	{
 
 		$table_alias = $table_alias ?? $this->name();
@@ -34,12 +34,12 @@ class Manipulation extends Description implements TableManipulationInterface
     return $select;
 	}
 
-  public function update($modifications = [], $conditions = []) : BaseQuery
+  public function update($modifications = [], $conditions = []) : BaseQueryWhere
   {
     return (new Update($this, $modifications, $conditions))->connection($this->connection());
   }
 
-  public function delete($conditions=[]) : BaseQuery
+  public function delete($conditions=[]) : BaseQueryWhere
   {
     return (new Delete($this, $conditions))->connection($this->connection());
   }
