@@ -56,7 +56,10 @@ class Crudites
   public static function count(Select $Query)
   {
     $Query->select_also(['COUNT(*) as count']);
-    return intval(current($Query->ret_col()));
+    $res = $Query->ret_col();
+    if(is_array($res))
+      return intval(current($res));
+    return null;
   }
 
   // success: return AIPK-indexed array of results (associative array or object)
