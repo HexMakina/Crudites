@@ -4,25 +4,25 @@ namespace HexMakina\Crudites;
 
 use \HexMakina\Crudites\Queries\BaseQuery;
 
-// return $Query->is_create() ? 'CRUDITES_INSTANCE_CREATED' :
+// return $Query->is_create()   ? 'CRUDITES_INSTANCE_CREATED' :
 //       ($Query->is_retrieve() ? 'CRUDITES_INSTANCE_RETRIEVED' :
-//       ($Query->is_update() ? 'CRUDITES_INSTANCE_UPDATED' :
-//       ($Query->is_delete() ? 'CRUDITES_INSTANCE_DESTROYED' : 'ERR_UNKOWN_QUERY_TYPE')));
+//       ($Query->is_update()   ? 'CRUDITES_INSTANCE_UPDATED' :
+//       ($Query->is_delete()   ? 'CRUDITES_INSTANCE_DESTROYED' : 'ERR_UNKOWN_QUERY_TYPE')));
 
 // TODO ? move to Models\Abilities
 trait Traceability // YOUR MOTHER'S A TRACER!
 {
-	public function traceable() : bool
-	{
-		return true;
-	}
+  public function traceable() : bool
+  {
+    return true;
+  }
 
   public function track($query_code, int $query_by) : bool
   {
-		if(!$this->traceable())
-			return true;
+    if(!$this->traceable())
+      return true;
 
-		$trace = [];
+    $trace = [];
     $trace['query_type'] = $query_code;
     $trace['query_table'] = get_class($this)::table_name();
     $trace['query_id'] = $this->get_id();
