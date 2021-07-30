@@ -27,4 +27,6 @@ interface TableColumnInterface
   public function is_string() : bool;
 
   public function default();
+
+  public function foreign_table_name();
 }
