@@ -2,7 +2,6 @@
 
 namespace HexMakina\Crudites\Queries;
 
-// use \HexMakina\Crudites\{CruditesException,Crudites};
 use \HexMakina\Crudites\Interfaces\{TableManipulationInterface};
 
 class Select extends BaseQueryWhere
@@ -224,5 +223,3 @@ class Select extends BaseQueryWhere
 	public function ret_par(){		return $this->ret(\PDO::FETCH_KEY_PAIR);}
 	public function ret_key(){		return $this->ret(\PDO::FETCH_UNIQUE);}
 }
-
-?>

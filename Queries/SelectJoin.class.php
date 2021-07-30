@@ -16,7 +16,7 @@ class SelectJoin extends Select
 		$this->tables_classes[$class_name] = $this->tables_classes[$class_name] ?? [];
 		$this->tables_classes[$class_name] []= $table;
 	}
-	
+
   public function eager($table_aliases=[])
   {
 		if(isset($table_aliases[$this->table_name()]))
@@ -29,10 +29,10 @@ class SelectJoin extends Select
 			$single_fk = count($fk_columns) === 1; //assumption
 			foreach($fk_columns as $fk_column)
 			{
-        
+
 				$select_also = [];
 				$select_only = [];
-				
+
 				// TODO this sucks.. 'created_by' & 'kadro_operator' have *NOTHING* to do in SelectJoin, must create mecanism for such exception
 				if($fk_column->foreign_table_name() == 'kadro_operator' && $fk_column->name() == 'created_by')
 				{
@@ -43,11 +43,11 @@ class SelectJoin extends Select
 				else
 				{
 					$m=[];
-					if(preg_match('/(.+)_('.$fk_column->foreign_column_name().')$/', $fk_column->name(), $m)) 
+					if(preg_match('/(.+)_('.$fk_column->foreign_column_name().')$/', $fk_column->name(), $m))
 					{
 						$foreign_table_alias = $m[1];
 					}
-					else 
+					else
 					{
 						$foreign_table_alias = $foreign_table_name;
 					}
@@ -60,7 +60,7 @@ class SelectJoin extends Select
 					foreach($foreign_table->columns() as $col)
 						if(!$col->is_hidden())
 							$select_also []= "$col";
-				
+
 				$this->auto_join([$foreign_table, $foreign_table_alias], $select_also);
 			}
 		}
@@ -71,7 +71,7 @@ class SelectJoin extends Select
 		$this->joined_tables = array_merge($this->joined_tables, is_array($setter) ? $setter : [$setter]);
 		return $this;
 	}
-	
+
   public function join($table_names, $joins, $join_type='')
 	{
 		list($join_table_name,$join_table_alias) = self::process_param_table_names($table_names);
@@ -80,19 +80,19 @@ class SelectJoin extends Select
 			$join_type = '';
 
 		$this->join_raw($this->generate_join($join_type, $join_table_name, $join_table_alias, $joins));
-		
+
 		return $this;
 	}
 
 	public function auto_join($other_table, $select_also=[], $relation_type=null)
 	{
 		$other_table_alias = null;
-		
+
 		if(is_array($other_table))
 			list($other_table, $other_table_alias) = $other_table;
-		else 
+		else
 			$other_table_alias = $other_table->name();
-		
+
 		$other_table_name = $other_table->name();
 
 		$joins = [];
@@ -115,7 +115,7 @@ class SelectJoin extends Select
 			$relation_type = $relation_type ?? 'LEFT OUTER';
 			$joins []= [$this->table_label(), $bonding_column->foreign_column_name(), $other_table_alias ?? $other_table->name(), $bonding_column->name()];
 		}
-		else 
+		else
 		{
 			$bondable_tables = $this->joinable_tables();
 			if(isset($bondable_tables[$other_table_name]))
@@ -125,11 +125,11 @@ class SelectJoin extends Select
 				{
 					$bonding_column = current($bonding_columns);
 					$other_table_alias = $other_table_alias ?? $bonding_column->foreign_table_alias();
-					
+
 					$bonding_table_label = array_search($bonding_column->table_name(), $this->joined_tables());
 					if($bonding_table_label === false)
 						$bonding_table_label = $bonding_column->table_name();
-						
+
 					$joins = [[$bonding_table_label, $bonding_column->name(), $other_table_alias, $bonding_column->foreign_column_name()]];
 					$relation_type = $relation_type ?? (($bonding_column->is_nullable()) ? 'LEFT OUTER' : 'INNER');
 				}
@@ -148,11 +148,11 @@ class SelectJoin extends Select
 
 					$bonding_column = current($bonding_column);
 					$joins []= [$other_table_alias, $bonding_column->name(), $bonding_column->foreign_table_alias(), $bonding_column->foreign_column_name()];
-					
+
 					// vd($other_table_alias);
 					$bonding_column = current($bondable_tables[$table_name]);
 					$joins []= [$bonding_column->table_name(), $bonding_column->name(), $bonding_column->foreign_table_alias(), $bonding_column->foreign_column_name()];
-					
+
 					$relation_type = $relation_type ?? (($parent_column->is_nullable() || $bonding_column->is_nullable()) ? 'LEFT OUTER' : 'INNER');
 				}
 			}
@@ -164,8 +164,8 @@ class SelectJoin extends Select
 			// vd('ottojoin: '.$this->table()->name().' with '.$other_table_name.' as '.$other_table_alias);
 			$this->join([$other_table_name, $other_table_alias], $joins, $relation_type);
 			$this->add_tables([$other_table_alias => $other_table_name]);
-			
-			
+
+
 			// if(is_null($select_also) empty($select_also))
 			// 	$select_also=[$other_table_alias.'.*'];
 			if(!empty($select_also))
@@ -175,7 +175,7 @@ class SelectJoin extends Select
 						$computed_selection = "$select_field"; // table column does not exist, no nood to prefix
 					else
 						$computed_selection = "$other_table_alias.$select_field as ".$other_table_alias."_$select_field";
-					
+
 					// vd($computed_selection);
 					$this->select_also($computed_selection);
 				}
@@ -189,7 +189,7 @@ class SelectJoin extends Select
 	{
 		return $this->joined_tables;
 	}
-	
+
 	private function joinable_tables() : array
 	{
 		$joinable_tables = $this->table()->foreign_keys_by_table();
@@ -197,7 +197,7 @@ class SelectJoin extends Select
 		{
 			$joinable_tables += Crudites::inspect($join_table)->foreign_keys_by_table();
 		}
-		
+
 		return $joinable_tables;
 	}
 
@@ -208,13 +208,11 @@ class SelectJoin extends Select
 
 		if(is_array($table_names) && !isset($table_names[1]))
 			$table_names = current($table_names);
-			
+
 		if(is_string($table_names))
 			return [$table_names, $table_names];
-		
+
 		throw new CruditesException('INVALID_PARAM_TABLE_NAMES');
 	}
 
 }
-
-?>

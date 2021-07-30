@@ -163,5 +163,3 @@ class TableToForm
     return $ret;
   }
 }
-
-?>

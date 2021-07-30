@@ -24,8 +24,4 @@ class Delete extends BaseQueryWhere
 
 		return sprintf('DELETE FROM `%s` %s ', $this->table_name(), $this->generate_where());
   }
-
-
 }
-
-?>

@@ -36,7 +36,6 @@ class ClauseJoin
     //   $this->join = $join;
   }
 
-
   public function has_single_foreign_key()
   {
     $bond = $this->$table->foreign_keys_by_table()[$join_table->name()] ?? null;
@@ -45,7 +44,4 @@ class ClauseJoin
 
     return false;
   }
-
 }
-
-?>

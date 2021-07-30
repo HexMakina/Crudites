@@ -67,5 +67,3 @@ class Connection extends \PDO implements Interfaces\ConnectionInterface
     return true;
   }
 }
-
-?>

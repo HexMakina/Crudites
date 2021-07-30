@@ -262,4 +262,3 @@ abstract class BaseQuery
 		return $this->connection->errorInfo();
 	}
 }
-?>

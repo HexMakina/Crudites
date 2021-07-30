@@ -1,11 +1,11 @@
 <?php
- 
+
 namespace HexMakina\Crudites\Queries;
 
 class Describe extends BaseQuery
 {
   private $table_name = null; // table objects are not a thing here.. table() return null;
-  
+
   public function __construct($table_name)
   {
     $this->table_name = $table_name;
@@ -29,5 +29,3 @@ class Describe extends BaseQuery
     return parent::ret(\PDO::FETCH_UNIQUE); // fetch by key
   }
 }
-
-?>

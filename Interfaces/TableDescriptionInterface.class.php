@@ -22,11 +22,9 @@ interface TableDescriptionInterface
 
   public function add_unique_key($constraint_name, $columns);
   public function unique_keys_by_name() : array;
-  
-  public function auto_incremented_primary_key(TableColumnInterface $setter = null) : ?TableColumnInterface;
-  
-  //EOF introspection
-  
-}
 
-?>
+  public function auto_incremented_primary_key(TableColumnInterface $setter = null) : ?TableColumnInterface;
+
+  //EOF introspection
+
+}

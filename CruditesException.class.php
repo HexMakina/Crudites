@@ -57,5 +57,3 @@ class CruditesException extends \Exception
 
 
 }
-
-?>

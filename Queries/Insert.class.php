@@ -57,6 +57,4 @@ class Insert extends BaseQuery
 	{
 		return $this->inserted_id;
 	}
-
 }
-?>

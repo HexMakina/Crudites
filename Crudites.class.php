@@ -161,4 +161,3 @@ class Crudites
 		return is_string($table) ? self::inspect($table) : $table;
 	}
 }
-?>

@@ -11,7 +11,7 @@ abstract class BaseQueryWhere extends BaseQuery
   const WHERE_LIKE_PRE = '%TERM';
   const WHERE_LIKE_POST = 'TERM%';
 	const WHERE_LIKE_BOTH = '%TERM%';
-	
+
 	const GT = '>';
 	const LT = '<';
 	const EQ = '=';
@@ -20,7 +20,7 @@ abstract class BaseQueryWhere extends BaseQuery
 	const NEQ = '<>';
 	const LIKE = 'LIKE';
 	const NLIKE = 'NOT LIKE';
-	
+
 	protected $where = null;
 
 	public function and_where($where_condition, $whereings=[])
@@ -34,7 +34,7 @@ abstract class BaseQueryWhere extends BaseQuery
 
 		return $this;
 	}
-	
+
 
   public function aw_eq_or_null($field, $value, $table_name=null, $bindname=null)
 	{
@@ -51,11 +51,11 @@ abstract class BaseQueryWhere extends BaseQuery
 	public function aw_gte($field, $value, $table_name=null, $bindname=null){	 						return $this->aw_bind_field($table_name, $field, self::GTE, $value, $bindname);}
 	public function aw_lte($field, $value, $table_name=null, $bindname=null){  						return $this->aw_bind_field($table_name, $field, self::LTE, $value, $bindname);}
 	public function aw_not_eq($field, $value, $table_name=null, $bindname=null){  				return $this->aw_bind_field($table_name, $field, self::NEQ, $value, $bindname);}
-	
+
 	public function aw_primary($pk_values)
 	{
 		$pks = $this->table()->primary_keys_match($pk_values);
-		
+
 		if(empty($pks))
 			$this->and_where('1=0');
 		else
@@ -63,11 +63,11 @@ abstract class BaseQueryWhere extends BaseQuery
 
 		return $this;
 	}
-	
+
 	public function aw_like($field, $prep_value, $table_name=null, $bindname=null){  			return $this->aw_bind_field($table_name, $field, self::LIKE, $prep_value, $bindname);}
 	public function aw_not_like($field, $prep_value, $table_name=null, $bindname=null){  	return $this->aw_bind_field($table_name, $field, self::NLIKE, $prep_value, $bindname);}
-  
-	
+
+
 	public function aw_fields_eq($assoc_data, $table_name=null)
   {
 		$table_name = $table_name ?? $this->table_alias ?? $this->table->name();
@@ -87,10 +87,10 @@ abstract class BaseQueryWhere extends BaseQuery
   {
 		if(is_array($values) && !empty($values))
 			return $this->aw_field($field, sprintf(' IN (%s)', implode(',', $values)), $table_name);
-		
+
 		return $this;
   }
-  
+
   public function aw_string_in($field, $values, $table_name=null)
   {
 		if(is_array($values) && !empty($values))
@@ -113,19 +113,19 @@ abstract class BaseQueryWhere extends BaseQuery
 	{
 		return $this->aw_field($field, 'IS NULL', $table_name);
 	}
-	
+
 	public function aw_field($field, $condition, $table_name=null)
 	{
 		$table_field = $this->field_label($field, $table_name);
 		return $this->and_where("$table_field $condition");
-	}	
+	}
 
   public function aw_not_empty($field, $table_name=null)
 	{
 		$table_field = $this->field_label($field, $table_name);
 		return $this->and_where("($table_field IS NOT NULL AND $table_field <> '') ");
 	}
-	
+
   public function aw_empty($field, $table_name=null)
 	{
 		$table_field = $this->field_label($field, $table_name);
@@ -176,9 +176,9 @@ abstract class BaseQueryWhere extends BaseQuery
 			{
 				$operator = self::valid_operator($filters_operator, self::OR);
 				$content_wc = implode(" $operator ", $content_wc);
-	      
+
 		    $this->and_where(" ($content_wc) ", []);
-			}	
+			}
 		}
 	}
 	// //------------------------------------------------------------  FIELDS
@@ -186,24 +186,21 @@ abstract class BaseQueryWhere extends BaseQuery
 	{
 		$operator = strtoupper("$operator");
     $choices = [self::AND, self::OR];
-	
+
 		if(in_array($operator, $choices) === true)
 			return $operator;
-	
+
 		if(in_array($default, $choices) === true)
 			return $default;
-	
+
 		throw new \Exception('ERR_INVALID_QUERY_OPERATOR');
-	}	
-  
+	}
+
 	protected function generate_where()
 	{
     if(!empty($this->where))
     {
       return PHP_EOL .' WHERE '. implode(PHP_EOL.' AND ', $this->where);
     }
-	    
 	}
-  
 }
-?>

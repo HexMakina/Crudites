@@ -13,9 +13,9 @@ class Update extends BaseQueryWhere
 	{
     $this->table = $table;
 		$this->connection = $table->connection();
-		
+
 		if(!empty($update_data))
-		  $this->values($update_data);	
+		  $this->values($update_data);
 
     if(!empty($conditions))
     {
@@ -56,12 +56,11 @@ class Update extends BaseQueryWhere
     if(empty($this->alterations))
      throw new CruditesException('UPDATE_NO_ALTERATIONS');
 
-		// prevents haphazrdous generation of massive update query, must use statement setter for such jobs 
+		// prevents haphazrdous generation of massive update query, must use statement setter for such jobs
     if(empty($this->where))
      throw new CruditesException('UPDATE_NO_CONDITIONS');
-		
+
 		$ret = sprintf('UPDATE `%s` SET %s %s;', $this->table->name(), implode(', ', $this->alterations), $this->generate_where());
 		return $ret;
   }
 }
-?>

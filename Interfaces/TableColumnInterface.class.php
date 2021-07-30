@@ -28,5 +28,3 @@ interface TableColumnInterface
 
   public function default();
 }
-
-?>

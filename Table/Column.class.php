@@ -268,5 +268,3 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     return false;
   }
 }
-
-?>

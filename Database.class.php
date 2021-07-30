@@ -135,5 +135,3 @@ class Database implements DatabaseInterface
     return $this->fk_by_table[$table_name][$column_name] ?? false;
   }
 }
-
-?>

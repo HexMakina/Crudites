@@ -13,5 +13,3 @@ interface ConnectionInterface
   public function commit() : bool;
   public function rollback() : bool;
 }
-
-?>

@@ -2,9 +2,6 @@
 
 namespace HexMakina\Crudites\Queries;
 
-// use \HexMakina\Crudites\{CruditesException,Crudites};
-// use \HexMakina\Crudites\Interfaces\{TableManipulationInterface};
-
 trait Join
 {
 	protected $selection = [];
@@ -20,5 +17,4 @@ trait Join
 	protected $limit = null;
 	protected $limit_number = null;
 	protected $limit_offset = 0;
-
 }

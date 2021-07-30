@@ -207,5 +207,3 @@ class Description implements TableDescriptionInterface
   //   return is_null($setter) ? $this->ORM_class_name : ($this->ORM_class_name = $setter);
   // }
 }
-
-?>

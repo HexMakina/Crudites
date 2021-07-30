@@ -241,7 +241,4 @@ class Row
 		}
     return $errors;
 	}
-
 }
-
-?>
