@@ -141,14 +141,6 @@ abstract class BaseQuery
     return ':'.$this->table_label($table_name).'_'.$field;
   }
 
-  public function bind($field, $value, $operator = '=', $table_name=null)
-  {
-    $binding_name = $this->bind_label($field, $table_name);
-    $this->add_binding($binding_name, $value);
-
-    return $this->field_label($field, $table_name)." $operator $binding_name";
-  }
-
   public function add_binding($k, $v)
   {
     $this->bindings[$k] = $v;
