@@ -3,7 +3,7 @@
 namespace HexMakina\Crudites\Table;
 
 use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
-use \HexMakina\Crudites\Queries\{BaseQueryWhere,Insert,SelectJoin,Update,Delete};
+use \HexMakina\Crudites\Queries\{Select,Insert,Update,Delete};
 
 class Manipulation extends Description implements TableManipulationInterface
 {
@@ -30,7 +30,7 @@ class Manipulation extends Description implements TableManipulationInterface
 	{
 
 		$table_alias = $table_alias ?? $this->name();
-    $select = (new SelectJoin($columns ?? [$table_alias.'.*'], $this, $table_alias))->connection($this->connection());
+    $select = (new Select($columns ?? [$table_alias.'.*'], $this, $table_alias))->connection($this->connection());
     return $select;
 	}
 

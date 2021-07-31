@@ -6,10 +6,12 @@ use \HexMakina\Crudites\Interfaces\{TableManipulationInterface};
 use \HexMakina\Crudites\{CruditesException};
 class Select extends BaseQueryWhere
 {
+  use ClauseJoin;
+
   protected $selection = [];
   protected $table_alias = null;
   protected $join = [];
-  protected $joined_tables = [];
+
   protected $group = [];
   protected $having = [];
   protected $order = [];
@@ -79,12 +81,6 @@ class Select extends BaseQueryWhere
         }
       }
     }
-    return $this;
-  }
-
-  public function add_tables($setter)
-  {
-    $this->joined_tables = array_merge($this->joined_tables, is_array($setter) ? $setter : [$setter]);
     return $this;
   }
 
@@ -184,30 +180,6 @@ class Select extends BaseQueryWhere
     }
 
     return $ret;
-  }
-
-  protected function generate_join($join_type, $join_table_name, $join_table_alias=null, $join_fields)
-  {
-    $join_table_alias = $join_table_alias ?? $join_table_name;
-
-    $join_parts = [];
-    foreach($join_fields as $join_cond)
-    {
-      if(isset($join_cond[3])) // 4 joins param -> t.f = t.f
-      {
-        list($table, $field, $join_table, $join_table_field) = $join_cond;
-        $join_parts []= $this->field_label($field, $table) . ' = ' . $this->field_label($join_table_field, $join_table);
-      }
-      elseif(isset($join_cond[2])) // 3 joins param -> t.f = v
-      {
-        list($table, $field, $value) = $join_cond;
-        $bind_label = ':loj_'.$join_table_alias.'_'.$table.'_'.$field;
-        $this->bindings[$bind_label] = $value;
-
-        $join_parts []= $this->field_label($field, $table) . ' = ' . $bind_label;
-      }
-    }
-    return sprintf('%s JOIN `%s` %s ON %s', $join_type, $join_table_name, $join_table_alias, implode(' AND ', $join_parts));
   }
 
   //------------------------------------------------------------ SELECT:FETCHING RESULT
