@@ -62,7 +62,6 @@ abstract class BaseQuery
   abstract public function generate() : string;
 
   // returns one of C, R, U, D
-  // TODO ? make them abstract ? forces knowledge of these methods..
   // public function is_create(){    return false;}
   // public function is_retrieve(){  return false;}
   // public function is_update(){    return false;}

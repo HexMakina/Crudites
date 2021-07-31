@@ -171,39 +171,36 @@ trait ClauseWhere
       $search_table = $this->table_label();
 
     $search_term = trim($filters_content['term']);
-    if($search_term !== '')
+    if($search_term === '')
+      return $this;
+
+    $content_wc = [];
+    foreach($filters_content['fields'] as $search_field => $search_mode)
     {
-      $content_wc = [];
-      foreach($filters_content['fields'] as $search_field => $search_mode)
+      if(is_numeric($search_field))
       {
-        if(is_numeric($search_field))
-        {
-          $search_field = $search_mode;
-          $search_mode = self::$WHERE_LIKE_BOTH;
-        }
-        $search_field = $this->field_label($search_field, $search_table);
-        switch($search_mode)
-        {
-          case self::$WHERE_LIKE_PRE:
-          case self::$WHERE_LIKE_POST:
-          case self::$WHERE_LIKE_BOTH:
-            $pattern = str_replace('TERM', $search_term, $search_mode);
-            $content_wc []= " $search_field LIKE '$pattern' ";
-          break;
-
-          case self::$OP_EQ:
-            $content_wc []= "$search_field = '$search_term' ";
-          break;
-        }
+        $search_field = $search_mode;
+        $search_mode = self::$WHERE_LIKE_BOTH;
       }
+      $search_field = $this->field_label($search_field, $search_table);
 
-      if(!empty($content_wc))
+      if($search_mode === self::$OP_EQ)
       {
-        $operator = self::valid_operator($filters_operator, self::$OP_OR);
-        $content_wc = implode(" $operator ", $content_wc);
-
-        $this->and_where(" ($content_wc) ", []);
+        $content_wc []= "$search_field = '$search_term' "; // TODO bindthis
       }
+      else // %%
+      {
+        $pattern = str_replace('TERM', $search_term, $search_mode);
+        $content_wc []= " $search_field LIKE '$pattern' "; // TODO bindthis
+      }
+    }
+
+    if(!empty($content_wc))
+    {
+      $operator = self::valid_operator($filters_operator, self::$OP_OR);
+      $content_wc = implode(" $operator ", $content_wc);
+
+      $this->and_where(" ($content_wc) ", []);
     }
   }
   // //------------------------------------------------------------  FIELDS
