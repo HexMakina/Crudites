@@ -8,13 +8,13 @@ trait ClauseJoin
 {
   protected $joined_tables = [];
 
-  abstract public function table();
+  abstract public function table(TableManipulationInterface $setter = null) : TableManipulationInterface;
   abstract public function table_name();
   abstract public function table_alias();
-  abstract public function table_label();
+  abstract public function table_label($table_name=null);
   abstract public function select_also();
-  abstract public function field_label();
-  abstract public function add_binding();
+  abstract public function field_label($field, $table_name=null);
+  abstract public function add_binding($k, $v);
 
   public function add_tables($setter)
   {
@@ -70,11 +70,6 @@ trait ClauseJoin
     }
   }
 
-  public function add_tables($setter)
-  {
-    $this->joined_tables = array_merge($this->joined_tables, is_array($setter) ? $setter : [$setter]);
-    return $this;
-  }
 
   public function join($table_names, $joins, $join_type='')
   {
