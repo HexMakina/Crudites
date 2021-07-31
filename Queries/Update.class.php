@@ -41,9 +41,9 @@ class Update extends BaseQuery
       elseif(empty($value) && $column->type()->is_boolean()) //empty '', 0, false
         $value = 0;
 
-      $binding_name = $this->bind_label($field, $table_name);
+      $binding_name = $this->bind_label($field_name);
       $this->add_binding($binding_name, $value);
-      $this->alterations []= $this->field_label($field, $table_name)." = $binding_name";
+      $this->alterations []= $this->field_label($field_name)." = $binding_name";
     }
     return $this;
   }
