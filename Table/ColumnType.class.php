@@ -108,7 +108,7 @@ class ColumnType
 
   public function validate_value($field_value=null)
   {
-    if($column->type()->is_text())
+    if($this->is_text())
       return true;
 
     if($this->is_date_or_time())
