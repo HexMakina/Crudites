@@ -8,12 +8,20 @@ trait ClauseJoin
 {
   protected $joined_tables = [];
 
+  abstract public function table();
+  abstract public function table_name();
+  abstract public function table_alias();
+  abstract public function table_label();
+  abstract public function select_also();
+  abstract public function field_label();
+  abstract public function add_binding();
+
   public function add_tables($setter)
   {
     $this->joined_tables = array_merge($this->joined_tables, is_array($setter) ? $setter : [$setter]);
     return $this;
   }
-    
+
   public function eager($table_aliases=[])
   {
     if(isset($table_aliases[$this->table_name()]))
@@ -195,7 +203,7 @@ trait ClauseJoin
       {
         list($table, $field, $value) = $join_cond;
         $bind_label = ':loj_'.$join_table_alias.'_'.$table.'_'.$field;
-        $this->bindings[$bind_label] = $value;
+        $this->add_binding($bind_label, $value);
 
         $join_parts []= $this->field_label($field, $table) . ' = ' . $bind_label;
       }
