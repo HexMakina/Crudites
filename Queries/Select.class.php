@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use \HexMakina\Crudites\Interfaces\{TableManipulationInterface};
+use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
 use \HexMakina\Crudites\{CruditesException};
 class Select extends BaseQuery
 {

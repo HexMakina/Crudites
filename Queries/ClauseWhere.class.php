@@ -2,6 +2,8 @@
 
 namespace HexMakina\Crudites\Queries;
 
+use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
+
 trait ClauseWhere
 {
   // const AND = 'AND';
