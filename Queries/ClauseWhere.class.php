@@ -39,14 +39,19 @@ trait ClauseWhere
 
   protected $where = null;
 
+  abstract public function table(TableManipulationInterface $setter = null) : TableManipulationInterface;
+  abstract public function table_label($table_name=null);
+  abstract public function bind_name($table_name, $field, $value, $bind_label=null);
+  abstract public function field_label($field, $table_name=null);
+
   public function and_where($where_condition, $where_bindings=[])
   {
     $this->where = $this->where ?? [];
 
     $this->where[]= "($where_condition)";
 
-    if(!empty($where_bindings))
-      $this->bindings = array_merge($this->bindings, $where_bindings);
+    foreach($where_bindings as $k => $v)
+      $this->add_binding($k,$v);
 
     return $this;
   }
@@ -86,7 +91,7 @@ trait ClauseWhere
 
   public function aw_fields_eq($assoc_data, $table_name=null)
   {
-    $table_name = $table_name ?? $this->table_alias ?? $this->table->name();
+    $table_name = $this->table_label($table_name);
     foreach($assoc_data as $field => $value)
       $this->aw_bind_field($table_name, $field, self::$OP_EQ, $value);
 
@@ -116,7 +121,7 @@ trait ClauseWhere
       foreach($values as $i => $v)
       {
         $placeholder_name = ':'.$table_name.'_'.$field.'_awS_in_'.$count_values.'_'.$i; // TODO dirty patching. mathematical certainty needed
-        $this->bindings[$placeholder_name] = $v;
+        $this->add_binding($placeholder_name, $v);
         $in .= "$placeholder_name,";
       }
       // $this->aw_field($field, sprintf(" IN ('%s')", implode("','", $values)), $table_name);
