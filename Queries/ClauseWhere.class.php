@@ -86,7 +86,7 @@ trait ClauseWhere
 
   public function aw_fields_eq($assoc_data, $table_name=null)
   {
-    $table_name = $table_name ?? $this->table_alias ?? $this->table->name();
+    $table_name = $this->table_label($table_name);
     foreach($assoc_data as $field => $value)
       $this->aw_bind_field($table_name, $field, self::$OP_EQ, $value);
 
