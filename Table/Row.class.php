@@ -181,32 +181,17 @@ class Row
   public function validate() : array
   {
     $errors = [];
-    $ass_merge = $this->export();
+    $dat_ass = $this->export();
 
     // vdt($this->table);
     foreach($this->table->columns() as $column_name => $column)
     {
-      if($column->is_auto_incremented())
-        continue;
+      $validation = $column->type()->validate_value($dat_ass[$column_name] ?? null);
 
-      if($column->type()->is_boolean())
-        continue;
-
-      $field_value = $ass_merge[$column_name] ?? null;
-
-      if(is_null($field_value))
-      {
-        if(!$column->is_nullable() && is_null($column->default()))
-          $errors[$column_name] = 'ERR_FIELD_REQUIRED';
-      }
-      elseif(!$column->type()->is_text())
-      {
-        $res = $column->type()->validate_value($field_value);
-
-        if($res !== true)
-          $errors[$column_name] = $res;
-      }
+      if($validation !== true)
+        $errors[$column_name] = $validation;
     }
+
     return $errors;
   }
 }

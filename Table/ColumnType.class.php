@@ -56,6 +56,8 @@ class ColumnType
         break;
       }
     }
+    if(is_null($this->name))
+      throw new CruditesException('FIELD_TYPE_UNKNOWN');
   }
 
   public function is_text() : bool        {  return $this->name === self::TYPE_TEXT;}
@@ -89,40 +91,35 @@ class ColumnType
   }
 
 
-  public function validate_value($field_value)
+  public function validate_value($field_value=null)
   {
-    $ret = true;
+    if($column->is_auto_incremented())
+      return true;
 
-    if($this->is_date_or_time())
-    {
-      if(date_create($field_value) === false)
-        $ret = 'ERR_FIELD_FORMAT';
-    }
-    elseif($this->is_year())
-    {
-      if(preg_match('/^[0-9]{4}$/', $field_value) !== 1)
-        $ret = 'ERR_FIELD_FORMAT';
-    }
-    elseif($this->is_string())
-    {
-      if($this->length() < strlen($field_value))
-        $ret = 'ERR_FIELD_TOO_LONG';
-    }
-    elseif($this->is_integer() || $this->is_float())
-    {
-      if(!is_numeric($field_value))
-        $ret = 'ERR_FIELD_FORMAT';
-    }
-    elseif($this->is_enum())
-    {
-      if(!in_array($field_value, $this->enum_values()))
-        $ret = 'ERR_FIELD_VALUE_RESTRICTED_BY_ENUM';
-    }
-    else
-    {
-      $ret = 'ERR_FIELD_TYPE_UNKNOWN';
-    }
+    if($column->type()->is_boolean())
+      return true;
 
-    return $ret;
+    if(is_null($field_value) && !$column->is_nullable() && is_null($column->default()))
+      return 'ERR_FIELD_REQUIRED';
+
+    if($column->type()->is_text())
+      return true;
+
+    if($this->is_date_or_time() && date_create($field_value) === false)
+      return 'ERR_FIELD_FORMAT';
+
+    if($this->is_year() && preg_match('/^[0-9]{4}$/', $field_value) !== 1)
+      return 'ERR_FIELD_FORMAT';
+
+    if(($this->is_integer() || $this->is_float()) && !is_numeric($field_value))
+      return 'ERR_FIELD_FORMAT';
+
+    if($this->is_string() && $this->length() < strlen($field_value))
+      return 'ERR_FIELD_TOO_LONG';
+
+    if($this->is_enum() && !in_array($field_value, $this->enum_values()))
+      return 'ERR_FIELD_VALUE_RESTRICTED_BY_ENUM';
+
+    return true;
   }
 }
