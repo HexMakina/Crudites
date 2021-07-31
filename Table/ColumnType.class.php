@@ -106,7 +106,7 @@ class ColumnType
   }
 
 
-  public function validate_value($field_value=null)
+  public function validate_value($field_value)
   {
     if($this->is_text())
       return true;
@@ -117,11 +117,11 @@ class ColumnType
     if($this->is_year())
       return preg_match('/^[0-9]{4}$/', $field_value) !== 1 ? 'ERR_FIELD_FORMAT' : true;
 
-    if(($this->is_numeric())
-      return !is_numeric($field_value) ? 'ERR_FIELD_FORMAT' : true;
+    if($this->is_numeric())
+      return (!is_numeric($field_value)) ? 'ERR_FIELD_FORMAT' : true;
 
     if($this->is_string())
-      return $this->length() < strlen($field_value) ? 'ERR_FIELD_TOO_LONG' : true;
+      return ($this->length() < strlen($field_value)) ? 'ERR_FIELD_TOO_LONG' : true;
 
     if($this->is_enum())
       return !in_array($field_value, $this->enum_values()) ? 'ERR_FIELD_VALUE_RESTRICTED_BY_ENUM' : true;
