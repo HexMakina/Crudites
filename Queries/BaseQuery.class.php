@@ -87,14 +87,6 @@ abstract class BaseQuery
     return $this->statement ?? $this->generate();
   }
 
-  public function bindings($setter = null)
-  {
-    if(is_null($setter) || !is_array($setter))
-      return $this->bindings;
-
-    $this->bindings = $setter;
-    return $this;
-  }
 
   public function connection($setter = null)
   {
@@ -134,6 +126,16 @@ abstract class BaseQuery
   }
 
   //------------------------------------------------------------  PREP::BINDINGS
+
+  public function bindings($setter = null)
+  {
+    if(is_null($setter) || !is_array($setter))
+      return $this->bindings;
+
+    $this->bindings = $setter;
+    return $this;
+  }
+
   public function bind_label($field, $table_name=null)
   {
     return ':'.$this->table_label($table_name).'_'.$field;
@@ -173,7 +175,7 @@ abstract class BaseQuery
     try
     {
       if(!$this->is_prepared())
-        $this->prepared_statement = $this->connection->prepare($this->statement());
+        $this->prepared_statement = $this->connection()->prepare($this->statement());
 
       if($this->prepared_statement->execute($this->bindings()) !== false) // execute returns TRUE on success or FALSE on failure.
       {
