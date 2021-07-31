@@ -26,8 +26,6 @@ class Update extends BaseQueryWhere
     }
 	}
 
-  // public function is_update(){		return true;}
-
 	public function values($update_data)
 	{
     foreach($update_data as $field_name => $value)

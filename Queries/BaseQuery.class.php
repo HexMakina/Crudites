@@ -28,7 +28,6 @@ abstract class BaseQuery
 
   protected $prepared_statement = null;
 
-  // protected $inserted_id = null;
   protected $row_count = null;
 
   protected $error_code = null;
@@ -119,7 +118,7 @@ abstract class BaseQuery
 
   public function table_name()
   {
-    return $this->table->name();
+    return $this->table()->name();
   }
 
   //------------------------------------------------------------  PREP::FIELDS
@@ -182,9 +181,6 @@ abstract class BaseQuery
           $this->state = self::STATE_SUCCESS;
           // careful: https://www.php.net/manual/en/pdostatement.rowcount.php
           $this->row_count = $this->prepared_statement->rowCount();
-
-          // if($this->is_create())
-          //   $this->inserted_id = $this->connection->lastInsertId();
         }
       }
     }
