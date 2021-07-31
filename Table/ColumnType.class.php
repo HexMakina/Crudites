@@ -2,6 +2,8 @@
 
 namespace HexMakina\Crudites\Table;
 
+use HexMakina\Crudites\{CruditesException};
+
 class ColumnType
 {
   const TYPE_BOOLEAN = 'boolean';
@@ -56,6 +58,7 @@ class ColumnType
         break;
       }
     }
+
     if(is_null($this->name))
       throw new CruditesException('FIELD_TYPE_UNKNOWN');
   }
@@ -93,15 +96,6 @@ class ColumnType
 
   public function validate_value($field_value=null)
   {
-    if($column->is_auto_incremented())
-      return true;
-
-    if($column->type()->is_boolean())
-      return true;
-
-    if(is_null($field_value) && !$column->is_nullable() && is_null($column->default()))
-      return 'ERR_FIELD_REQUIRED';
-
     if($column->type()->is_text())
       return true;
 

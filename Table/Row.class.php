@@ -186,9 +186,9 @@ class Row
     // vdt($this->table);
     foreach($this->table->columns() as $column_name => $column)
     {
-      $validation = $column->type()->validate_value($dat_ass[$column_name] ?? null);
+      $field_value = $dat_ass[$column_name] ?? null;
 
-      if($validation !== true)
+      if($validation = $column->validate_value($field_value) !== true)
         $errors[$column_name] = $validation;
     }
 
