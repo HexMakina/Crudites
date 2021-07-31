@@ -12,7 +12,7 @@ trait ClauseJoin
   abstract public function table_name();
   abstract public function table_alias($setter = null);
   abstract public function table_label($table_name=null);
-  abstract public function select_also();
+  abstract public function select_also($setter);
   abstract public function field_label($field, $table_name=null);
   abstract public function add_binding($k, $v);
   abstract public function join_raw($sql);

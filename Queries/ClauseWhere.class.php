@@ -45,6 +45,8 @@ trait ClauseWhere
   abstract public function table_label($table_name=null);
   abstract public function bind_name($table_name, $field, $value, $bind_label=null);
   abstract public function field_label($field, $table_name=null);
+  abstract public function add_binding($k, $v);
+
 
   public function and_where($where_condition, $where_bindings=[])
   {
