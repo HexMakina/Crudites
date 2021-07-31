@@ -2,24 +2,40 @@
 
 namespace HexMakina\Crudites\Queries;
 
-// abstraction for select, update & delete
-abstract class BaseQueryWhere extends BaseQuery
+trait ClauseWhere
 {
-  const AND = 'AND';
-  const OR = 'OR';
+  // const AND = 'AND';
+  // const OR = 'OR';
 
-  const WHERE_LIKE_PRE = '%TERM';
-  const WHERE_LIKE_POST = 'TERM%';
-  const WHERE_LIKE_BOTH = '%TERM%';
+  // const WHERE_LIKE_PRE = '%TERM';
+  // const WHERE_LIKE_POST = 'TERM%';
+  // const WHERE_LIKE_BOTH = '%TERM%';
 
-  const GT = '>';
-  const LT = '<';
-  const EQ = '=';
-  const GTE = '>=';
-  const LTE = '<=';
-  const NEQ = '<>';
-  const LIKE = 'LIKE';
-  const NLIKE = 'NOT LIKE';
+  // const GT = '>';
+  // const LT = '<';
+  // const EQ = '=';
+  // const GTE = '>=';
+  // const LTE = '<=';
+  // const NEQ = '<>';
+  // const LIKE = 'LIKE';
+  // const NLIKE = 'NOT LIKE';
+
+  public static $OP_AND = 'AND';
+  public static $OP_OR = 'OR';
+
+  public static $OP_GT = '>';
+  public static $OP_LT = '<';
+  public static $OP_EQ = '=';
+  public static $OP_GTE = '>=';
+  public static $OP_LTE = '<=';
+  public static $OP_NEQ = '<>';
+  public static $OP_LIKE = 'LIKE';
+  public static $OP_NLIKE = 'NOT LIKE';
+
+
+  public static $WHERE_LIKE_PRE = '%TERM';
+  public static $WHERE_LIKE_POST = 'TERM%';
+  public static $WHERE_LIKE_BOTH = '%TERM%';
 
   protected $where = null;
 
@@ -44,13 +60,13 @@ abstract class BaseQueryWhere extends BaseQuery
     return $this->and_where("($field_name = $bind_name OR $field_name IS NULL)");
   }
 
-  public function aw_eq($field, $value, $table_name=null, $bindname=null){               return $this->aw_bind_field($table_name, $field, self::EQ, $value, $bindname);}
-  public function aw_gt($field, $value, $table_name=null, $bindname=null){               return $this->aw_bind_field($table_name, $field, self::GT, $value, $bindname);}
-  public function aw_lt($field, $value, $table_name=null, $bindname=null){               return $this->aw_bind_field($table_name, $field, self::LT, $value, $bindname);}
+  public function aw_eq($field, $value, $table_name=null, $bindname=null){               return $this->aw_bind_field($table_name, $field, self::$OP_EQ, $value, $bindname);}
+  public function aw_gt($field, $value, $table_name=null, $bindname=null){               return $this->aw_bind_field($table_name, $field, self::$OP_GT, $value, $bindname);}
+  public function aw_lt($field, $value, $table_name=null, $bindname=null){               return $this->aw_bind_field($table_name, $field, self::$OP_LT, $value, $bindname);}
 
-  public function aw_gte($field, $value, $table_name=null, $bindname=null){               return $this->aw_bind_field($table_name, $field, self::GTE, $value, $bindname);}
-  public function aw_lte($field, $value, $table_name=null, $bindname=null){              return $this->aw_bind_field($table_name, $field, self::LTE, $value, $bindname);}
-  public function aw_not_eq($field, $value, $table_name=null, $bindname=null){          return $this->aw_bind_field($table_name, $field, self::NEQ, $value, $bindname);}
+  public function aw_gte($field, $value, $table_name=null, $bindname=null){               return $this->aw_bind_field($table_name, $field, self::$OP_GTE, $value, $bindname);}
+  public function aw_lte($field, $value, $table_name=null, $bindname=null){              return $this->aw_bind_field($table_name, $field, self::$OP_LTE, $value, $bindname);}
+  public function aw_not_eq($field, $value, $table_name=null, $bindname=null){          return $this->aw_bind_field($table_name, $field, self::$OP_NEQ, $value, $bindname);}
 
   public function aw_primary($pk_values)
   {
@@ -64,15 +80,15 @@ abstract class BaseQueryWhere extends BaseQuery
     return $this;
   }
 
-  public function aw_like($field, $prep_value, $table_name=null, $bindname=null){        return $this->aw_bind_field($table_name, $field, self::LIKE, $prep_value, $bindname);}
-  public function aw_not_like($field, $prep_value, $table_name=null, $bindname=null){    return $this->aw_bind_field($table_name, $field, self::NLIKE, $prep_value, $bindname);}
+  public function aw_like($field, $prep_value, $table_name=null, $bindname=null){        return $this->aw_bind_field($table_name, $field, self::$OP_LIKE, $prep_value, $bindname);}
+  public function aw_not_like($field, $prep_value, $table_name=null, $bindname=null){    return $this->aw_bind_field($table_name, $field, self::$OP_NLIKE, $prep_value, $bindname);}
 
 
   public function aw_fields_eq($assoc_data, $table_name=null)
   {
     $table_name = $table_name ?? $this->table_alias ?? $this->table->name();
     foreach($assoc_data as $field => $value)
-      $this->aw_bind_field($table_name, $field, self::EQ, $value);
+      $this->aw_bind_field($table_name, $field, self::$OP_EQ, $value);
 
     return $this;
   }
@@ -154,19 +170,19 @@ abstract class BaseQueryWhere extends BaseQuery
         if(is_numeric($search_field))
         {
           $search_field = $search_mode;
-          $search_mode = self::WHERE_LIKE_BOTH;
+          $search_mode = self::$WHERE_LIKE_BOTH;
         }
         $search_field = $this->field_label($search_field, $search_table);
         switch($search_mode)
         {
-          case self::WHERE_LIKE_PRE:
-          case self::WHERE_LIKE_POST:
-          case self::WHERE_LIKE_BOTH:
+          case self::$WHERE_LIKE_PRE:
+          case self::$WHERE_LIKE_POST:
+          case self::$WHERE_LIKE_BOTH:
             $pattern = str_replace('TERM', $search_term, $search_mode);
             $content_wc []= " $search_field LIKE '$pattern' ";
           break;
 
-          case self::EQ:
+          case self::$OP_EQ:
             $content_wc []= "$search_field = '$search_term' ";
           break;
         }
@@ -174,7 +190,7 @@ abstract class BaseQueryWhere extends BaseQuery
 
       if(!empty($content_wc))
       {
-        $operator = self::valid_operator($filters_operator, self::OR);
+        $operator = self::valid_operator($filters_operator, self::$OP_OR);
         $content_wc = implode(" $operator ", $content_wc);
 
         $this->and_where(" ($content_wc) ", []);
@@ -185,7 +201,7 @@ abstract class BaseQueryWhere extends BaseQuery
   protected static function valid_operator($operator, $default)
   {
     $operator = strtoupper("$operator");
-    $choices = [self::AND, self::OR];
+    $choices = [self::$OP_AND, self::$OP_OR];
 
     if(in_array($operator, $choices) === true)
       return $operator;

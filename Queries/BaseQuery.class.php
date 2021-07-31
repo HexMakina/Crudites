@@ -7,7 +7,6 @@ use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
 
 abstract class BaseQuery
 {
-
   static private $executions = 0;
 
   const STATE_SUCCESS = '00000'; //PDO "error" code for "all is fine"

@@ -4,9 +4,10 @@ namespace HexMakina\Crudites\Queries;
 
 use \HexMakina\Crudites\Interfaces\{TableManipulationInterface};
 use \HexMakina\Crudites\{CruditesException};
-class Select extends BaseQueryWhere
+class Select extends BaseQuery
 {
   use ClauseJoin;
+  use ClauseWhere;
 
   protected $selection = [];
   protected $table_alias = null;
@@ -39,11 +40,6 @@ class Select extends BaseQueryWhere
     elseif(is_array($select_fields))
       $this->selection = $select_fields;
   }
-
-  // public function is_retrieve()
-  // {
-  //   return true;
-  // }
 
   public function table_label($table_name=null)
   {
