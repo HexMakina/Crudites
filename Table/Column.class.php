@@ -186,6 +186,26 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     return $this;
   }
 
+  public function validate_value($field_value=null)
+  {
+    if($this->is_auto_incremented())
+      return true;
+
+    if($this->type()->is_boolean())
+      return true;
+
+    if(is_null($field_value))
+    {
+      if($this->is_nullable())
+        return true;
+      elseif(is_null($this->default()))
+        return 'ERR_FIELD_REQUIRED';
+    }
+
+    if($validation = $this->type()->validate_value($field_value) !== true)
+      return $validation;
+  }
+
   public function is_hidden()
   {
     switch($this->name())
