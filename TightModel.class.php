@@ -3,7 +3,7 @@
 namespace HexMakina\Crudites;
 
 use \HexMakina\Crudites\Interfaces\{TableManipulationInterface,ModelInterface};
-use \HexMakina\Crudites\Queries\BaseQuery;
+use \HexMakina\Crudites\Queries\{BaseQuery,Select};
 
 abstract class TightModel extends Crudites implements ModelInterface
 {
