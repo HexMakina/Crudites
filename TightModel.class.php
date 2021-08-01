@@ -8,7 +8,7 @@ use \HexMakina\Crudites\Queries\BaseQuery;
 abstract class TightModel extends Crudites implements ModelInterface
 {
 	use Traceability;
-  use \HexMakina\Crudites\TraitIntrospector;
+  use TraitIntrospector;
 
 	const IMMORTAL_BY_DEFAULT = true; // immortal by default, prevent deletion without thinking, NEVER change that value
 
@@ -24,7 +24,7 @@ abstract class TightModel extends Crudites implements ModelInterface
   public function import($assoc_data)
 	{
 		if(!is_array($assoc_data))
-			ddt($assoc_data, __FUNCTION__.'(assoc_data)');
+      throw new \Exception(__FUNCTION__.'(assoc_data) parm is not an array');
 
     // shove it all up in model, god will sort them out
     foreach($assoc_data as $field => $value)
@@ -211,7 +211,7 @@ abstract class TightModel extends Crudites implements ModelInterface
 
 
 	//------------------------------------------------------------  Data Retrieval
-	public static function query_retrieve($filters=[], $options=[]) : BaseQuery
+	public static function query_retrieve($filters=[], $options=[]) : Select
 	{
 		$class = get_called_class();
 		$table = $class::table();
@@ -326,10 +326,11 @@ abstract class TightModel extends Crudites implements ModelInterface
 	}
 
 	// success: return PK-indexed array of results (associative array or object)
-	public static function retrieve(BaseQuery $Query) : array
+	public static function retrieve(Select $Query) : array
 	{
 		$ret = [];
 		$pk_name = implode('_', array_keys($Query->table()->primary_keys()));
+
     if(count($pks = $Query->table()->primary_keys())>1)
     {
       $concat_pk = sprintf('CONCAT(%s) as %s', implode(',',$pks),$pk_name);
@@ -341,9 +342,9 @@ abstract class TightModel extends Crudites implements ModelInterface
     }
 		catch(CruditesException $e)
 		{
-			vdt($e->getMessage());
 			return [];
 		}
+
 		if($Query->is_success())
 			foreach($Query->ret_obj(get_called_class()) as $rec)
 			{
@@ -363,8 +364,8 @@ abstract class TightModel extends Crudites implements ModelInterface
 
 	public function get_id($mode=null)
   {
-    $primary_key = null;
-    if(is_null($primary_key = static::table()->auto_incremented_primary_key()) && count($pks = static::table()->primary_keys())==1)
+    $primary_key = static::table()->auto_incremented_primary_key();
+    if(is_null($primary_key) && count($pks = static::table()->primary_keys())==1)
       $primary_key = current($pks);
 
     return $mode === 'name' ? $primary_key->name() : $this->get($primary_key->name());
@@ -453,10 +454,11 @@ abstract class TightModel extends Crudites implements ModelInterface
 
 	public static function table_name() : string
 	{
-		$table_name = null;
 		$reflect = new \ReflectionClass(get_called_class());
 
-		if(($table_name = $reflect->getConstant('TABLE_NAME')) === false)
+    $table_name = $reflect->getConstant('TABLE_NAME');
+
+		if($table_name === false)
 		{
 			$calling_class = $reflect->getShortName();
 			if(defined($const_name = 'TABLE_'.strtoupper($calling_class)))
@@ -492,4 +494,3 @@ abstract class TightModel extends Crudites implements ModelInterface
     return ['*'];
   }
 }
-?>
