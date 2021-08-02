@@ -9,9 +9,10 @@
  */
 namespace HexMakina\Crudites;
 
-class Connection extends \PDO implements Interfaces\ConnectionInterface
+class Connection implements Interfaces\ConnectionInterface
 {
   private $database_name = null;
+  private $pdo;
 
   static private $driver_options = [
   \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, // mandatory in CRUDITES error handler
@@ -24,34 +25,54 @@ class Connection extends \PDO implements Interfaces\ConnectionInterface
     $this->database_name = $db_name;
     $dsn = "mysql:host=$db_host;port=$db_port;dbname=$db_name;charset=$charset";
     $this->validate_dsn($dsn); //throws \PDOException
-    parent::__construct($dsn, $username, $password, self::$driver_options);
+    $this->pdo = new \PDO($dsn, $username, $password, self::$driver_options);
+
   }
 
   public function driver_name()
   {
-    return $this->getAttribute(\PDO::ATTR_DRIVER_NAME);
+    return $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
   }
 
-  public function database_name()
+  public function database_name() : string
   {
     return $this->database_name;
   }
 
+  public function prepare($sql_statement, $options = [])
+  {
+    return $this->pdo->prepare($sql_statement, $options);
+  }
+
   public function transact() : bool
   {
-    return $this->beginTransaction();
+    return $this->pdo->beginTransaction();
   }
 
   public function commit() : bool
   {
-    return parent::commit();
+    return $this->pdo->commit();
   }
 
   public function rollback() : bool
   {
-    return parent::rollback();
+    return $this->pdo->rollback();
   }
 
+  public function error_info() : array
+  {
+    return $this->pdo->errorInfo();
+  }
+
+  public function last_inserted_id($name = null)
+  {
+    return $this->pdo->lastInsertId();
+  }
+
+  public function error_code() : array
+  {
+    return $this->pdo->errorInfo();
+  }
 
   private function validate_dsn($dsn)
   {

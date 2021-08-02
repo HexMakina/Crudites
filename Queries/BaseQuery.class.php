@@ -251,6 +251,6 @@ abstract class BaseQuery implements QueryInterface
     if($this->is_prepared())
       return $this->prepared_statement->errorInfo();
 
-    return $this->connection->errorInfo();
+    return $this->connection()->error_info();
   }
 }
