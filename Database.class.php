@@ -2,7 +2,9 @@
 
 namespace HexMakina\Crudites;
 
-use HexMakina\Crudites\Queries\{Select, Describe};
+use HexMakina\Crudites\Queries\{Select,Describe};
+use HexMakina\Crudites\Table\{Manipulation,Column};
+
 use HexMakina\Crudites\Interfaces\{ConnectionInterface,DatabaseInterface,TableManipulationInterface};
 
 class Database implements DatabaseInterface
@@ -97,11 +99,11 @@ class Database implements DatabaseInterface
     if($description === false)
       throw new \PDOException("Unable to describe $table_name");
 
-    $table = new Table\Manipulation($table_name, $this->contentConnection());
+    $table = new Manipulation($table_name, $this->contentConnection());
 
     foreach($description as $column_name => $specs)
     {
-      $column = new Table\Column($table, $column_name, $specs);
+      $column = new Column($table, $column_name, $specs);
 
       // handling usage constraints
       if(isset($this->unique_by_table[$table_name][$column_name]))
