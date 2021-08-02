@@ -68,19 +68,12 @@ class Crudites
     $pk_name = implode('_', array_keys($Query->table()->primary_keys()));
 
     $ret = [];
-    // try
-    // {
+
     if($Query->run()->is_success())
     {
       foreach($Query->ret_ass() as $rec)
         $ret[$rec[$pk_name]] = $rec;
     }
-    // }
-    // catch(CruditesException $e)
-    // {
-    //   vdt($e->getMessage());
-    //   return [];
-    // }
 
     return $ret;
   }

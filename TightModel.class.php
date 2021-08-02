@@ -55,7 +55,7 @@ abstract class TightModel extends Crudites implements ModelInterface, TraceableI
     return $table_row;
   }
 
-  public function extract(TightModel $extract_model, $ignore_nullable=false)
+  public function extract(ModelInterface $extract_model, $ignore_nullable=false)
   {
     $extraction_class = get_class($extract_model);
 
@@ -446,13 +446,10 @@ abstract class TightModel extends Crudites implements ModelInterface, TraceableI
 
   //------------------------------------------------------------  Introspection & Data Validation
   /** Cascade of table name guessing goes:
-   * 1. Constant 'TABLE_NAME' defined in class
-   * 2. Constant 'TABLE_[CLASS_NAME]'
-   * 3. lower-case class name
+   * 1. Constant 'TABLE_ALIAS' defined in class
+   * 2. lower-case class name
    * @throws CruditesException, if ever called from Crudites class, must be inherited call
-   *
    */
-
   public static function table_alias() : string
   {
     return defined(get_called_class().'::TABLE_ALIAS') ? static::TABLE_ALIAS : static::model_type();
