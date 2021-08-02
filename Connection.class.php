@@ -87,4 +87,17 @@ class Connection implements Interfaces\ConnectionInterface
 
     return true;
   }
+
+  public function query($sql_statement, $fetch_mode = null, $fetch_col_num=null)
+  {
+    //TODO consolidate this, test args and warnings
+    return $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);
+  }
+
+  public function alter($sql_statement)
+  {
+    //TODO consolidate this, test args and warnings
+    // PDO::exec() returns the number of rows that were modified or deleted by the SQL statement you issued. If no rows were affected, PDO::exec() returns 0.
+    return $this->pdo->exec($sql_statement);
+  }
 }

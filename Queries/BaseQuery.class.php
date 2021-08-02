@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use \HexMakina\Crudites\{Connection,CruditesException};
+use \HexMakina\Crudites\{CruditesException};
 use \HexMakina\Crudites\Interfaces\{TableManipulationInterface,ConnectionInterface,QueryInterface};
 
 abstract class BaseQuery implements QueryInterface

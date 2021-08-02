@@ -89,7 +89,13 @@ class Crudites
   {
     $conx = self::connect();
     if(empty($dat_ass))
+    {
       $res = $conx->query($sql);
+      //TODO query | alter !
+      //$res = $conx->alter($sql);
+
+    }
+
     else
     {
       $stmt = $conx->prepare($sql);

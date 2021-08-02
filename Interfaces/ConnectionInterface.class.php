@@ -18,4 +18,7 @@ interface ConnectionInterface
   public function last_inserted_id($name = null);
   public function error_code() : array;
   public function error_info() : array;
+
+  public function query($sql_statement, $fetch_mode = null, $fetch_col_num=null);
+  public function alter($sql_statement);
 }
