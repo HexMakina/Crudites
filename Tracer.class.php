@@ -49,10 +49,10 @@ class Tracer implements TracerInterface
 
     try{
       $this->tracing_table()->connection()->transact();
-      $this->tracing_table()->insert($trace)->run();
+      $query = $this->tracing_table()->insert($trace)->run();
 
       // if we delete a record, we remove all traces of update
-      if($res->is_success() && $trace['query_type'] === self::CODE_DELETE)
+      if($query->is_success() && $trace['query_type'] === self::CODE_DELETE)
       {
         $trace['query_type'] = self::CODE_UPDATE;
         unset($trace['query_by']);
