@@ -24,14 +24,14 @@ class Manipulation extends Description implements TableManipulationInterface
   public function insert($values=[]) : Insert
   {
     $q = new Insert($this, $values);
-    $q->->connection($this->connection());
+    $q->connection($this->connection());
     return $q;
   }
 
   public function update($modifications = [], $conditions = []) : Update
   {
     $q = new Update($this, $modifications, $conditions);
-    $q->->connection($this->connection());
+    $q->connection($this->connection());
     return $q;
   }
 
@@ -45,9 +45,9 @@ class Manipulation extends Description implements TableManipulationInterface
   public function select($columns=null, $table_alias=null) : SelectInterface
   {
     $table_alias = $table_alias ?? $this->name();
-    $select = new Select($columns ?? [$table_alias.'.*'], $this, $table_alias);
-    $select->connection($this->connection());
-    return $select;
+    $q = new Select($columns ?? [$table_alias.'.*'], $this, $table_alias);
+    $q->connection($this->connection());
+    return $q;
   }
 
 
