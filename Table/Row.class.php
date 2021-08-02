@@ -188,7 +188,8 @@ class Row
     {
       $field_value = $dat_ass[$column_name] ?? null;
 
-      if($validation = $column->validate_value($field_value) !== true)
+      $validation = $column->validate_value($field_value);
+      if($validation !== true)
         $errors[$column_name] = $validation;
     }
 
