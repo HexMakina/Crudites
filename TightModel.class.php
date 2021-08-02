@@ -2,19 +2,23 @@
 
 namespace HexMakina\Crudites;
 
-use \HexMakina\Crudites\Interfaces\{TableManipulationInterface,ModelInterface};
+use \HexMakina\Crudites\Interfaces\{TableManipulationInterface,ModelInterface,TraceableInterface};
 use \HexMakina\Crudites\Queries\{BaseQuery,Select};
 
-abstract class TightModel extends Crudites implements ModelInterface
+abstract class TightModel extends Crudites implements ModelInterface, TraceableInterface
 {
-  use Traceability;
   use TraitIntrospector;
 
   const IMMORTAL_BY_DEFAULT = true; // immortal by default, prevent deletion without thinking, NEVER change that value
 
   public function __toString(){ return static::class_short_name().' #'.$this->get_id();}
 
-  //check all primary keys are set
+  public function traceable() : bool
+  {
+    return true;
+  }
+
+  //check all primary keys are set (TODO that doesn't work unles AIPK.. nice try)
   public function is_new() : bool
   {
     $match = static::table()->primary_keys_match(get_object_vars($this));
@@ -121,7 +125,7 @@ abstract class TightModel extends Crudites implements ModelInterface
   }
 
   // return array of errors
-  public function save($operator_id) : ?array
+  public function save($operator_id, $tracer=null) : ?array
   {
     try
     {
@@ -150,12 +154,15 @@ abstract class TightModel extends Crudites implements ModelInterface
           return $errors;
         }
 
+        if(!is_null($tracer) && $this->traceable())
+          $tracer->trace($table_row->last_query(), $operator_id, $this->get_id());
+
         // reload row
         $table_row = static::table()->restore($table_row->export());
 
-        // was is a creation or alteration
-        if(!$this->is_new())
-          $this->track(BaseQuery::CODE_UPDATE, $operator_id);
+        // // was is a creation or alteration
+        // if(!$this->is_new())
+        //   $this->track(BaseQuery::CODE_UPDATE, $operator_id);
 
         // update model
         $this->import($table_row->export());
@@ -188,9 +195,12 @@ abstract class TightModel extends Crudites implements ModelInterface
     return true;
   }
 
-  public function after_destroy(){$this->search_and_execute_trait_methods(__FUNCTION__);}
+  public function after_destroy()
+  {
+    $this->search_and_execute_trait_methods(__FUNCTION__);
+  }
 
-  public function destroy($operator_id) : bool
+  public function destroy($operator_id, $tracer=null) : bool
   {
     if($this->before_destroy() === false)
       return false;
@@ -200,7 +210,10 @@ abstract class TightModel extends Crudites implements ModelInterface
     if($table_row->wipe() === false)
       return false;
 
-    $this->track(BaseQuery::CODE_DELETE, $operator_id);
+    if(!is_null($tracer) && $this->traceable())
+      $tracer->trace($table_row->last_query(), $operator_id, $this->get_id());
+
+    // $this->track(BaseQuery::CODE_DELETE, $operator_id);
 
     $this->after_destroy();
 
