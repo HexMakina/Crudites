@@ -2,7 +2,8 @@
 
 namespace HexMakina\Crudites\Interfaces;
 
-use \HexMakina\Crudites\Queries\{Select, Insert, Update, Delete};
+use \HexMakina\Crudites\Queries\{Insert, Update, Delete};
+use \HexMakina\Crudites\Interfaces\{SelectInterface};
 use \HexMakina\Crudites\Table\Row;
 
 interface TableManipulationInterface extends TableDescriptionInterface
@@ -13,7 +14,7 @@ interface TableManipulationInterface extends TableDescriptionInterface
 
   // query generators
   public function insert($values=[]) : Insert;
-  public function select($columns=null, $table_alias=null) : Select;
+  public function select($columns=null, $table_alias=null) : SelectInterface;
   public function update($modifications = [], $conditions = []) : Update;
   public function delete($conditions=[]) : Delete;
 
