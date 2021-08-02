@@ -22,4 +22,29 @@ interface SelectInterface extends QueryInterface
   public function ret_par();
   public function ret_key();
 
+  public function and_where($where_condition, $where_bindings=[]);
+
+  public function aw_primary($pk_values);
+
+  public function aw_eq_or_null($field, $value, $table_name=null, $bindname=null);
+  public function aw_eq($field, $value, $table_name=null, $bindname=null);
+  public function aw_gt($field, $value, $table_name=null, $bindname=null);
+  public function aw_lt($field, $value, $table_name=null, $bindname=null);
+
+  public function aw_fields_eq($assoc_data, $table_name=null);
+
+  public function aw_like($field, $prep_value, $table_name=null, $bindname=null);
+  public function aw_not_like($field, $prep_value, $table_name=null, $bindname=null);
+
+  public function aw_numeric_in($field, $values, $table_name=null);
+  public function aw_string_in($field, $values, $table_name=null);
+
+  public function aw_empty($field, $table_name=null);
+  public function aw_not_empty($field, $table_name=null);
+  public function aw_is_null($field, $table_name=null);
+
+  public function aw_field($field, $condition, $table_name=null);
+
+  public function aw_filter_content($filters_content, $search_table=null, $filters_operator = null);
+  
 }
