@@ -95,7 +95,7 @@ class Database implements DatabaseInterface
 
     // TODO test this when all is back to normal 2021.03.09
     if($description === false)
-      throw new \PDOException("Unable to describe $table");
+      throw new \PDOException("Unable to describe $table_name");
 
     $table = new Table\Manipulation($table_name, $this->contentConnection());
 

@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Table;
 
-use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use \HexMakina\Crudites\Interfaces\{TableManipulationInterface,SelectInterface};
 use \HexMakina\Crudites\Queries\{Select,Insert,Update,Delete};
 
 class Manipulation extends Description implements TableManipulationInterface
@@ -23,26 +23,32 @@ class Manipulation extends Description implements TableManipulationInterface
 
   public function insert($values=[]) : Insert
   {
-    return (new Insert($this, $values))->connection($this->connection());
+    $q = new Insert($this, $values);
+    $q->->connection($this->connection());
+    return $q;
   }
-
-  public function select($columns=null, $table_alias=null) : Select
-	{
-
-		$table_alias = $table_alias ?? $this->name();
-    $select = new Select($columns ?? [$table_alias.'.*'], $this, $table_alias);
-    $select->connection($this->connection());
-    return $select;
-	}
 
   public function update($modifications = [], $conditions = []) : Update
   {
-    return (new Update($this, $modifications, $conditions))->connection($this->connection());
+    $q = new Update($this, $modifications, $conditions);
+    $q->->connection($this->connection());
+    return $q;
   }
 
   public function delete($conditions=[]) : Delete
   {
-    return (new Delete($this, $conditions))->connection($this->connection());
+    $q = new Delete($this, $conditions);
+    $q->connection($this->connection());
+    return $q;
   }
+
+  public function select($columns=null, $table_alias=null) : SelectInterface
+  {
+    $table_alias = $table_alias ?? $this->name();
+    $select = new Select($columns ?? [$table_alias.'.*'], $this, $table_alias);
+    $select->connection($this->connection());
+    return $select;
+  }
+
 
 }
