@@ -328,7 +328,7 @@ abstract class TightModel extends Crudites implements ModelInterface, TraceableI
 
   public static function listing($filters = [], $options = []) : array
   {
-    return static::retrieve(static::query_retrieve($filters, $options), $return_as_assoc = true); // listing as arrays for templates
+    return static::retrieve(static::query_retrieve($filters, $options)); // listing as arrays for templates
   }
 
   // success: return PK-indexed array of results (associative array or object)
