@@ -17,7 +17,6 @@ class Row
 
   private $last_query = null;
 
-
   public function __construct(TableManipulationInterface $table, $dat_ass = [])
   {
     $this->table = $table;
@@ -43,7 +42,12 @@ class Row
     return $this->table;
   }
 
-  public function is_new()
+  public function last_query()
+  {
+    return $this->last_query;
+  }
+
+  public function is_new() : bool
   {
     return empty($this->load);
   }
@@ -82,8 +86,8 @@ class Row
     if(empty($pks))
       return $this;
 
-    $Query = $this->table->select()->aw_primary($pks);
-    $res = $Query->ret_ass();
+    $this->last_query = $this->table()->select()->aw_primary($pks);
+    $res = $this->last_query->ret_ass();
 
     $this->load = (is_array($res) && count($res) === 1) ? current($res) : null;
 
@@ -128,21 +132,20 @@ class Row
     if(!empty($errors = $this->validate())) // Table level validation
       return $errors;
 
-    $persist_query = null;
     try
     {
       if($this->is_new())
       {
-        $persist_query = $this->table->insert($this->export());
-        $persist_query->run();
-        if($persist_query->is_success() && !is_null($aipk = $persist_query->table()->auto_incremented_primary_key()))
-          $this->alterations[$aipk->name()]=$persist_query->inserted_id();
+        $this->last_query = $this->table()->insert($this->export());
+        $this->last_query->run();
+        if($this->last_query->is_success() && !is_null($aipk = $this->last_query->table()->auto_incremented_primary_key()))
+          $this->alterations[$aipk->name()]=$this->last_query->inserted_id();
       }
       else
       {
         $pk_match = $this->table()->primary_keys_match($this->load);
-        $persist_query = $this->table->update($this->alterations, $pk_match);
-        $persist_query->run();
+        $this->last_query = $this->table()->update($this->alterations, $pk_match);
+        $this->last_query->run();
       }
     }
     catch(CruditesException $e)
@@ -150,7 +153,7 @@ class Row
       return [$e->getMessage()];
     }
 
-    return $persist_query->is_success() ? [] : ['CRUDITES_ERR_ROW_PERSISTENCE'];
+    return $this->last_query->is_success() ? [] : ['CRUDITES_ERR_ROW_PERSISTENCE'];
   }
 
   public function wipe() : bool

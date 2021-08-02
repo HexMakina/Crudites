@@ -18,7 +18,7 @@ class Describe extends BaseQuery
   }
 
   // overwrites BaseQuery, bypassing null table object
-  public function table_name()
+  public function table_name() : string
   {
     return $this->table_name;
   }
