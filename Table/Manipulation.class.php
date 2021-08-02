@@ -30,7 +30,8 @@ class Manipulation extends Description implements TableManipulationInterface
 	{
 
 		$table_alias = $table_alias ?? $this->name();
-    $select = (new Select($columns ?? [$table_alias.'.*'], $this, $table_alias))->connection($this->connection());
+    $select = new Select($columns ?? [$table_alias.'.*'], $this, $table_alias);
+    $select->connection($this->connection());
     return $select;
 	}
 

@@ -3,9 +3,9 @@
 namespace HexMakina\Crudites\Queries;
 
 use \HexMakina\Crudites\{Connection,CruditesException};
-use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use \HexMakina\Crudites\Interfaces\{TableManipulationInterface,ConnectionInterface,QueryInterface};
 
-abstract class BaseQuery
+abstract class BaseQuery implements QueryInterface
 {
   static private $executions = 0;
 
@@ -31,6 +31,7 @@ abstract class BaseQuery
 
   protected $error_code = null;
   protected $error_text = null;
+
   //------------------------------------------------------------  DEBUG
   public function __debugInfo()
   {
@@ -87,13 +88,12 @@ abstract class BaseQuery
   }
 
 
-  public function connection($setter = null)
+  public function connection(ConnectionInterface $setter = null) : ConnectionInterface
   {
-    if(is_null($setter))
-      return $this->connection;
+    if(!is_null($setter))
+      $this->connection = $setter;
 
-    $this->connection = $setter;
-    return $this;
+    return $this->connection;
   }
 
   public function has_table() : bool
@@ -106,7 +106,7 @@ abstract class BaseQuery
     return is_null($setter) ? $this->table : ($this->table = $setter);
   }
 
-  public function table_name()
+  public function table_name() : string
   {
     return $this->table()->name();
   }
@@ -159,7 +159,7 @@ abstract class BaseQuery
   // returns itself
   // DEBUG dies on \Exception
 
-  public function run() : BaseQuery
+  public function run() : QueryInterface
   {
     if(is_null($this->connection()))
       throw new CruditesException('NO_CONNECTION');
@@ -231,17 +231,17 @@ abstract class BaseQuery
   }
 
   //------------------------------------------------------------  Status
-  public function is_prepared()
+  public function is_prepared() : bool
   {
     return !is_null($this->prepared_statement) && false !== $this->prepared_statement;
   }
 
-  public function is_executed($setter=null)
+  public function is_executed($setter=null) : bool
   {
     return is_null($setter) ? $this->executed === true : ($this->executed = $setter);
   }
 
-  public function is_success()
+  public function is_success() : bool
   {
     return $this->state === self::STATE_SUCCESS;
   }

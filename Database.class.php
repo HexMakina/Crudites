@@ -32,16 +32,23 @@ class Database implements DatabaseInterface
     return $this->connection;
   }
 
+  public function introspectionConnection() : ConnectionInterface
+  {
+    return $this->introspection_connection ?? $this->contentConnection();
+  }
+
+
   public function introspect(ConnectionInterface $information_schema = null)
   {
     if(!is_null($information_schema))
       $this->introspection_connection = $information_schema;
 
-    if(is_null($this->introspection_connection))
+    if(is_null($this->introspectionConnection()))
       return null;
 
     $statement = sprintf('SELECT TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION, COLUMN_NAME, POSITION_IN_UNIQUE_CONSTRAINT, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = "%s" ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION', $this->name());
-    $q = (new Select())->connection($this->introspection_connection);
+    $q = new Select();
+    $q->connection($this->introspectionConnection());
     $q->statement($statement);
     $res = $q->ret_ass();
 
@@ -81,13 +88,16 @@ class Database implements DatabaseInterface
     if(isset($this->table_cache[$table_name]))
       return $this->table_cache[$table_name];
 
-    $table = new Table\Manipulation($table_name, $this->contentConnection());
-    $description = (new Describe($table_name))->connection($this->contentConnection())->ret();
+
+    $describe = (new Describe($table_name));
+    $describe->connection($this->contentConnection());
+    $description = $describe->ret();
 
     // TODO test this when all is back to normal 2021.03.09
     if($description === false)
       throw new \PDOException("Unable to describe $table");
 
+    $table = new Table\Manipulation($table_name, $this->contentConnection());
 
     foreach($description as $column_name => $specs)
     {
