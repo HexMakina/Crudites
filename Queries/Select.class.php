@@ -2,9 +2,10 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use \HexMakina\Crudites\Interfaces\{TableManipulationInterface,SelectInterface};
 use \HexMakina\Crudites\{CruditesException};
-class Select extends BaseQuery
+
+class Select extends BaseQuery implements SelectInterface
 {
   use ClauseJoin;
   use ClauseWhere;
@@ -41,9 +42,9 @@ class Select extends BaseQuery
       $this->selection = $select_fields;
   }
 
-  public function table_label($table_name=null)
+  public function table_label($forced_value=null)
   {
-    return $table_name ?? $this->table_alias ?? $this->table_name();
+    return $forced_value ?? $this->table_alias ?? $this->table_name();
   }
 
   public function columns($setter = null)
