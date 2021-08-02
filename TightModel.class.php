@@ -2,8 +2,7 @@
 
 namespace HexMakina\Crudites;
 
-use \HexMakina\Crudites\Interfaces\{TableManipulationInterface,ModelInterface,TraceableInterface};
-use \HexMakina\Crudites\Queries\{BaseQuery,Select};
+use \HexMakina\Crudites\Interfaces\{TableManipulationInterface,ModelInterface,TraceableInterface,SelectInterface};
 
 abstract class TightModel extends Crudites implements ModelInterface, TraceableInterface
 {
@@ -160,10 +159,6 @@ abstract class TightModel extends Crudites implements ModelInterface, TraceableI
         // reload row
         $table_row = static::table()->restore($table_row->export());
 
-        // // was is a creation or alteration
-        // if(!$this->is_new())
-        //   $this->track(BaseQuery::CODE_UPDATE, $operator_id);
-
         // update model
         $this->import($table_row->export());
 
@@ -213,8 +208,6 @@ abstract class TightModel extends Crudites implements ModelInterface, TraceableI
     if(!is_null($tracer) && $this->traceable())
       $tracer->trace($table_row->last_query(), $operator_id, $this->get_id());
 
-    // $this->track(BaseQuery::CODE_DELETE, $operator_id);
-
     $this->after_destroy();
 
     return true;
@@ -224,7 +217,7 @@ abstract class TightModel extends Crudites implements ModelInterface, TraceableI
 
 
   //------------------------------------------------------------  Data Retrieval
-  public static function query_retrieve($filters=[], $options=[]) : Select
+  public static function query_retrieve($filters=[], $options=[]) : SelectInterface
   {
     $class = get_called_class();
     $table = $class::table();
@@ -339,7 +332,7 @@ abstract class TightModel extends Crudites implements ModelInterface, TraceableI
   }
 
   // success: return PK-indexed array of results (associative array or object)
-  public static function retrieve(Select $Query) : array
+  public static function retrieve(SelectInterface $Query) : array
   {
     $ret = [];
     $pk_name = implode('_', array_keys($Query->table()->primary_keys()));
