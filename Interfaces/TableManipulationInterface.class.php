@@ -3,7 +3,6 @@
 namespace HexMakina\Crudites\Interfaces;
 
 use \HexMakina\Crudites\Queries\{Insert, Update, Delete};
-use \HexMakina\Crudites\Interfaces\{SelectInterface};
 use \HexMakina\Crudites\Table\Row;
 
 interface TableManipulationInterface extends TableDescriptionInterface
