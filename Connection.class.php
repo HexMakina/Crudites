@@ -91,6 +91,9 @@ class Connection implements Interfaces\ConnectionInterface
   public function query($sql_statement, $fetch_mode = null, $fetch_col_num=null)
   {
     //TODO consolidate this, test args and warnings
+    if(is_null($fetch_mode))
+      return $this->pdo->query($sql_statement);
+      
     return $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);
   }
 
