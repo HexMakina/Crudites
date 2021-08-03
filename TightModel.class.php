@@ -4,11 +4,10 @@ namespace HexMakina\Crudites;
 
 use \HexMakina\Crudites\Interfaces\{TableManipulationInterface,ModelInterface,TraceableInterface,SelectInterface};
 
-abstract class TightModel extends Crudites implements ModelInterface, TraceableInterface
+abstract class TightModel extends TableToModel implements ModelInterface, TraceableInterface
 {
-  use TraitIntrospector;
 
-  const IMMORTAL_BY_DEFAULT = true; // immortal by default, prevent deletion without thinking, NEVER change that value
+  use TraitIntrospector;
 
   public function __toString(){ return static::class_short_name().' #'.$this->get_id();}
 
@@ -17,42 +16,9 @@ abstract class TightModel extends Crudites implements ModelInterface, TraceableI
     return true;
   }
 
-  //check all primary keys are set (TODO that doesn't work unles AIPK.. nice try)
-  public function is_new() : bool
+  public function immortal() : bool
   {
-    $match = static::table()->primary_keys_match(get_object_vars($this));
-    return empty($match);
-  }
-
-  public function import($assoc_data)
-  {
-    if(!is_array($assoc_data))
-      throw new \Exception(__FUNCTION__.'(assoc_data) parm is not an array');
-
-    // shove it all up in model, god will sort them out
-    foreach($assoc_data as $field => $value)
-      $this->set($field, $value);
-
-    return $this;
-  }
-
-  public function to_table_row($operator_id)
-  {
-    if($this->is_new() && is_null($this->get('created_by')))
-      $this->set('created_by', $operator_id);
-
-    $model_data = get_object_vars($this);
-
-    // 1. Produce OR restore a row
-    if($this->is_new())
-      $table_row = static::table()->produce($model_data);
-    else
-      $table_row = static::table()->restore($model_data);
-
-    // 2. Apply alterations from form_model data
-    $table_row->alter($model_data);
-
-    return $table_row;
+    return self::IMMORTAL_BY_DEFAULT;
   }
 
   public function extract(ModelInterface $extract_model, $ignore_nullable=false)
@@ -92,19 +58,6 @@ abstract class TightModel extends Crudites implements ModelInterface, TraceableI
     return $clone;
   }
 
-  public function get($prop_name)
-  {
-    if(property_exists($this, $prop_name) === true)
-      return $this->$prop_name;
-
-    return null;
-  }
-
-  public function set($prop_name, $value)
-  {
-    $this->$prop_name = $value;
-  }
-
   public function toggle($prop_name)
   {
     parent::toggle_boolean(static::table(), $prop_name, $this->get_id());
@@ -137,46 +90,40 @@ abstract class TightModel extends Crudites implements ModelInterface, TraceableI
       if(!empty($errors=$this->validate())) // Model level validation
         return $errors;
 
-      $errors = [];
       //1 tight model *always* match a single table row
-
       $table_row = $this->to_table_row($operator_id);
+
 
       if($table_row->is_altered()) // someting to save ?
       {
-
         if(!empty($validation_errors=$table_row->persist())) // validate and persist
         {
+          $errors = [];
           foreach($validation_errors as $column_name => $err)
             $errors[sprintf('MODEL_%s_FIELD_%s', static::model_type(), $column_name)] = 'CRUDITES_'.$err;
 
           return $errors;
         }
 
-        if(!is_null($tracer) && $this->traceable())
-          $tracer->trace($table_row->last_query(), $operator_id, $this->get_id());
-
         // reload row
         $table_row = static::table()->restore($table_row->export());
 
         // update model
         $this->import($table_row->export());
-
       }
 
-      if(empty($errors))
-      {
-        $this->search_and_execute_trait_methods('after_save');
-        $this->after_save();
-        return [];
-      }
+      if(!is_null($tracer) && $this->traceable())
+        $tracer->trace($table_row->last_alter_query(), $operator_id, $this->get_id());
+
+      $this->search_and_execute_trait_methods('after_save');
+      $this->after_save();
     }
     catch (\Exception $e)
     {
-      $errors[]= $e->getMessage();
+      return [$e->getMessage()];
     }
 
-    return $errors;
+    return [];
   }
 
   // returns false on failure or last executed delete query
@@ -212,9 +159,6 @@ abstract class TightModel extends Crudites implements ModelInterface, TraceableI
 
     return true;
   }
-
-  public function immortal() : bool{ return self::IMMORTAL_BY_DEFAULT;}
-
 
   //------------------------------------------------------------  Data Retrieval
   public static function query_retrieve($filters=[], $options=[]) : SelectInterface
@@ -368,14 +312,7 @@ abstract class TightModel extends Crudites implements ModelInterface, TraceableI
     return null;
   }
 
-  public function get_id($mode=null)
-  {
-    $primary_key = static::table()->auto_incremented_primary_key();
-    if(is_null($primary_key) && count($pks = static::table()->primary_keys())==1)
-      $primary_key = current($pks);
 
-    return $mode === 'name' ? $primary_key->name() : $this->get($primary_key->name());
-  }
 
   //------------------------------------------------------------  Data Relation
   // returns true on success, error message on failure
@@ -453,33 +390,6 @@ abstract class TightModel extends Crudites implements ModelInterface, TraceableI
   public static function table_alias() : string
   {
     return defined(get_called_class().'::TABLE_ALIAS') ? static::TABLE_ALIAS : static::model_type();
-  }
-
-  public static function table_name() : string
-  {
-    $reflect = new \ReflectionClass(get_called_class());
-
-    $table_name = $reflect->getConstant('TABLE_NAME');
-
-    if($table_name === false)
-    {
-      $calling_class = $reflect->getShortName();
-      if(defined($const_name = 'TABLE_'.strtoupper($calling_class)))
-        $table_name = constant($const_name);
-      else
-        $table_name = strtolower($calling_class);
-    }
-
-    return $table_name;
-  }
-
-
-  public static function table() : TableManipulationInterface
-  {
-    $table = static::table_name();
-    $table = self::inspect($table);
-
-    return $table;
   }
 
   public static function class_short_name()

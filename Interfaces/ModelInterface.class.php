@@ -5,13 +5,18 @@ namespace HexMakina\Crudites\Interfaces;
 
 interface ModelInterface
 {
+  const IMMORTAL_BY_DEFAULT = true; // immortal by default, prevent deletion without thinking, NEVER change that value
+
+  public function immortal() : bool;
+
   public function is_new() : bool;
   public function get_id();
 
   public function get($prop_name);
   public function set($prop_name, $value);
 
-  public function immortal() : bool;
+  public function import($assoc_data);
+
 
   public function validate() : array;
   public function before_save() : array;
