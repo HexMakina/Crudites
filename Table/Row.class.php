@@ -16,6 +16,7 @@ class Row
   private $fresh = [];
 
   private $last_query = null;
+  private $last_alter_query = null;
 
   public function __construct(TableManipulationInterface $table, $dat_ass = [])
   {
@@ -45,6 +46,11 @@ class Row
   public function last_query()
   {
     return $this->last_query;
+  }
+
+  public function last_alter_query()
+  {
+    return $this->last_alter_query;
   }
 
   public function is_new() : bool
@@ -147,6 +153,8 @@ class Row
         $this->last_query = $this->table()->update($this->alterations, $pk_match);
         $this->last_query->run();
       }
+
+      $this->last_alter_query = $this->last_query();
     }
     catch(CruditesException $e)
     {
@@ -170,8 +178,9 @@ class Row
       catch(CruditesException $e){
         return false;
       }
-
-      return $this->last_query->is_success();
+      
+      $this->last_alter_query = $this->last_query();
+      return $this->last_query()->is_success();
     }
 
     return false;
