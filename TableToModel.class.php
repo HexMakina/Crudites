@@ -94,5 +94,3 @@ abstract class TableToModel extends Crudites
   }
 
 }
-
-?>
