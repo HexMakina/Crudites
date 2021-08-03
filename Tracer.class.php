@@ -6,9 +6,9 @@
 
 namespace HexMakina\Crudites;
 
-use \HexMakina\Crudites\Interfaces\{TracerInterface, TableManipulationInterface, QueryInterface};
+use \HexMakina\Crudites\Interfaces\{TracerInterface, TableManipulationInterface, QueryInterface, ModelInterface};
 
-class Tracer implements TracerInterface
+class Tracer implements Interfaces\TracerInterface
 {
   private static $query_codes = [
     'insert' => self::CODE_CREATE,
@@ -85,6 +85,12 @@ class Tracer implements TracerInterface
   }
 
   // ----------------------------------------------------------- CRUD Tracking:get for many models
+
+  public function traces_by_model(ModelInterface $m)
+  {
+    return $this->traces(['id' => $m->get_id(), 'table' => get_class($m)::table_name()]);
+  }
+
   public function traces($options=[])
   {
 

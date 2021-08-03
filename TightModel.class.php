@@ -16,6 +16,11 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
     return true;
   }
 
+  public function traces() : array
+  {
+    return [];
+  }
+
   public function immortal() : bool
   {
     return self::IMMORTAL_BY_DEFAULT;
@@ -250,7 +255,6 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
       throw new CruditesException('UNIQUE_IDENTIFIER_NOT_FOUND');
 
     $Query = static::query_retrieve([], ['eager' => true])->aw_fields_eq($unique_identifiers);
-    // vd($Query);
     switch(count($res = static::retrieve($Query)))
     {
       case 0: throw new CruditesException('INSTANCE_NOT_FOUND');
