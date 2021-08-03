@@ -106,7 +106,7 @@ class Tracer implements Interfaces\TracerInterface
     $q->order_by([$this->tracing_table()->name(), 'query_table', 'DESC']);
     $q->order_by([$this->tracing_table()->name(), 'query_id', 'DESC']);
 
-    $q->group_by('working_day');
+    $q->group_by(['working_day']);
     $q->group_by('query_table');
     $q->group_by('query_id');
     $q->having("action_by NOT LIKE '%D%'");
@@ -122,6 +122,7 @@ class Tracer implements Interfaces\TracerInterface
       elseif(preg_match('/(oper|user|query_by)/', $o))  $q->aw_eq('query_by', $v);
     }
 
+    // vd($q);
     try{
       $q->run();
     }
