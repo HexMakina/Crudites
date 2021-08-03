@@ -119,7 +119,7 @@ abstract class BaseQuery implements QueryInterface
 
   public function field_label($field, $table_name=null)
   {
-    if($table_name === '')
+    if(empty($table_name))
       return "`$field`";
     return sprintf('`%s`.`%s`', $this->table_label($table_name), $field);
   }
