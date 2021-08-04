@@ -15,7 +15,7 @@ trait TraitIntrospector
         if(preg_match("/.+$pattern$/", $method->name, $match) === 1)
         {
           $callable = current($match);
-          $this->$callable(); // $res = ? what to do with eventual return data?
+          $this->$callable(); // TODO $res = ? what to do with eventual return data? errors, messages etc..
           // TODO handle errors in callable..
         }
       }
