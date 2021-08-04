@@ -33,7 +33,7 @@ abstract class BaseQuery implements QueryInterface
   protected $error_text = null;
 
   //------------------------------------------------------------  DEBUG
-  public function __debugInfo()
+  public function __debugInfo() : array
   {
     $dbg = [];
     if(isset($this->table))
