@@ -29,7 +29,7 @@ class Row
     return PHP_EOL .'load: '.json_encode($this->load) . PHP_EOL.'alterations: '.json_encode(array_keys($this->alterations));
   }
 
-  public function __debugInfo()
+  public function __debugInfo() : array
   {
     $dbg = get_object_vars($this);
     unset($dbg['table']);

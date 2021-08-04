@@ -44,7 +44,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     return $this->name;
   }
 
-  public function __debugInfo()
+  public function __debugInfo() : array
   {
     $dbg = get_object_vars($this);
 
@@ -201,7 +201,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
       elseif(is_null($this->default()))
         return 'ERR_FIELD_REQUIRED';
     }
-    
+
     // nothing found on the Column level, lets check for Typing error
     return $this->type()->validate_value($field_value);
   }
