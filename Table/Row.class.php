@@ -142,26 +142,26 @@ class Row
     {
       if($this->is_new())
       {
-        $this->last_query = $this->table()->insert($this->export());
-        $this->last_query->run();
-        if($this->last_query->is_success() && !is_null($aipk = $this->last_query->table()->auto_incremented_primary_key()))
-          $this->alterations[$aipk->name()]=$this->last_query->inserted_id();
+        $this->last_alter_query = $this->table()->insert($this->export());
+        $this->last_alter_query->run();
+        if($this->last_alter_query->is_success() && !is_null($aipk = $this->last_alter_query->table()->auto_incremented_primary_key()))
+          $this->alterations[$aipk->name()]=$this->last_alter_query->inserted_id();
       }
       else
       {
         $pk_match = $this->table()->primary_keys_match($this->load);
-        $this->last_query = $this->table()->update($this->alterations, $pk_match);
-        $this->last_query->run();
+        $this->last_alter_query = $this->table()->update($this->alterations, $pk_match);
+        $this->last_alter_query->run();
       }
 
-      $this->last_alter_query = $this->last_query();
+      $this->last_query = $this->last_alter_query;
     }
     catch(CruditesException $e)
     {
       return [$e->getMessage()];
     }
 
-    return $this->last_query->is_success() ? [] : ['CRUDITES_ERR_ROW_PERSISTENCE'];
+    return $this->last_query()->is_success() ? [] : ['CRUDITES_ERR_ROW_PERSISTENCE'];
   }
 
   public function wipe() : bool
@@ -171,16 +171,16 @@ class Row
     // need The Primary key, then you can wipe at ease
     if(!empty($pk_match = $this->table()->primary_keys_match($dat_ass)))
     {
-      $this->last_query = $this->table->delete($pk_match);
+      $this->last_alter_query = $this->table->delete($pk_match);
       try{
-        $this->last_query->run();
+        $this->last_alter_query->run();
       }
       catch(CruditesException $e){
         return false;
       }
-      
-      $this->last_alter_query = $this->last_query();
-      return $this->last_query()->is_success();
+
+      $this->last_query = $this->last_alter_query;
+      return $this->last_alter_query->is_success();
     }
 
     return false;

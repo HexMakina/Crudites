@@ -76,8 +76,8 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
 
   public function before_save() : array {return [];}
 
-  public function after_save(){
-
+  public function after_save()
+  {
     return true;
   }
 
@@ -110,15 +110,17 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
           return $errors;
         }
 
+        if(!is_null($tracer) && $this->traceable())
+        {
+          $tracer->trace($table_row->last_alter_query(), $operator_id, $this->get_id());
+        }
+
         // reload row
-        $table_row = static::table()->restore($table_row->export());
+        $refreshed_row = static::table()->restore($table_row->export());
 
         // update model
-        $this->import($table_row->export());
+        $this->import($refreshed_row->export());
       }
-
-      if(!is_null($tracer) && $this->traceable())
-        $tracer->trace($table_row->last_alter_query(), $operator_id, $this->get_id());
 
       $this->search_and_execute_trait_methods('after_save');
       $this->after_save();
