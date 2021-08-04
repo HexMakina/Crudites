@@ -25,7 +25,10 @@ class CruditesException extends \Exception
     switch($code)
     {
       case 1062:
-        preg_match("/for key '(.+)'$/", $message, $m);
+
+        if(preg_match("/for key '[a-z]+\.(.+)'$/", $message, $m) !== 1)
+          preg_match("/for key '(.+)'$/", $message, $m);
+
         $ret = $m[1];
       break;
 
