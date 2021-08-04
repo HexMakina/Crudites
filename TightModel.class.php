@@ -101,11 +101,11 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
 
       if($table_row->is_altered()) // someting to save ?
       {
-        if(!empty($validation_errors=$table_row->persist())) // validate and persist
+        if(!empty($persistence_errors=$table_row->persist())) // validate and persist
         {
           $errors = [];
-          foreach($validation_errors as $column_name => $err)
-            $errors[sprintf('MODEL_%s_FIELD_%s', static::model_type(), $column_name)] = 'CRUDITES_'.$err;
+          foreach($persistence_errors as $column_name => $err)
+            $errors[sprintf('MODEL_%s_FIELD_%s', static::model_type(), $column_name)] = $err;
 
           return $errors;
         }
