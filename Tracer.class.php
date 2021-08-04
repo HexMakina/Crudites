@@ -69,18 +69,14 @@ class Tracer implements Interfaces\TracerInterface
   }
 
   // ----------------------------------------------------------- CRUD Tracking:get for one model
-  public function history($table_name, $table_pk, $sort='DESC') : array
+  public function history_by_model(ModelInterface $m)
   {
-    $res = [];
-  //   $table_alias = 'logladdy';
-  //   $q = $this->tracing_table()->select(["$table_alias.*", 'name'], $table_alias);
-  //   $q->join([User::table_name(), 'u'], [[$table_alias,'query_by', 'u','id']], 'INNER');
-  //   $q->aw_fields_eq(['query_table' => $table, 'query_id' => $id], $table_alias);
-  //
-  //   $q->order_by(['query_on', $sort]);
-  //   $q->run();
-  //   $res = $q->ret_ass();
-  //
+    $q = $this->tracing_table()->select();
+    $q->aw_fields_eq(['query_table' => get_class($m)::table_name(), 'query_id' => $m->get_id()]);
+    $q->order_by(['query_on', 'DESC']);
+    $q->run();
+    $res = $q->ret_ass();
+
     return $res;
   }
 
