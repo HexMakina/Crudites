@@ -3,12 +3,15 @@
  * Tracer
  *
  */
-
+ 
 namespace HexMakina\Crudites;
 
-use \HexMakina\Crudites\Interfaces\{TracerInterface, TableManipulationInterface, QueryInterface, ModelInterface};
+use \HexMakina\Crudites\Interfaces\TracerInterface;
+use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use \HexMakina\Crudites\Interfaces\QueryInterface;
+use \HexMakina\Crudites\Interfaces\ModelInterface;
 
-class Tracer implements Interfaces\TracerInterface
+class Tracer implements TracerInterface
 {
   private static $query_codes = [
     'insert' => self::CODE_CREATE,

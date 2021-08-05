@@ -2,7 +2,8 @@
 
 namespace HexMakina\Crudites;
 
-use \HexMakina\Crudites\Interfaces\{TableManipulationInterface,ModelInterface,TraceableInterface,SelectInterface};
+use \HexMakina\Crudites\Interfaces\ModelInterface;
+use \HexMakina\Crudites\Interfaces\SelectInterface;
 
 class TightModelSelector
 {
