@@ -183,7 +183,7 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
     // }
     return $query;
   }
-  
+
   public static function exists($arg1, $arg2=null)
   {
     try{
@@ -267,74 +267,6 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
       return static::retrieve(static::table()->select()->aw_numeric_in($AIPK, $aipk_values));
 
     return null;
-  }
-
-
-
-  //------------------------------------------------------------  Data Relation
-  // returns true on success, error message on failure
-  public function set_many($linked_models, $join_info)
-  {
-    $ids = [];
-    if($first = current($linked_models))
-    {
-      $id_name = $first->get_id('name');
-      foreach($linked_models as $m)
-        $ids[]=$m->get($id_name); // TODO change this to get_primary(null|'name'|'value')
-    }
-    return $this->set_many_by_ids($ids, $join_info);
-  }
-
-  // returns true on success, error message on failure
-  public function set_many_by_ids($linked_ids, $join_info)
-  {
-    $j_table = self::inspect($join_info['t']);
-    $j_table_key = $join_info['k'];
-
-    if(empty($j_table) || empty($j_table_key))
-      throw new \Exception('ERR_JOIN_INFO');
-
-    $model_type = get_class($this)::model_type();
-
-    $assoc_data = ['model_id' => $this->get_id(), 'model_type' => $model_type];
-
-    $transaction = $j_table->connection();
-    $transaction->transact();
-    try
-    {
-      $res = $j_table->delete($assoc_data)->run();
-      if(!$res->is_success())
-        throw new CruditesException('QUERY_FAILED');
-
-      if(!empty($linked_ids))
-      {
-        $join_data = $assoc_data;
-
-        $Query = $j_table->insert($join_data);
-        foreach($linked_ids as $linked_id)
-        {
-          $Query->values([$j_table_key => $linked_id]);
-          $res = $Query->run();
-
-          if(!$res->is_success())
-            throw new CruditesException('QUERY_FAILED');
-        }
-      }
-      $transaction->commit();
-    }
-    catch(\Exception $e)
-    {
-      $transaction->rollback();
-      return $e->getMessage();
-    }
-    return true;
-  }
-
-  public static function otm($k=null)
-  {
-    $type = static::model_type();
-    $d = ['t' => $type.'s_models', 'k' => $type.'_id', 'a' => $type.'s_otm'];
-    return is_null($k) ? $d : $d[$k];
   }
 
 
