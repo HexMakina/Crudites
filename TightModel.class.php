@@ -168,6 +168,12 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
   }
 
   //------------------------------------------------------------  Data Retrieval
+  public static function query_retrieve2($filters=[], $options=[]) : SelectInterface
+  {
+    $class = get_called_class();
+    return (new TightModelSelector(new $class()))->select($filters,$options);
+  }
+  
   public static function query_retrieve($filters=[], $options=[]) : SelectInterface
   {
     $class = get_called_class();
