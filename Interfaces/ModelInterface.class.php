@@ -27,8 +27,10 @@ interface ModelInterface
   public function destroy($operator_id, TracerInterface $tracer=null) : bool;
   public function after_destroy();
 
-  public static function table_name() : string;
   public static function table() : TableManipulationInterface;
+  public static function table_name() : string;
+  public static function table_alias() : string;
+
   public static function model_type() : string;
 
   public static function query_retrieve($filters=[], $options=[]) : SelectInterface;
