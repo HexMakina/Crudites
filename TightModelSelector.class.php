@@ -20,12 +20,12 @@ class TightModelSelector
     $this->statement = $this->model_table->select();
   }
 
-  public function model()
+  public function model() : ModelInterface
   {
     return $this->model;
   }
 
-  public function class() : ModelInterface
+  public function class() : string
   {
     return $this->model_class;
   }
