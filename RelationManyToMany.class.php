@@ -15,15 +15,11 @@ trait RelationManyToMany
   // returns true on success, error message on failure
   public static function set_many($linked_models, ModelInterface $m)
   {
+    $linked_ids = [];
+    foreach($linked_models as $m)
+      $linked_ids[]=$m->get_id();
 
-    $ids = [];
-    if($first = current($linked_models))
-    {
-      $id_name = $first->get_id('name');
-      foreach($linked_models as $m)
-        $ids[]=$m->get($id_name); // TODO change this to get_primary(null|'name'|'value')
-    }
-    return static::set_many_by_ids($ids, $m);
+    return static::set_many_by_ids($linked_ids, $m);
   }
 
   // returns true on success, error message on failure
