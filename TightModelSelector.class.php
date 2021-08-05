@@ -27,7 +27,7 @@ class TightModelSelector
 
   public function class() : ModelInterface
   {
-    return $this->class;
+    return $this->model_class;
   }
 
   public function statement() : SelectInterface
@@ -88,9 +88,9 @@ class TightModelSelector
 
     if(!empty($date_stop))
       $this->statement()->aw_lte($this->model()->event_field(), $date_stop, $this->statement()->table_label(), ':filter_date_stop');
-
-    if(empty($options['order_by']))
-      $this->statement()->order_by([$this->model()->event_field(), 'DESC']);
+    //
+    // if(empty($options['order_by']))
+    //   $this->statement()->order_by([$this->model()->event_field(), 'DESC']);
   }
 
   public function filter_with_ids($ids)

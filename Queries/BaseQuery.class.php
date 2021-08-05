@@ -254,7 +254,7 @@ abstract class BaseQuery implements QueryInterface
     return $this->connection()->error_info();
   }
 
-  public function compare(QueryInterface $other) : bool
+  public function compare(QueryInterface $other)
   {
     if($this->statement() !== $other->statement())
       return 'statement';
