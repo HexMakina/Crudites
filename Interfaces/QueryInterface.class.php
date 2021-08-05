@@ -5,6 +5,8 @@ namespace HexMakina\Crudites\Interfaces;
 interface QueryInterface
 {
   public function statement($setter = null) : string;
+  public function bindings($setter = null);
+
   public function connection(ConnectionInterface $setter = null) : ConnectionInterface;
 
   public function table_name() : string;

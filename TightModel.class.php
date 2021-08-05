@@ -168,13 +168,23 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
   }
 
   //------------------------------------------------------------  Data Retrieval
-  public static function query_retrieve2($filters=[], $options=[]) : SelectInterface
+  public static function query_retrieve($filters=[], $options=[]) : SelectInterface
   {
     $class = get_called_class();
-    return (new TightModelSelector(new $class()))->select($filters,$options);
+    $query = (new TightModelSelector(new $class()))->select($filters,$options);
+    $query_old = self::query_retrieve_old($filters,$options);
+
+    if($res = $query->compare($query_old) !== true)
+    {
+      vd($res);
+      vd($query->statement(), 'new statement');
+      vd($query_old->statement(), 'old statement');
+      ddt('different');
+    }
+    return $query_old;
   }
-  
-  public static function query_retrieve($filters=[], $options=[]) : SelectInterface
+
+  public static function query_retrieve_old($filters=[], $options=[]) : SelectInterface
   {
     $class = get_called_class();
     $table = $class::table();
@@ -212,7 +222,7 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
     {
       if(empty($filters['ids']))
         $Query->and_where('1=0'); // TODO: this is a new low.. find another way to cancel query
-      else $Query->aw_numeric_in('id', $filters['ids']);
+      else $Query->aw_numeric_in('id', $filters['ids'], $Query->table_label());
     }
 
     if(isset($options['order_by'])) // TODO commenting required about the array situation
