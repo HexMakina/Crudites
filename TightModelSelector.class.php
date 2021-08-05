@@ -96,10 +96,10 @@ class TightModelSelector
 
   public function filter_with_ids($ids)
   {
-    if(empty($filters['ids']))
+    if(empty($ids))
       $this->statement()->and_where('1=0'); // TODO: this is a new low.. find another way to cancel query
     else
-      $this->statement()->aw_numeric_in('id', $filters['ids']);
+      $this->statement()->aw_numeric_in('id', $ids);
   }
 
   public function filter_with_fields($filters, $filter_mode = 'aw_eq')
