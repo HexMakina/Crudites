@@ -31,6 +31,9 @@ interface SelectInterface extends QueryInterface
   public function aw_gt($field, $value, $table_name=null, $bindname=null);
   public function aw_lt($field, $value, $table_name=null, $bindname=null);
 
+  public function aw_gte($field, $value, $table_name=null, $bindname=null);
+  public function aw_lte($field, $value, $table_name=null, $bindname=null);
+  
   public function aw_fields_eq($assoc_data, $table_name=null);
 
   public function aw_like($field, $prep_value, $table_name=null, $bindname=null);
@@ -46,5 +49,5 @@ interface SelectInterface extends QueryInterface
   public function aw_field($field, $condition, $table_name=null);
 
   public function aw_filter_content($filters_content, $search_table=null, $filters_operator = null);
-  
+
 }
