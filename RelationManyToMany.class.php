@@ -9,11 +9,7 @@ trait RelationManyToMany
 {
   abstract public static function model_type() : string;
 
-  public function has_models() : bool
-  {
-    $Query = static::inspect(static::otm('t'))->select([static::model_type().'_id'])->aw_eq(static::otm('k'), $this->get_id());
-    return static::count($Query) > 0;
-  }
+
 
   //------------------------------------------------------------  Data Relation
   // returns true on success, error message on failure
@@ -39,7 +35,7 @@ trait RelationManyToMany
     $j_table_key = $join_info['k'];
 
     if(empty($j_table) || empty($j_table_key))
-      throw new \CruditesException('ERR_JOIN_INFO');
+      throw new CruditesException('ERR_JOIN_INFO');
 
     $assoc_data = ['model_id' => $m->get_id(), 'model_type' => get_class($m)::model_type()];
 
