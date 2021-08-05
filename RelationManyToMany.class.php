@@ -2,6 +2,7 @@
 
 namespace HexMakina\Crudites;
 
+use \HexMakina\Crudites\CruditesException;
 use \HexMakina\Crudites\Interfaces\ModelInterface;
 
 trait RelationManyToMany
