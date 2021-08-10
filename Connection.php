@@ -2,7 +2,7 @@
 /**
  * Simple PDO connection wrapper for Crudites
  *
- * Sets required defaults, ERRMODE_EXPCETION, ATTR_CASE
+ * Sets defaults: ERRMODE_EXCEPTION, CASE_NATURAL, FETCH_ASSOC, required by Crudites
  * Sets prefered fetch mode: associative array
  *
  * Throws \PDOException when DSN is wrong
@@ -83,7 +83,9 @@ class Connection implements Interfaces\ConnectionInterface
         $dsn_driver = $matches[1];
         $available_drivers = \PDO::getAvailableDrivers();
         if (!in_array($dsn_driver, $available_drivers, true)) {
-            throw new \PDOException(sprintf('DSN Error: "%s" was given, "%s" are available', $dsn_driver, implode(', ', \PDO::getAvailableDrivers())));
+            $err_msg = 'DSN Error: "%s" was given, "%s" are available';
+            $err_msg = sprintf($err_msg, $dsn_driver, implode(', ', \PDO::getAvailableDrivers()));
+            throw new \PDOException($err_msg);
         }
 
         return true;
@@ -91,18 +93,15 @@ class Connection implements Interfaces\ConnectionInterface
 
     public function query($sql_statement, $fetch_mode = null, $fetch_col_num = null)
     {
-      //TODO consolidate this, test args and warnings
         if (is_null($fetch_mode)) {
             return $this->pdo->query($sql_statement);
         }
-      
+
         return $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);
     }
 
     public function alter($sql_statement)
     {
-      //TODO consolidate this, test args and warnings
-      // PDO::exec() returns the number of rows that were modified or deleted by the SQL statement you issued. If no rows were affected, PDO::exec() returns 0.
         return $this->pdo->exec($sql_statement);
     }
 }
