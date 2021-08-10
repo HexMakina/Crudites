@@ -7,7 +7,7 @@ interface TableColumnInterface
     public function name() : string;
 
     public function type();
-  // public function length($setter=null) : int;
+    // public function length($setter=null) : int;
 
     public function is_primary() : bool;
     public function is_auto_incremented() : bool;

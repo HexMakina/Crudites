@@ -11,19 +11,19 @@ class Describe extends BaseQuery
         $this->table_name = $table_name;
     }
 
-  // implements BaseQuery, pretty basic stuff
+    // implements BaseQuery, pretty basic stuff
     public function generate() : string
     {
         return sprintf('DESCRIBE `%s`;', $this->table_name);
     }
 
-  // overwrites BaseQuery, bypassing null table object
+    // overwrites BaseQuery, bypassing null table object
     public function table_name() : string
     {
         return $this->table_name;
     }
 
-  // overwrites BaseQuery, return description as key value pair
+    // overwrites BaseQuery, return description as key value pair
     public function ret($mode = null, $option = null)
     {
         return parent::ret(\PDO::FETCH_UNIQUE); // fetch by key

@@ -6,21 +6,21 @@ use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
 
 trait ClauseWhere
 {
-  // const AND = 'AND';
-  // const OR = 'OR';
+    // const AND = 'AND';
+    // const OR = 'OR';
 
-  // const WHERE_LIKE_PRE = '%TERM';
-  // const WHERE_LIKE_POST = 'TERM%';
-  // const WHERE_LIKE_BOTH = '%TERM%';
+    // const WHERE_LIKE_PRE = '%TERM';
+    // const WHERE_LIKE_POST = 'TERM%';
+    // const WHERE_LIKE_BOTH = '%TERM%';
 
-  // const GT = '>';
-  // const LT = '<';
-  // const EQ = '=';
-  // const GTE = '>=';
-  // const LTE = '<=';
-  // const NEQ = '<>';
-  // const LIKE = 'LIKE';
-  // const NLIKE = 'NOT LIKE';
+    // const GT = '>';
+    // const LT = '<';
+    // const EQ = '=';
+    // const GTE = '>=';
+    // const LTE = '<=';
+    // const NEQ = '<>';
+    // const LIKE = 'LIKE';
+    // const NLIKE = 'NOT LIKE';
 
     public static $OP_AND = 'AND';
     public static $OP_OR = 'OR';
@@ -154,7 +154,7 @@ trait ClauseWhere
                 $this->add_binding($placeholder_name, $v);
                 $in .= "$placeholder_name,";
             }
-          // $this->aw_field($field, sprintf(" IN ('%s')", implode("','", $values)), $table_name);
+            // $this->aw_field($field, sprintf(" IN ('%s')", implode("','", $values)), $table_name);
             $this->aw_field($field, sprintf(" IN (%s)", rtrim($in, ',')), $table_name);
         }
         return $this;
@@ -183,11 +183,11 @@ trait ClauseWhere
         return $this->and_where("($table_field IS NULL OR $table_field = '')");
     }
 
-  /**
-  * @param array $filters_content with 2 indexes: 'term', the search string, 'fields', the search fields
-  * @param $search_table String to filter
-  * @param $filters_operator Object, inclusive or exclusive search
-  */
+    /**
+     * @param array $filters_content  with 2 indexes: 'term', the search string, 'fields', the search fields
+     * @param $search_table     String to filter
+     * @param $filters_operator Object, inclusive or exclusive search
+     */
     public function aw_filter_content($filters_content, $search_table = null, $filters_operator = null) // sub array filters[$content]
     {
         if (!isset($filters_content['term']) || !isset($filters_content['fields'])) {
@@ -227,7 +227,7 @@ trait ClauseWhere
             $this->and_where(" ($content_wc) ", []);
         }
     }
-  // //------------------------------------------------------------  FIELDS
+    // //------------------------------------------------------------  FIELDS
     protected static function valid_operator($operator, $default)
     {
         $operator = strtoupper("$operator");

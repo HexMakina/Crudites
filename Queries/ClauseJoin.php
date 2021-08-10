@@ -37,11 +37,9 @@ trait ClauseJoin
             foreach ($fk_columns as $fk_column) {
                 $select_also = [];
 
-              // TODO this sucks.. 'created_by' & 'kadro_operator' have *NOTHING* to do in SelectJoin, must create mecanism for such exception
+                // TODO this sucks hard.. 'created_by' & 'kadro_operator' have *NOTHING* to do in SelectJoin, must create mecanism for such exception
                 if ($fk_column->foreign_table_name() == 'kadro_operator' && $fk_column->name() == 'created_by') {
                     continue; // dont load the log information
-                  // $foreign_table_alias = 'creator';
-                  // $select_also=['id','name'];
                 } else {
                     $m=[];
                     if (preg_match('/(.+)_('.$fk_column->foreign_column_name().')$/', $fk_column->name(), $m)) {
@@ -51,7 +49,7 @@ trait ClauseJoin
                     }
                     $foreign_table_alias = $single_fk === true ? $foreign_table_alias : $foreign_table_alias.'_'.$fk_column->name();
 
-              // auto select non nullable columns
+                    // auto select non nullable columns
                 }
 
                 if (empty($select_also)) {
@@ -95,17 +93,17 @@ trait ClauseJoin
 
         $joins = [];
 
-      // 1. ? this->table.other_table_id -> $other_table.id
-      // 2. ? this_table.id -> $other_table.this_table_id)
-      // if(count($bonding_column = $this->table()->foreign_keys_by_table()[$other_table_name] ?? []) === 1)
+        // 1. ? this->table.other_table_id -> $other_table.id
+        // 2. ? this_table.id -> $other_table.this_table_id)
+        // if(count($bonding_column = $this->table()->foreign_keys_by_table()[$other_table_name] ?? []) === 1)
         if (!is_null($bonding_column = $this->table()->single_foreign_key_to($other_table))) {
             $relation_type = $relation_type ?? $bonding_column->is_nullable() ? 'LEFT OUTER' : 'INNER';
-          // $joins []= [$bonding_column->table_name(), $bonding_column->name(), $other_table_alias ?? $bonding_column->foreign_table_alias(), $bonding_column->foreign_column_name()];
+            // $joins []= [$bonding_column->table_name(), $bonding_column->name(), $other_table_alias ?? $bonding_column->foreign_table_alias(), $bonding_column->foreign_column_name()];
             $joins []= [$this->table_alias(), $bonding_column->name(), $other_table_alias ?? $bonding_column->foreign_table_alias(), $bonding_column->foreign_column_name()];
         }
-      // elseif(count($bonding_column = $other_table->foreign_keys_by_table()[$this->table()->name()] ?? []) === 1)
+        // elseif(count($bonding_column = $other_table->foreign_keys_by_table()[$this->table()->name()] ?? []) === 1)
         elseif (!is_null($bonding_column = $other_table->single_foreign_key_to($this->table()))) {
-          // vd(__FUNCTION__.' : '.$other_table.' has fk to '.$this->table());
+            // vd(__FUNCTION__.' : '.$other_table.' has fk to '.$this->table());
             $relation_type = $relation_type ?? 'LEFT OUTER';
             $joins []= [$this->table_label(), $bonding_column->foreign_column_name(), $other_table_alias ?? $other_table->name(), $bonding_column->name()];
         } else {
@@ -130,33 +128,33 @@ trait ClauseJoin
                     if (count($bonding_column) !== 1 || count($other_table->foreign_keys_by_table()[$table_name]) !== 1) {
                         break;
                     }
-                  // vd($this->table_name() . " $other_table_name");
-                  // vd($bonding_column);
+                    // vd($this->table_name() . " $other_table_name");
+                    // vd($bonding_column);
 
                     $joins = [];
 
                     $bonding_column = current($bonding_column);
                     $joins []= [$other_table_alias, $bonding_column->name(), $bonding_column->foreign_table_alias(), $bonding_column->foreign_column_name()];
 
-                  // vd($other_table_alias);
+                    // vd($other_table_alias);
                     $bonding_column = current($bondable_tables[$table_name]);
                     $joins []= [$bonding_column->table_name(), $bonding_column->name(), $bonding_column->foreign_table_alias(), $bonding_column->foreign_column_name()];
 
-                  // $relation_type = $relation_type ?? (($parent_column->is_nullable() || $bonding_column->is_nullable()) ? 'LEFT OUTER' : 'INNER');
+                    // $relation_type = $relation_type ?? (($parent_column->is_nullable() || $bonding_column->is_nullable()) ? 'LEFT OUTER' : 'INNER');
                     $relation_type = $relation_type ?? (($bonding_column->is_nullable()) ? 'LEFT OUTER' : 'INNER');
                 }
             }
         }
 
-      // vd($relation_type.' '.json_encode($joins));
+        // vd($relation_type.' '.json_encode($joins));
         if (!empty($joins)) {
-          // vd('ottojoin: '.$this->table()->name().' with '.$other_table_name.' as '.$other_table_alias);
+            // vd('ottojoin: '.$this->table()->name().' with '.$other_table_name.' as '.$other_table_alias);
             $this->join([$other_table_name, $other_table_alias], $joins, $relation_type);
             $this->add_tables([$other_table_alias => $other_table_name]);
 
 
-          // if(is_null($select_also) empty($select_also))
-          //   $select_also=[$other_table_alias.'.*'];
+            // if(is_null($select_also) empty($select_also))
+            //   $select_also=[$other_table_alias.'.*'];
             if (!empty($select_also)) {
                 foreach ($select_also as $select_field) {
                     if (is_null($other_table->column("$select_field"))) {

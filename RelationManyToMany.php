@@ -9,10 +9,8 @@ trait RelationManyToMany
 {
     abstract public static function model_type() : string;
 
-
-
-  //------------------------------------------------------------  Data Relation
-  // returns true on success, error message on failure
+    //------------------------------------------------------------  Data Relation
+    // returns true on success, error message on failure
     public static function set_many($linked_models, ModelInterface $m)
     {
         $linked_ids = [];
@@ -23,7 +21,7 @@ trait RelationManyToMany
         return static::set_many_by_ids($linked_ids, $m);
     }
 
-  // returns true on success, error message on failure
+    // returns true on success, error message on failure
     public static function set_many_by_ids($linked_ids, ModelInterface $m)
     {
         $join_info = static::otm();

@@ -3,7 +3,7 @@
  * Tracer
  *
  */
- 
+
 namespace HexMakina\Crudites;
 
 use \HexMakina\Crudites\Interfaces\TracerInterface;
@@ -55,7 +55,7 @@ class Tracer implements TracerInterface
             $this->tracing_table()->connection()->transact();
             $query = $this->tracing_table()->insert($trace)->run();
 
-          // if we delete a record, we remove all traces of update
+            // if we delete a record, we remove all traces of update
             if ($query->is_success() && $trace['query_type'] === self::CODE_DELETE) {
                 $trace['query_type'] = self::CODE_UPDATE;
                 unset($trace['query_by']);
@@ -69,7 +69,7 @@ class Tracer implements TracerInterface
         }
     }
 
-  // ----------------------------------------------------------- CRUD Tracking:get for one model
+    // -- CRUD Tracking:get for one model
     public function history_by_model(ModelInterface $m)
     {
         $q = $this->tracing_table()->select();
@@ -81,7 +81,7 @@ class Tracer implements TracerInterface
         return $res;
     }
 
-  // ----------------------------------------------------------- CRUD Tracking:get for many models
+    // -- CRUD Tracking:get for many models
 
     public function traces_by_model(ModelInterface $m)
     {
@@ -97,7 +97,7 @@ class Tracer implements TracerInterface
             $limit = intval($options['limit']);
         }
 
-      // TODO SELECT field order can't change without adapting the result parsing code (foreach $res)
+        // TODO SELECT field order can't change without adapting the result parsing code (foreach $res)
         $select_fields = ['SUBSTR(query_on, 1, 10) AS working_day', 'query_table', 'query_id',  'GROUP_CONCAT(DISTINCT query_type, "-", query_by) as action_by'];
         $q = $this->tracing_table()->select($select_fields);
         $q->order_by(['', 'working_day', 'DESC']);
@@ -126,7 +126,7 @@ class Tracer implements TracerInterface
             }
         }
 
-      // vd($q);
+        // vd($q);
         try {
             $q->run();
         } catch (\Exception $e) {
@@ -134,7 +134,7 @@ class Tracer implements TracerInterface
         }
 
         $res = $q->ret_num(); // ret num to list()
-      // ddt($res);
+        // ddt($res);
         $ret = [];
 
         foreach ($res as $r) {

@@ -90,7 +90,6 @@ class Database implements DatabaseInterface
 
     public function inspect($table_name) : TableManipulationInterface
     {
-
         if (isset($this->table_cache[$table_name])) {
             return $this->table_cache[$table_name];
         }

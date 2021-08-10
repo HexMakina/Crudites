@@ -27,7 +27,7 @@ class Insert extends BaseQuery
         $this->values($assoc_data);
     }
 
-  // public function is_create(){       return true;}
+    // public function is_create(){       return true;}
 
     public function values($assoc_data)
     {

@@ -12,7 +12,7 @@ use \HexMakina\Crudites\Queries\Delete;
 class Manipulation extends Description implements TableManipulationInterface
 {
 
-  // creates a new Row based on the table
+    // creates a new Row based on the table
     public function produce($dat_ass = []) : Row
     {
         return new Row($this, $dat_ass);

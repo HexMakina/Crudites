@@ -4,11 +4,11 @@ namespace HexMakina\Crudites\Interfaces;
 
 interface TableDescriptionInterface
 {
-  // getters
+    // getters
     public function connection() : ConnectionInterface;
     public function name() : string;
 
-  //introspection
+    //introspection
     public function add_column(TableColumnInterface $column);
     public function columns() : array;
     public function column($name) : ?TableColumnInterface;
@@ -27,5 +27,5 @@ interface TableDescriptionInterface
 
     public function auto_incremented_primary_key(TableColumnInterface $setter = null) : ?TableColumnInterface;
 
-  //EOF introspection
+    //EOF introspection
 }

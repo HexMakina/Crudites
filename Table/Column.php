@@ -37,7 +37,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
         $this->import_describe($specs);
     }
 
-  //------------------------------------------------------------  getters:field:info
+    //------------------------------------------------------------  getters:field:info
     public function __toString()
     {
         return $this->name;
@@ -66,11 +66,11 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
         return $this->table_name;
     }
 
-  /**
-  * @return mixed the default value of a field
-  * @return int for integer and boolean fields
-  * @return null where no default is set
-  */
+    /**
+     * @return mixed the default value of a field
+     * @return int for integer and boolean fields
+     * @return null where no default is set
+     */
     public function default()
     {
         $ret = $this->default_value;
@@ -156,20 +156,20 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
         return is_bool($setter) ? ($this->nullable = $setter) : $this->nullable;
     }
 
-  //------------------------------------------------------------  getters:field:info:type
-  // public function type($setter=null)
-  // {
-  //   return is_null($setter) ? $this->type : ($this->type=$setter);
-  // }
+    //------------------------------------------------------------  getters:field:info:type
+    // public function type($setter=null)
+    // {
+    //   return is_null($setter) ? $this->type : ($this->type=$setter);
+    // }
     public function type()
     {
         return $this->ColumnType;
     }
 
-  // public function length($setter=null) : int
-  // {
-  //   return is_null($setter) ? ($this->type_length ?? -1) : ($this->type_length=$setter);
-  // }
+    // public function length($setter=null) : int
+    // {
+    //   return is_null($setter) ? ($this->type_length ?? -1) : ($this->type_length=$setter);
+    // }
 
     public function import_describe($specs)
     {
@@ -181,7 +181,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
 
                 case 'Key':
                     $this->is_primary($v === 'PRI');
-                              $this->is_index(true);
+                          $this->is_index(true);
                     break;
 
                 case 'Default':
@@ -218,7 +218,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
             }
         }
 
-      // nothing found on the Column level, lets check for Typing error
+        // nothing found on the Column level, lets check for Typing error
         return $this->type()->validate_value($field_value);
     }
 

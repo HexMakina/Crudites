@@ -1,10 +1,10 @@
 <?php
 /**
-  * Crudités, it's a cup of carrots sticks (but are they organic ?)
-  * Codd's Relational model, Unicity, Definitions, Introspection, Tests, Execution & Sets
-  * Create - Retrieve - Update - Delete
-  * API for writing and running SQL queries
-  */
+ * Crudités, it's a cup of carrots sticks (but are they organic ?)
+ * Codd's Relational model, Unicity, Definitions, Introspection, Tests, Execution & Sets
+ * Create - Retrieve - Update - Delete
+ * API for writing and running SQL queries
+ */
 
 namespace HexMakina\Crudites;
 
@@ -37,7 +37,7 @@ class Crudites
 
     public static function connect($props = null)
     {
-      // no props, means connection already exists, verify and return
+        // no props, means connection already exists, verify and return
         if (!isset($props['host'], $props['port'], $props['name'], $props['char'], $props['user'], $props['pass'])) {
             if (is_null(self::$database)) {
                 throw new CruditesException('CONNECTION_MISSING');
@@ -50,8 +50,8 @@ class Crudites
         return $conx;
     }
 
-  //------------------------------------------------------------  DataRetrieval
-  // success: return AIPK-indexed array of results (associative array or object)
+    //------------------------------------------------------------  DataRetrieval
+    // success: return AIPK-indexed array of results (associative array or object)
     public static function count(Select $Query)
     {
         $Query->select_also(['COUNT(*) as count']);
@@ -62,7 +62,7 @@ class Crudites
         return null;
     }
 
-  // success: return AIPK-indexed array of results (associative array or object)
+    // success: return AIPK-indexed array of results (associative array or object)
     public static function retrieve(Select $Query) : array
     {
         $pk_name = implode('_', array_keys($Query->table()->primary_keys()));
@@ -83,8 +83,8 @@ class Crudites
         $conx = self::connect();
         if (empty($dat_ass)) {
             $res = $conx->query($sql);
-          //TODO query | alter !
-          //$res = $conx->alter($sql);
+            //TODO query | alter !
+            //$res = $conx->alter($sql);
         } else {
             $stmt = $conx->prepare($sql);
             $res = $stmt->execute($dat_ass);
@@ -107,7 +107,7 @@ class Crudites
         }
 
         $Query->order_by($column_name, 'DESC');
-      // ddt($Query);
+        // ddt($Query);
         return $Query->ret_col();
     }
 
@@ -128,9 +128,9 @@ class Crudites
         return $Query->ret_par();
     }
 
-  //------------------------------------------------------------  DataManipulation Helpers
-  // returns true on success, false on failure or throws an exception
-  // throws Exception on failure
+    //------------------------------------------------------------  DataManipulation Helpers
+    // returns true on success, false on failure or throws an exception
+    // throws Exception on failure
     public static function toggle_boolean($table, $boolean_column_name, $id) : bool
     {
 
@@ -140,7 +140,7 @@ class Crudites
             return false;
         }
 
-      // TODO: still using 'id' instead of table->primaries
+        // TODO: still using 'id' instead of table->primaries
         $Query = $table->update();
         $Query->statement("UPDATE ".$table->name()." SET $boolean_column_name = !$boolean_column_name WHERE id=:id");
         $Query->bindings([':id' => $id]);

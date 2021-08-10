@@ -34,7 +34,7 @@ abstract class BaseQuery implements QueryInterface
     protected $error_code = null;
     protected $error_text = null;
 
-  //------------------------------------------------------------  DEBUG
+    //------------------------------------------------------------  DEBUG
     public function __debugInfo() : array
     {
         $dbg = [];
@@ -68,23 +68,23 @@ abstract class BaseQuery implements QueryInterface
 
     abstract public function generate() : string;
 
-  // returns one of C, R, U, D
-  // public function is_create(){    return false;}
-  // public function is_retrieve(){  return false;}
-  // public function is_update(){    return false;}
-  // public function is_delete(){    return false;}
+    // returns one of C, R, U, D
+    // public function is_create(){    return false;}
+    // public function is_retrieve(){  return false;}
+    // public function is_update(){    return false;}
+    // public function is_delete(){    return false;}
 
-  // public function query_code()
-  // {
-  //   if($this->is_create())        return self::CODE_CREATE;
-  //   elseif($this->is_retrieve())  return self::CODE_RETRIEVE;
-  //   elseif($this->is_update())    return self::CODE_UPDATE;
-  //   elseif($this->is_delete())    return self::CODE_DELETE;
-  //
-  //   throw new CruditesException('UNKOWN_QUERY_CODE');
-  // }
+    // public function query_code()
+    // {
+    //   if($this->is_create())        return self::CODE_CREATE;
+    //   elseif($this->is_retrieve())  return self::CODE_RETRIEVE;
+    //   elseif($this->is_update())    return self::CODE_UPDATE;
+    //   elseif($this->is_delete())    return self::CODE_DELETE;
+    //
+    //   throw new CruditesException('UNKOWN_QUERY_CODE');
+    // }
 
-  //------------------------------------------------------------  GET/SETTERS
+    //------------------------------------------------------------  GET/SETTERS
     public function statement($setter = null) : string
     {
         if (!is_null($setter)) {
@@ -119,7 +119,7 @@ abstract class BaseQuery implements QueryInterface
         return $this->table()->name();
     }
 
-  //------------------------------------------------------------  PREP::FIELDS
+    //------------------------------------------------------------  PREP::FIELDS
     public function table_label($table_name = null)
     {
         return $table_name ?? $this->table_name();
@@ -133,7 +133,7 @@ abstract class BaseQuery implements QueryInterface
         return sprintf('`%s`.`%s`', $this->table_label($table_name), $field);
     }
 
-  //------------------------------------------------------------  PREP::BINDINGS
+    //------------------------------------------------------------  PREP::BINDINGS
 
     public function bindings($setter = null)
     {
@@ -164,10 +164,10 @@ abstract class BaseQuery implements QueryInterface
         return $bind_label;
     }
 
-  //------------------------------------------------------------  Run
-  // throws CruditesException on failure
-  // returns itself
-  // DEBUG dies on \Exception
+    //------------------------------------------------------------  Run
+    // throws CruditesException on failure
+    // returns itself
+    // DEBUG dies on \Exception
 
     public function run() : QueryInterface
     {
@@ -186,25 +186,25 @@ abstract class BaseQuery implements QueryInterface
 
                 if ($this->prepared_statement->errorCode() === self::STATE_SUCCESS) {
                     $this->state = self::STATE_SUCCESS;
-                  // careful: https://www.php.net/manual/en/pdostatement.rowcount.php
+                    // careful: https://www.php.net/manual/en/pdostatement.rowcount.php
                     $this->row_count = $this->prepared_statement->rowCount();
                 }
             }
         } catch (\PDOException $e) {
             throw (new CruditesException($e->getMessage()))->fromQuery($this);
         }
-      // not doing anything with it.. let it blow
-      // catch(\Exception $e)
-      // {
-      //   var_dump(get_class($e));
-      //   var_dump($e);
-      //   die;
-      // }
+        // not doing anything with it.. let it blow
+        // catch(\Exception $e)
+        // {
+        //   var_dump(get_class($e));
+        //   var_dump($e);
+        //   die;
+        // }
 
         return $this;
     }
 
-  //------------------------------------------------------------  Return
+    //------------------------------------------------------------  Return
     public function ret($mode = null, $option = null)
     {
         if (!$this->is_executed()) {
@@ -218,20 +218,20 @@ abstract class BaseQuery implements QueryInterface
             return false;
         }
 
-      // if(is_null($mode)) // nothin was specified, it's probe-time
-      // {
-      //   if($this->has_table() && !is_null($class_name = $this->table()->map_class()))
-      //   {
-      //     $mode = \PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE;
-      //     $option = $class_name;
-      //   }
-      //   else
-      //     $mode = \PDO::FETCH_ASSOC;
-      // }
+        // if(is_null($mode)) // nothin was specified, it's probe-time
+        // {
+        //   if($this->has_table() && !is_null($class_name = $this->table()->map_class()))
+        //   {
+        //     $mode = \PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE;
+        //     $option = $class_name;
+        //   }
+        //   else
+        //     $mode = \PDO::FETCH_ASSOC;
+        // }
         return is_null($option) ? $this->prepared_statement->fetchAll($mode) : $this->prepared_statement->fetchAll($mode, $option);
     }
 
-  //------------------------------------------------------------ Return:count
+    //------------------------------------------------------------ Return:count
     public function count()
     {
         if (!$this->is_executed()) {
@@ -241,7 +241,7 @@ abstract class BaseQuery implements QueryInterface
         return $this->is_success() ? $this->row_count : null;
     }
 
-  //------------------------------------------------------------  Status
+    //------------------------------------------------------------  Status
     public function is_prepared() : bool
     {
         return !is_null($this->prepared_statement) && false !== $this->prepared_statement;

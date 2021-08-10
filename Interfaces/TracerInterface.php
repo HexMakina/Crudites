@@ -15,5 +15,5 @@ interface TracerInterface
 
     public function query_code($sql_statement) : string;
 
-  // public function history($table_name, $table_pk, $sort='DESC') : array;
+    // public function history($table_name, $table_pk, $sort='DESC') : array;
 }

@@ -73,18 +73,18 @@ class Row
         return array_merge((array)$this->load, $this->fresh, $this->alterations);
     }
 
-  /**
-  * loads row content from database,
-  *
-  * looks for primary key matching data in $dat_ass and sets the $load variable
-  * $load stays null if
-  * 1. not match is found in $dat_ass
-  * 2. multiple records are returned
-  * 3. no record is found
-  *
-  * @param Array $dat_ass an associative array containing primary key data matches
-  * @return $this
-  */
+    /**
+     * loads row content from database,
+     *
+     * looks for primary key matching data in $dat_ass and sets the $load variable
+     * $load stays null if
+     * 1. not match is found in $dat_ass
+     * 2. multiple records are returned
+     * 3. no record is found
+     *
+     * @param  Array $dat_ass an associative array containing primary key data matches
+     * @return $this
+     */
     public function load($dat_ass)
     {
         $pks = $this->table()->primary_keys_match($dat_ass);
@@ -101,29 +101,30 @@ class Row
         return $this;
     }
 
-  /**
-   * records changes vis-à-vis loaded data
-   *
-   * loops through the $dat_ass params
-   * @param Array $dat_ass an associative array containing the new data
-   * @return $this
-   */
+    /**
+     * records changes vis-à-vis loaded data
+     *
+     * loops through the $dat_ass params
+     *
+     * @param  Array $dat_ass an associative array containing the new data
+     * @return $this
+     */
     public function alter($dat_ass)
     {
         foreach ($dat_ass as $field_name => $value) {
             $column = $this->table->column($field_name);
 
-          // skips non exisint field name and A_I column
+            // skips non exisint field name and A_I column
             if (is_null($column) || $column->is_auto_incremented()) {
                 continue;
             }
 
-          // replaces empty strings with null or default value
+            // replaces empty strings with null or default value
             if (trim($dat_ass[$field_name]) === '') {
                 $dat_ass[$field_name] = $column->is_nullable() ? null : $column->default();
             }
 
-          // checks for changes with loaded data. using == instead of === is risky but needed
+            // checks for changes with loaded data. using == instead of === is risky but needed
             if (!is_array($this->load) || $this->load[$field_name] != $dat_ass[$field_name]) {
                 $this->alterations[$field_name] = $dat_ass[$field_name];
             }
@@ -168,7 +169,7 @@ class Row
     {
         $dat_ass = $this->load ?? $this->fresh ?? $this->alterations;
 
-      // need The Primary key, then you can wipe at ease
+        // need The Primary key, then you can wipe at ease
         if (!empty($pk_match = $this->table()->primary_keys_match($dat_ass))) {
             $this->last_alter_query = $this->table->delete($pk_match);
             try {
@@ -184,16 +185,16 @@ class Row
         return false;
     }
 
-  //------------------------------------------------------------  type:data validation
-  /**
-  * @return array containing all invalid data, indexed by field name, or empty if all valid
-  */
+    //------------------------------------------------------------  type:data validation
+    /**
+     * @return array containing all invalid data, indexed by field name, or empty if all valid
+     */
     public function validate() : array
     {
         $errors = [];
         $dat_ass = $this->export();
 
-      // vdt($this->table);
+        // vdt($this->table);
         foreach ($this->table->columns() as $column_name => $column) {
             $field_value = $dat_ass[$column_name] ?? null;
 

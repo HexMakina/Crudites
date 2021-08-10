@@ -91,7 +91,7 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
         return true;
     }
 
-  // return array of errors
+    // return array of errors
     public function save($operator_id, $tracer = null) : ?array
     {
         try {
@@ -107,7 +107,7 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
                 return $errors;
             }
 
-          //1 tight model *always* match a single table row
+            //1 tight model *always* match a single table row
             $table_row = $this->to_table_row($operator_id);
 
 
@@ -141,7 +141,7 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
         return [];
     }
 
-  // returns false on failure or last executed delete query
+    // returns false on failure or last executed delete query
     public function before_destroy() : bool
     {
         if ($this->is_new() || $this->immortal()) {
@@ -179,20 +179,20 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
         return true;
     }
 
-  //------------------------------------------------------------  Data Retrieval
+    //------------------------------------------------------------  Data Retrieval
     public static function query_retrieve($filters = [], $options = []) : SelectInterface
     {
         $class = get_called_class();
         $query = (new TightModelSelector(new $class()))->select($filters, $options);
-      // $query_old = self::query_retrieve_old($filters,$options);
-      //
-      // if($res = $query->compare($query_old) !== true)
-      // {
-      //   vd($res);
-      //   vd($query->statement(), 'new statement');
-      //   vd($query_old->statement(), 'old statement');
-      //   ddt('different');
-      // }
+        // $query_old = self::query_retrieve_old($filters,$options);
+        //
+        // if($res = $query->compare($query_old) !== true)
+        // {
+        //   vd($res);
+        //   vd($query->statement(), 'new statement');
+        //   vd($query_old->statement(), 'old statement');
+        //   ddt('different');
+        // }
         return $query;
     }
 
@@ -205,10 +205,10 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
         }
     }
 
-  /* USAGE
-   * one($primary_key_value)
-   * one($unique_column, $value)
-   */
+    /* USAGE
+    * one($primary_key_value)
+    * one($unique_column, $value)
+    */
     public static function one($arg1, $arg2 = null)
     {
         $mixed_info = is_null($arg2)? $arg1 : [$arg1=>$arg2];
@@ -246,7 +246,7 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
         return static::retrieve(static::query_retrieve($filters, $options)); // listing as arrays for templates
     }
 
-  // success: return PK-indexed array of results (associative array or object)
+    // success: return PK-indexed array of results (associative array or object)
     public static function retrieve(SelectInterface $Query) : array
     {
         $ret = [];
@@ -282,12 +282,14 @@ abstract class TightModel extends TableToModel implements ModelInterface, Tracea
     }
 
 
-  //------------------------------------------------------------  Introspection & Data Validation
-  /** Cascade of table name guessing goes:
-   * 1. Constant 'TABLE_ALIAS' defined in class
-   * 2. lower-case class name
-   * @throws CruditesException, if ever called from Crudites class, must be inherited call
-   */
+    //------------------------------------------------------------  Introspection & Data Validation
+    /**
+     * Cascade of table name guessing goes:
+     * 1. Constant 'TABLE_ALIAS' defined in class
+     * 2. lower-case class name
+     *
+     * @throws CruditesException, if ever called from Crudites class, must be inherited call
+     */
     public static function table_alias() : string
     {
         return defined(get_called_class().'::TABLE_ALIAS') ? static::TABLE_ALIAS : static::model_type();

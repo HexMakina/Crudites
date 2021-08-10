@@ -18,7 +18,7 @@ class Delete extends BaseQuery
         }
     }
 
-  // public function is_delete(){    return true;}
+    // public function is_delete(){    return true;}
 
     public function generate() : string
     {

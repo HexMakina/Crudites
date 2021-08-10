@@ -6,7 +6,7 @@ use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
 
 abstract class TableToModel extends Crudites
 {
-  //check all primary keys are set (TODO that doesn't work unles AIPK.. nice try)
+    //check all primary keys are set (TODO that doesn't work unles AIPK.. nice try)
     public function is_new() : bool
     {
         $match = static::table()->primary_keys_match(get_object_vars($this));
@@ -43,7 +43,7 @@ abstract class TableToModel extends Crudites
             throw new \Exception(__FUNCTION__.'(assoc_data) parm is not an array');
         }
 
-      // shove it all up in model, god will sort them out
+        // shove it all up in model, god will sort them out
         foreach ($assoc_data as $field => $value) {
             $this->set($field, $value);
         }
@@ -86,14 +86,14 @@ abstract class TableToModel extends Crudites
 
         $model_data = get_object_vars($this);
 
-      // 1. Produce OR restore a row
+        // 1. Produce OR restore a row
         if ($this->is_new()) {
             $table_row = static::table()->produce($model_data);
         } else {
             $table_row = static::table()->restore($model_data);
         }
 
-      // 2. Apply alterations from form_model data
+        // 2. Apply alterations from form_model data
         $table_row->alter($model_data);
 
         return $table_row;

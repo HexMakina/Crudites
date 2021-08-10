@@ -12,7 +12,7 @@ class Description implements TableDescriptionInterface
     protected $connection = null;
 
     protected $name = null;
-  // protected $ORM_class_name = null;
+    // protected $ORM_class_name = null;
 
     protected $columns = [];
 
@@ -38,7 +38,6 @@ class Description implements TableDescriptionInterface
     {
         return $this->connection;
     }
-
 
     public function add_column(TableColumnInterface $column)
     {
@@ -72,38 +71,38 @@ class Description implements TableDescriptionInterface
         $this->foreign_keys_by_name[$column->name()] = $column;
     }
 
-  //getsetter of AIPK, default get is null, cant set to null
+    //getsetter of AIPK, default get is null, cant set to null
     public function auto_incremented_primary_key(TableColumnInterface $setter = null) : ?TableColumnInterface
     {
         return is_null($setter) ? $this->auto_incremented_primary_key : ($this->auto_incremented_primary_key = $setter);
     }
 
-  //------------------------------------------------------------  getters
-  // TableDescriptionInterface implementation
+    //------------------------------------------------------------  getters
+    // TableDescriptionInterface implementation
     public function name() : string
     {
         return $this->name;
     }
 
-  // TableDescriptionInterface implementation
+    // TableDescriptionInterface implementation
     public function columns() : array
     {
         return $this->columns;
     }
 
-  // TableDescriptionInterface implementation
+    // TableDescriptionInterface implementation
     public function column($name) : ?TableColumnInterface
     {
         return $this->columns[$name] ?? null;
     }
 
-  // TableDescriptionInterface implementation
+    // TableDescriptionInterface implementation
     public function unique_keys_by_name() : array
     {
         return $this->unique_keys;
     }
 
-  // TableDescriptionInterface implementation
+    // TableDescriptionInterface implementation
     public function primary_keys($with_values = null) : array
     {
         if (is_null($with_values)) {
@@ -142,11 +141,11 @@ class Description implements TableDescriptionInterface
         return [];
     }
 
-  /*
-   * @return array, empty on mismatch
-   * @return array, assoc of column_name => $value on match
-   * @throws CruditesException if no pk defined
-   */
+    /*
+    * @return array, empty on mismatch
+    * @return array, assoc of column_name => $value on match
+    * @throws CruditesException if no pk defined
+    */
 
     public function primary_keys_match($dat_ass) : array
     {
@@ -160,7 +159,7 @@ class Description implements TableDescriptionInterface
 
         $valid_dat_ass = [];
         foreach ($this->primary_keys as $pk_name => $pk_field) {
-          // empty ensures non existing keys, null and empty values
+            // empty ensures non existing keys, null and empty values
             if (empty($dat_ass[$pk_name]) && !$pk_field->is_nullable()) {
                 return [];
             }
@@ -191,13 +190,13 @@ class Description implements TableDescriptionInterface
         return [];
     }
 
-  // TableDescriptionInterface implementation
+    // TableDescriptionInterface implementation
     public function foreign_keys_by_name() : array
     {
         return $this->foreign_keys_by_name;
     }
 
-  // TableDescriptionInterface implementation
+    // TableDescriptionInterface implementation
     public function foreign_keys_by_table() : array
     {
         return $this->foreign_keys_by_table;

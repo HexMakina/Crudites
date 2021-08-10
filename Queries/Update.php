@@ -61,7 +61,7 @@ class Update extends BaseQuery
             throw new CruditesException('UPDATE_NO_ALTERATIONS');
         }
 
-      // prevents haphazrdous generation of massive update query, must use statement setter for such jobs
+        // prevents haphazrdous generation of massive update query, must use statement setter for such jobs
         if (empty($this->where)) {
             throw new CruditesException('UPDATE_NO_CONDITIONS');
         }
