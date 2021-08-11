@@ -1,4 +1,4 @@
-tion<?php
+<?php
 
 namespace HexMakina\Crudites;
 
@@ -38,7 +38,8 @@ class TightModelSelector
 
     public function select($filters = [], $options = []) : SelectInterface
     {
-        $this->statement()->table_alias($options['table_alias'] ?? get_class($this->model)::table_alias());
+        $this->statement = $this->model_table->select(null, $options['table_alias'] ?? get_class($this->model)::table_alias());
+        // $this->statement()->table_alias($options['table_alias'] ?? get_class($this->model)::table_alias());
 
         if (!isset($options['eager']) || $options['eager'] !== false) {
             $this->statement()->eager();
