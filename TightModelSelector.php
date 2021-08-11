@@ -1,4 +1,4 @@
-tion<?php
+<?php
 
 namespace HexMakina\Crudites;
 
