@@ -1,0 +1,23 @@
+{
+    "name": "hexmakina/crudites",
+    "description": "PHP/PDO CRUD ORM",
+    "keywords": ["php", "pdo", "crud", "orm", "mysql", "mariasql", "select", "insert", "update", "delete", "intropection", "database", "database connection"],
+    "type": "package",
+    "require": {
+        "php": ">=7.4"
+    },
+    "license": "mit",
+    "authors": [
+        {
+            "name": "HexMakina",
+            "email": "touch@hexmakina.be",
+            "homepage": "https://hexmakina.be"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "HexMakina\\Crudites\\": "/"
+        }
+    }
+}
