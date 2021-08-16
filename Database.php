@@ -18,10 +18,10 @@ class Database implements DatabaseInterface
     private $fk_by_table = [];
     private $unique_by_table = [];
 
-    public function __construct(ConnectionInterface $connection)
+    public function __construct($db_host, $db_port, $db_name, $charset = 'utf8', $username = '', $password = '')
     {
-        $this->connection = $connection;
-        $this->introspect();
+      $this->connection = new Connection($db_host, $db_port, $db_name, $charset, $username, $password);
+      $this->introspect(new Connection($db_host, $db_port, 'INFORMATION_SCHEMA', $charset, $username, $password));
     }
 
     public function name()
@@ -34,14 +34,14 @@ class Database implements DatabaseInterface
         return $this->connection;
     }
 
-    public function introspect()
+    public function introspect(ConnectionInterface $information_schema)
     {
+
         $statement = sprintf('SELECT TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION, COLUMN_NAME, POSITION_IN_UNIQUE_CONSTRAINT, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = "%s" ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION', $this->name());
         $q = new Select();
-        $q->connection($this->connection());
+        $q->connection($information_schema);
         $q->statement($statement);
         $res = $q->ret_ass();
-
         foreach ($res as $key_usage) {
             $table_name = $key_usage['TABLE_NAME'];
 
@@ -68,6 +68,7 @@ class Database implements DatabaseInterface
                 unset($this->unique_by_table[$table_name][$constraint_name]);
             }
         }
+
     }
 
     public function inspect($table_name) : TableManipulationInterface
