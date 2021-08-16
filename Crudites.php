@@ -43,7 +43,7 @@ class Crudites
                 throw new CruditesException('CONNECTION_MISSING');
             }
 
-            return self::$database->contentConnection();
+            return self::$database->connection();
         }
 
         $conx = new Connection($props['host'], $props['port'], $props['name'], $props['char'], $props['user'], $props['pass']);

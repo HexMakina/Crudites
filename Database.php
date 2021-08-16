@@ -14,49 +14,31 @@ use HexMakina\Crudites\Interfaces\TableManipulationInterface;
 class Database implements DatabaseInterface
 {
     private $connection = null;
-    private $introspection_connection = null;
-
     private $table_cache = [];
     private $fk_by_table = [];
     private $unique_by_table = [];
 
-    public function __construct(ConnectionInterface $connection, ConnectionInterface $information_schema = null)
+    public function __construct(ConnectionInterface $connection)
     {
         $this->connection = $connection;
-        $this->introspection_connection = $information_schema ?? $this->connection;
-
         $this->introspect();
     }
 
     public function name()
     {
-        return $this->contentConnection()->database_name();
+        return $this->connection()->database_name();
     }
 
-    public function contentConnection() : ConnectionInterface
+    public function connection() : ConnectionInterface
     {
         return $this->connection;
     }
 
-    public function introspectionConnection() : ConnectionInterface
+    public function introspect()
     {
-        return $this->introspection_connection ?? $this->contentConnection();
-    }
-
-
-    public function introspect(ConnectionInterface $information_schema = null)
-    {
-        if (!is_null($information_schema)) {
-            $this->introspection_connection = $information_schema;
-        }
-
-        if (is_null($this->introspectionConnection())) {
-            return null;
-        }
-
         $statement = sprintf('SELECT TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION, COLUMN_NAME, POSITION_IN_UNIQUE_CONSTRAINT, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = "%s" ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION', $this->name());
         $q = new Select();
-        $q->connection($this->introspectionConnection());
+        $q->connection($this->connection());
         $q->statement($statement);
         $res = $q->ret_ass();
 
@@ -96,7 +78,7 @@ class Database implements DatabaseInterface
 
 
         $describe = (new Describe($table_name));
-        $describe->connection($this->contentConnection());
+        $describe->connection($this->connection());
         $description = $describe->ret();
 
       // TODO test this when all is back to normal 2021.03.09
@@ -104,7 +86,7 @@ class Database implements DatabaseInterface
             throw new \PDOException("Unable to describe $table_name");
         }
 
-        $table = new Manipulation($table_name, $this->contentConnection());
+        $table = new Manipulation($table_name, $this->connection());
 
         foreach ($description as $column_name => $specs) {
             $column = new Column($table, $column_name, $specs);
