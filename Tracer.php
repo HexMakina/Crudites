@@ -9,7 +9,7 @@ namespace HexMakina\Crudites;
 use \HexMakina\Crudites\Interfaces\TracerInterface;
 use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
 use \HexMakina\Crudites\Interfaces\QueryInterface;
-use \HexMakina\Crudites\Interfaces\ModelInterface;
+use \HexMakina\TightORM\Interfaces\ModelInterface;
 
 class Tracer implements TracerInterface
 {
