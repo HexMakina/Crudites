@@ -1,7 +1,7 @@
 {
     "name": "hexmakina/crudites",
-    "description": "PHP/PDO CRUD ORM",
-    "keywords": ["php", "pdo", "crud", "orm", "mysql", "mariasql", "select", "insert", "update", "delete", "intropection", "database", "database connection"],
+    "description": "PHP/PDO CRUD",
+    "keywords": ["php", "pdo", "crud", "mysql", "mariasql", "select", "insert", "update", "delete", "intropection", "database", "database connection"],
     "type": "package",
     "require": {
         "php": ">=7.4"
