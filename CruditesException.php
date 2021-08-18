@@ -2,13 +2,13 @@
 
 namespace HexMakina\Crudites;
 
-use \HexMakina\Crudites\Queries\BaseQuery;
+use HexMakina\Crudites\Queries\BaseQuery;
 
 class CruditesException extends \Exception
 {
     public function __construct($message, $code = 0, $previous = null)
     {
-        parent::__construct('CRUDITES_ERR_'.$message, $code, $previous);
+        parent::__construct('CRUDITES_ERR_' . $message, $code, $previous);
     }
 
     public function fromQuery(BaseQuery $Query)
@@ -46,7 +46,7 @@ class CruditesException extends \Exception
                 break;
 
             default:
-                $ret = 'FUBAR #'.$state.'-'.$code.'-'.$message;
+                $ret = 'FUBAR #' . $state . '-' . $code . '-' . $message;
                 break;
         }
 

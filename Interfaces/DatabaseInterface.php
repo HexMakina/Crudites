@@ -4,9 +4,9 @@ namespace HexMakina\Crudites\Interfaces;
 
 interface DatabaseInterface
 {
-    public function connection() : ConnectionInterface;
+    public function connection(): ConnectionInterface;
 
     public function name();
     
-    public function inspect($table_name) : TableManipulationInterface;
+    public function inspect($table_name): TableManipulationInterface;
 }

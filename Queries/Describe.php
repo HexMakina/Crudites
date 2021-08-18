@@ -12,13 +12,13 @@ class Describe extends BaseQuery
     }
 
     // implements BaseQuery, pretty basic stuff
-    public function generate() : string
+    public function generate(): string
     {
         return sprintf('DESCRIBE `%s`;', $this->table_name);
     }
 
     // overwrites BaseQuery, bypassing null table object
-    public function table_name() : string
+    public function table_name(): string
     {
         return $this->table_name;
     }

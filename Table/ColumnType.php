@@ -68,65 +68,65 @@ class ColumnType
         }
     }
 
-    public function is_text() : bool
+    public function is_text(): bool
     {
         return $this->name === self::TYPE_TEXT;
     }
-    public function is_string() : bool
+    public function is_string(): bool
     {
         return $this->name === self::TYPE_STRING;
     }
 
-    public function is_boolean() : bool
+    public function is_boolean(): bool
     {
         return $this->name === self::TYPE_BOOLEAN;
     }
 
-    public function is_integer() : bool
+    public function is_integer(): bool
     {
         return $this->name === self::TYPE_INTEGER;
     }
-    public function is_float() : bool
+    public function is_float(): bool
     {
         return $this->name === self::TYPE_FLOAT;
     }
-    public function is_decimal() : bool
+    public function is_decimal(): bool
     {
         return $this->name === self::TYPE_DECIMAL;
     }
 
-    public function is_enum() : bool
+    public function is_enum(): bool
     {
         return $this->name === self::TYPE_ENUM;
     }
 
-    public function is_year() : bool
+    public function is_year(): bool
     {
         return $this->name === self::TYPE_YEAR;
     }
-    public function is_date() : bool
+    public function is_date(): bool
     {
         return $this->name === self::TYPE_DATE;
     }
-    public function is_time() : bool
+    public function is_time(): bool
     {
         return $this->name === self::TYPE_TIME;
     }
-    public function is_timestamp() : bool
+    public function is_timestamp(): bool
     {
         return $this->name === self::TYPE_TIMESTAMP;
     }
-    public function is_datetime() : bool
+    public function is_datetime(): bool
     {
         return $this->name === self::TYPE_DATETIME;
     }
 
-    public function is_date_or_time() : bool
+    public function is_date_or_time(): bool
     {
         return in_array($this->name, [self::TYPE_DATE, self::TYPE_TIME, self::TYPE_TIMESTAMP, self::TYPE_DATETIME]);
     }
 
-    public function is_numeric() : bool
+    public function is_numeric(): bool
     {
         return in_array($this->name, [self::TYPE_INTEGER, self::TYPE_FLOAT, self::TYPE_DECIMAL]);
     }

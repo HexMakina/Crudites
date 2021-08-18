@@ -34,7 +34,7 @@ class Description implements TableDescriptionInterface
         return $this->name;
     }
 
-    public function connection() : ConnectionInterface
+    public function connection(): ConnectionInterface
     {
         return $this->connection;
     }
@@ -66,7 +66,7 @@ class Description implements TableDescriptionInterface
     public function add_foreign_key(TableColumnInterface $column)
     {
         $this->foreign_keys_by_table[$column->foreign_table_name()] = $this->foreign_keys_by_table[$column->foreign_table_name()] ?? [];
-        $this->foreign_keys_by_table[$column->foreign_table_name()] []= $column;
+        $this->foreign_keys_by_table[$column->foreign_table_name()] [] = $column;
 
         $this->foreign_keys_by_name[$column->name()] = $column;
     }
@@ -79,13 +79,13 @@ class Description implements TableDescriptionInterface
 
     //------------------------------------------------------------  getters
     // TableDescriptionInterface implementation
-    public function name() : string
+    public function name(): string
     {
         return $this->name;
     }
 
     // TableDescriptionInterface implementation
-    public function columns() : array
+    public function columns(): array
     {
         return $this->columns;
     }
@@ -97,13 +97,13 @@ class Description implements TableDescriptionInterface
     }
 
     // TableDescriptionInterface implementation
-    public function unique_keys_by_name() : array
+    public function unique_keys_by_name(): array
     {
         return $this->unique_keys;
     }
 
     // TableDescriptionInterface implementation
-    public function primary_keys($with_values = null) : array
+    public function primary_keys($with_values = null): array
     {
         if (is_null($with_values)) {
             return $this->primary_keys;
@@ -124,7 +124,7 @@ class Description implements TableDescriptionInterface
         return $valid_dat_ass;
     }
 
-    public function match_uniqueness($dat_ass) : array
+    public function match_uniqueness($dat_ass): array
     {
         if (!is_array($dat_ass)) { // aipk value
             return $this->primary_keys_match($dat_ass);
@@ -147,7 +147,7 @@ class Description implements TableDescriptionInterface
     * @throws CruditesException if no pk defined
     */
 
-    public function primary_keys_match($dat_ass) : array
+    public function primary_keys_match($dat_ass): array
     {
         if (count($this->primary_keys()) === 0) {
             throw new CruditesException('NO_PRIMARY_KEYS_DEFINED');
@@ -170,7 +170,7 @@ class Description implements TableDescriptionInterface
         return $valid_dat_ass;
     }
 
-    public function unique_keys_match($dat_ass) : array
+    public function unique_keys_match($dat_ass): array
     {
         if (count($this->unique_keys_by_name()) === 0 || !is_array($dat_ass)) {
             return [];
@@ -191,13 +191,13 @@ class Description implements TableDescriptionInterface
     }
 
     // TableDescriptionInterface implementation
-    public function foreign_keys_by_name() : array
+    public function foreign_keys_by_name(): array
     {
         return $this->foreign_keys_by_name;
     }
 
     // TableDescriptionInterface implementation
-    public function foreign_keys_by_table() : array
+    public function foreign_keys_by_table(): array
     {
         return $this->foreign_keys_by_table;
     }

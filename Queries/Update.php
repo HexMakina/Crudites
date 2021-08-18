@@ -2,8 +2,8 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use \HexMakina\Crudites\CruditesException;
-use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\Interfaces\TableManipulationInterface;
 
 class Update extends BaseQuery
 {
@@ -45,7 +45,7 @@ class Update extends BaseQuery
 
             $binding_name = $this->bind_label($field_name);
             $this->add_binding($binding_name, $value);
-            $this->alterations []= $this->field_label($field_name)." = $binding_name";
+            $this->alterations [] = $this->field_label($field_name) . " = $binding_name";
         }
         return $this;
     }
@@ -55,7 +55,7 @@ class Update extends BaseQuery
         return !empty($this->alterations);
     }
 
-    public function generate() : string
+    public function generate(): string
     {
         if (empty($this->alterations)) {
             throw new CruditesException('UPDATE_NO_ALTERATIONS');

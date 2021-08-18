@@ -6,7 +6,6 @@ use HexMakina\Crudites\Queries\Select;
 use HexMakina\Crudites\Queries\Describe;
 use HexMakina\Crudites\Table\Manipulation;
 use HexMakina\Crudites\Table\Column;
-
 use HexMakina\Crudites\Interfaces\ConnectionInterface;
 use HexMakina\Crudites\Interfaces\DatabaseInterface;
 use HexMakina\Crudites\Interfaces\TableManipulationInterface;
@@ -20,8 +19,8 @@ class Database implements DatabaseInterface
 
     public function __construct($db_host, $db_port, $db_name, $charset = 'utf8', $username = '', $password = '')
     {
-      $this->connection = new Connection($db_host, $db_port, $db_name, $charset, $username, $password);
-      $this->introspect(new Connection($db_host, $db_port, 'INFORMATION_SCHEMA', $charset, $username, $password));
+        $this->connection = new Connection($db_host, $db_port, $db_name, $charset, $username, $password);
+        $this->introspect(new Connection($db_host, $db_port, 'INFORMATION_SCHEMA', $charset, $username, $password));
     }
 
     public function name()
@@ -29,7 +28,7 @@ class Database implements DatabaseInterface
         return $this->connection()->database_name();
     }
 
-    public function connection() : ConnectionInterface
+    public function connection(): ConnectionInterface
     {
         return $this->connection;
     }
@@ -68,10 +67,9 @@ class Database implements DatabaseInterface
                 unset($this->unique_by_table[$table_name][$constraint_name]);
             }
         }
-
     }
 
-    public function inspect($table_name) : TableManipulationInterface
+    public function inspect($table_name): TableManipulationInterface
     {
         if (isset($this->table_cache[$table_name])) {
             return $this->table_cache[$table_name];

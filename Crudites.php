@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Crudités, it's a cup of carrots sticks (but are they organic ?)
  * Codd's Relational model, Unicity, Definitions, Introspection, Tests, Execution & Sets
@@ -8,10 +9,10 @@
 
 namespace HexMakina\Crudites;
 
-use \HexMakina\Crudites\Queries\BaseQuery;
-use \HexMakina\Crudites\Queries\Select;
-use \HexMakina\Crudites\Interfaces\DatabaseInterface;
-use \HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\Queries\BaseQuery;
+use HexMakina\Crudites\Queries\Select;
+use HexMakina\Crudites\Interfaces\DatabaseInterface;
+use HexMakina\Crudites\CruditesException;
 
 class Crudites
 {
@@ -63,7 +64,7 @@ class Crudites
     }
 
     // success: return AIPK-indexed array of results (associative array or object)
-    public static function retrieve(Select $Query) : array
+    public static function retrieve(Select $Query): array
     {
         $pk_name = implode('_', array_keys($Query->table()->primary_keys()));
 
@@ -131,7 +132,7 @@ class Crudites
     //------------------------------------------------------------  DataManipulation Helpers
     // returns true on success, false on failure or throws an exception
     // throws Exception on failure
-    public static function toggle_boolean($table, $boolean_column_name, $id) : bool
+    public static function toggle_boolean($table, $boolean_column_name, $id): bool
     {
 
         $table = self::table_name_to_Table($table);
@@ -142,7 +143,7 @@ class Crudites
 
         // TODO: still using 'id' instead of table->primaries
         $Query = $table->update();
-        $Query->statement("UPDATE ".$table->name()." SET $boolean_column_name = !$boolean_column_name WHERE id=:id");
+        $Query->statement("UPDATE " . $table->name() . " SET $boolean_column_name = !$boolean_column_name WHERE id=:id");
         $Query->bindings([':id' => $id]);
         $Query->run();
 

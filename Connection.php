@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Simple PDO connection wrapper for Crudites
  *
@@ -7,6 +8,7 @@
  *
  * Throws \PDOException when DSN is wrong
  */
+
 namespace HexMakina\Crudites;
 
 class Connection implements Interfaces\ConnectionInterface
@@ -33,7 +35,7 @@ class Connection implements Interfaces\ConnectionInterface
         return $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
     }
 
-    public function database_name() : string
+    public function database_name(): string
     {
         return $this->database_name;
     }
@@ -43,22 +45,22 @@ class Connection implements Interfaces\ConnectionInterface
         return $this->pdo->prepare($sql_statement, $options);
     }
 
-    public function transact() : bool
+    public function transact(): bool
     {
         return $this->pdo->beginTransaction();
     }
 
-    public function commit() : bool
+    public function commit(): bool
     {
         return $this->pdo->commit();
     }
 
-    public function rollback() : bool
+    public function rollback(): bool
     {
         return $this->pdo->rollback();
     }
 
-    public function error_info() : array
+    public function error_info(): array
     {
         return $this->pdo->errorInfo();
     }
@@ -68,7 +70,7 @@ class Connection implements Interfaces\ConnectionInterface
         return $this->pdo->lastInsertId();
     }
 
-    public function error_code() : array
+    public function error_code(): array
     {
         return $this->pdo->errorInfo();
     }

@@ -43,7 +43,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
         return $this->name;
     }
 
-    public function __debugInfo() : array
+    public function __debugInfo(): array
     {
         $dbg = get_object_vars($this);
 
@@ -56,12 +56,12 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
         return $dbg;
     }
 
-    public function name() : string
+    public function name(): string
     {
         return $this->name;
     }
 
-    public function table_name() : string
+    public function table_name(): string
     {
         return $this->table_name;
     }
@@ -92,12 +92,12 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
         $this->extra = $v;
     }
 
-    public function is_primary($setter = null) : bool
+    public function is_primary($setter = null): bool
     {
-        return is_bool($setter)? ($this->primary = $setter) : $this->primary;
+        return is_bool($setter) ? ($this->primary = $setter) : $this->primary;
     }
 
-    public function is_foreign($setter = null) : bool
+    public function is_foreign($setter = null): bool
     {
         return is_bool($setter) ? ($this->foreign = $setter) : $this->foreign;
     }
@@ -116,15 +116,15 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     {
         $this->foreign_table_name = $setter;
     }
-    public function foreign_table_name() : string
+    public function foreign_table_name(): string
     {
         return $this->foreign_table_name;
     }
 
-    public function foreign_table_alias() : string
+    public function foreign_table_alias(): string
     {
         $ret = $this->foreign_table_name();
-        if (preg_match('/(.+)_('.$this->foreign_column_name().')$/', $this->name(), $m)) {
+        if (preg_match('/(.+)_(' . $this->foreign_column_name() . ')$/', $this->name(), $m)) {
             $ret = $m[1];
         }
 
@@ -135,23 +135,23 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     {
         $this->foreign_column_name = $setter;
     }
-    public function foreign_column_name() : string
+    public function foreign_column_name(): string
     {
         return $this->foreign_column_name;
     }
 
 
-    public function is_index($setter = null) : bool
+    public function is_index($setter = null): bool
     {
         return is_bool($setter) ? ($this->index = $setter) : $this->index;
     }
 
-    public function is_auto_incremented($setter = null) : bool
+    public function is_auto_incremented($setter = null): bool
     {
         return is_bool($setter) ? ($this->auto_incremented = $setter) : $this->auto_incremented;
     }
 
-    public function is_nullable($setter = null) : bool
+    public function is_nullable($setter = null): bool
     {
         return is_bool($setter) ? ($this->nullable = $setter) : $this->nullable;
     }

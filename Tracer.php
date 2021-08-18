@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Tracer
  *
@@ -6,10 +7,10 @@
 
 namespace HexMakina\Crudites;
 
-use \HexMakina\Crudites\Interfaces\TracerInterface;
-use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
-use \HexMakina\Crudites\Interfaces\QueryInterface;
-use \HexMakina\TightORM\Interfaces\ModelInterface;
+use HexMakina\Crudites\Interfaces\TracerInterface;
+use HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use HexMakina\Crudites\Interfaces\QueryInterface;
+use HexMakina\TightORM\Interfaces\ModelInterface;
 
 class Tracer implements TracerInterface
 {
@@ -27,12 +28,12 @@ class Tracer implements TracerInterface
         $this->tracing_table = $tracing_table;
     }
 
-    public function tracing_table() : TableManipulationInterface
+    public function tracing_table(): TableManipulationInterface
     {
         return $this->tracing_table;
     }
 
-    public function query_code($sql_statement) : string
+    public function query_code($sql_statement): string
     {
         $first_five = strtolower(substr($sql_statement, 0, 6));
 
@@ -43,7 +44,7 @@ class Tracer implements TracerInterface
         return self::$query_codes[$first_five];
     }
 
-    public function trace(QueryInterface $q, $operator_id, $model_id) : bool
+    public function trace(QueryInterface $q, $operator_id, $model_id): bool
     {
         $trace = [];
         $trace['query_type'] = $this->query_code($q->statement());

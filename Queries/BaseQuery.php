@@ -2,10 +2,10 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use \HexMakina\Crudites\CruditesException;
-use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
-use \HexMakina\Crudites\Interfaces\ConnectionInterface;
-use \HexMakina\Crudites\Interfaces\QueryInterface;
+use HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use HexMakina\Crudites\Interfaces\ConnectionInterface;
+use HexMakina\Crudites\Interfaces\QueryInterface;
 
 abstract class BaseQuery implements QueryInterface
 {
@@ -18,10 +18,10 @@ abstract class BaseQuery implements QueryInterface
     const CODE_UPDATE =   'U';
     const CODE_DELETE =   'D';
 
-    protected $database=null;
-    protected $table=null;
-    protected $statement=null;
-    protected $bindings=[];
+    protected $database = null;
+    protected $table = null;
+    protected $statement = null;
+    protected $bindings = [];
 
     protected $connection = null;
     protected $executed = false;
@@ -35,7 +35,7 @@ abstract class BaseQuery implements QueryInterface
     protected $error_text = null;
 
     //------------------------------------------------------------  DEBUG
-    public function __debugInfo() : array
+    public function __debugInfo(): array
     {
         $dbg = [];
         if (isset($this->table)) {
@@ -66,7 +66,7 @@ abstract class BaseQuery implements QueryInterface
     }
 
 
-    abstract public function generate() : string;
+    abstract public function generate(): string;
 
     // returns one of C, R, U, D
     // public function is_create(){    return false;}
@@ -85,7 +85,7 @@ abstract class BaseQuery implements QueryInterface
     // }
 
     //------------------------------------------------------------  GET/SETTERS
-    public function statement($setter = null) : string
+    public function statement($setter = null): string
     {
         if (!is_null($setter)) {
             $this->statement = $setter;
@@ -95,7 +95,7 @@ abstract class BaseQuery implements QueryInterface
     }
 
 
-    public function connection(ConnectionInterface $setter = null) : ConnectionInterface
+    public function connection(ConnectionInterface $setter = null): ConnectionInterface
     {
         if (!is_null($setter)) {
             $this->connection = $setter;
@@ -104,17 +104,17 @@ abstract class BaseQuery implements QueryInterface
         return $this->connection;
     }
 
-    public function has_table() : bool
+    public function has_table(): bool
     {
         return !is_null($this->table);
     }
 
-    public function table(TableManipulationInterface $setter = null) : TableManipulationInterface
+    public function table(TableManipulationInterface $setter = null): TableManipulationInterface
     {
         return is_null($setter) ? $this->table : ($this->table = $setter);
     }
 
-    public function table_name() : string
+    public function table_name(): string
     {
         return $this->table()->name();
     }
@@ -147,7 +147,7 @@ abstract class BaseQuery implements QueryInterface
 
     public function bind_label($field, $table_name = null)
     {
-        return ':'.$this->table_label($table_name).'_'.$field;
+        return ':' . $this->table_label($table_name) . '_' . $field;
     }
 
     public function add_binding($k, $v)
@@ -169,7 +169,7 @@ abstract class BaseQuery implements QueryInterface
     // returns itself
     // DEBUG dies on \Exception
 
-    public function run() : QueryInterface
+    public function run(): QueryInterface
     {
         if (is_null($this->connection())) {
             throw new CruditesException('NO_CONNECTION');
@@ -242,17 +242,17 @@ abstract class BaseQuery implements QueryInterface
     }
 
     //------------------------------------------------------------  Status
-    public function is_prepared() : bool
+    public function is_prepared(): bool
     {
         return !is_null($this->prepared_statement) && false !== $this->prepared_statement;
     }
 
-    public function is_executed($setter = null) : bool
+    public function is_executed($setter = null): bool
     {
         return is_null($setter) ? $this->executed === true : ($this->executed = $setter);
     }
 
-    public function is_success() : bool
+    public function is_success(): bool
     {
         return $this->state === self::STATE_SUCCESS;
     }

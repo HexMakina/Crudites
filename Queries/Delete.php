@@ -2,8 +2,8 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use \HexMakina\Crudites\Interfaces\TableDescriptionInterface;
-use \HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\Interfaces\TableDescriptionInterface;
+use HexMakina\Crudites\CruditesException;
 
 class Delete extends BaseQuery
 {
@@ -20,7 +20,7 @@ class Delete extends BaseQuery
 
     // public function is_delete(){    return true;}
 
-    public function generate() : string
+    public function generate(): string
     {
         if (empty($this->where)) {
             throw new CruditesException('DELETE_USED_AS_TRUNCATE');  // prevents haphazardous generation of dangerous DELETE statement

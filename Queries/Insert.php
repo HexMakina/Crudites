@@ -2,9 +2,9 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use \HexMakina\Crudites\Crudites;
-use \HexMakina\Crudites\CruditesException;
-use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use HexMakina\Crudites\Crudites;
+use HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\Interfaces\TableManipulationInterface;
 
 class Insert extends BaseQuery
 {
@@ -38,18 +38,18 @@ class Insert extends BaseQuery
 
             if (isset($assoc_data[$column_name])) {
                 $this->query_fields[$column_name] = $column_name;
-                $this->bindings[':'.$this->table_name().'_'.$column_name] = $assoc_data[$column_name];
+                $this->bindings[':' . $this->table_name() . '_' . $column_name] = $assoc_data[$column_name];
             }
         }
     }
 
-    public function generate() : string
+    public function generate(): string
     {
         if (empty($this->query_fields) || count($this->bindings) !== count($this->query_fields)) {
             throw new CruditesException('INSERT_FIELDS_BINDINGS_MISMATCH');
         }
 
-        $fields = '`'.implode('`, `', $this->query_fields).'`';
+        $fields = '`' . implode('`, `', $this->query_fields) . '`';
         $values = implode(', ', array_keys($this->bindings));
 
         return sprintf('INSERT INTO `%s` (%s) VALUES (%s)', $this->table, $fields, $values);
@@ -61,7 +61,7 @@ class Insert extends BaseQuery
         return $this->inserted_id;
     }
 
-    public function run() : BaseQuery
+    public function run(): BaseQuery
     {
         parent::run();
 

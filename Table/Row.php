@@ -2,8 +2,8 @@
 
 namespace HexMakina\Crudites\Table;
 
-use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
-use \HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use HexMakina\Crudites\CruditesException;
 
 class Row
 {
@@ -26,10 +26,10 @@ class Row
 
     public function __toString()
     {
-        return PHP_EOL .'load: '.json_encode($this->load) . PHP_EOL.'alterations: '.json_encode(array_keys($this->alterations));
+        return PHP_EOL . 'load: ' . json_encode($this->load) . PHP_EOL . 'alterations: ' . json_encode(array_keys($this->alterations));
     }
 
-    public function __debugInfo() : array
+    public function __debugInfo(): array
     {
         $dbg = get_object_vars($this);
         unset($dbg['table']);
@@ -38,7 +38,7 @@ class Row
         return $dbg;
     }
 
-    public function table() : TableManipulationInterface
+    public function table(): TableManipulationInterface
     {
         return $this->table;
     }
@@ -53,22 +53,22 @@ class Row
         return $this->last_alter_query;
     }
 
-    public function is_new() : bool
+    public function is_new(): bool
     {
         return empty($this->load);
     }
 
-    public function is_loaded() : bool
+    public function is_loaded(): bool
     {
         return !$this->is_new();
     }
 
-    public function is_altered() : bool
+    public function is_altered(): bool
     {
         return !empty($this->alterations);
     }
 
-    public function export() : array
+    public function export(): array
     {
         return array_merge((array)$this->load, $this->fresh, $this->alterations);
     }
@@ -133,7 +133,7 @@ class Row
         return $this;
     }
 
-    public function persist() : array
+    public function persist(): array
     {
 
         if (!$this->is_new() && !$this->is_altered()) { // existing record with no alterations
@@ -149,7 +149,7 @@ class Row
                 $this->last_alter_query = $this->table()->insert($this->export());
                 $this->last_alter_query->run();
                 if ($this->last_alter_query->is_success() && !is_null($aipk = $this->last_alter_query->table()->auto_incremented_primary_key())) {
-                    $this->alterations[$aipk->name()]=$this->last_alter_query->inserted_id();
+                    $this->alterations[$aipk->name()] = $this->last_alter_query->inserted_id();
                 }
             } else {
                 $pk_match = $this->table()->primary_keys_match($this->load);
@@ -165,7 +165,7 @@ class Row
         return $this->last_query()->is_success() ? [] : ['CRUDITES_ERR_ROW_PERSISTENCE'];
     }
 
-    public function wipe() : bool
+    public function wipe(): bool
     {
         $dat_ass = $this->load ?? $this->fresh ?? $this->alterations;
 
@@ -189,7 +189,7 @@ class Row
     /**
      * @return array containing all invalid data, indexed by field name, or empty if all valid
      */
-    public function validate() : array
+    public function validate(): array
     {
         $errors = [];
         $dat_ass = $this->export();

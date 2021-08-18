@@ -2,9 +2,9 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
-use \HexMakina\Crudites\Interfaces\SelectInterface;
-use \HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use HexMakina\Crudites\Interfaces\SelectInterface;
+use HexMakina\Crudites\CruditesException;
 
 class Select extends BaseQuery implements SelectInterface
 {
@@ -146,7 +146,7 @@ class Select extends BaseQuery implements SelectInterface
         return $this;
     }
 
-    public function generate() : string
+    public function generate(): string
     {
         if (is_null($this->table)) {
             throw new CruditesException('NO_TABLE');
@@ -156,25 +156,25 @@ class Select extends BaseQuery implements SelectInterface
 
         $query_fields = empty($this->selection) ? ['*'] : $this->selection;
 
-        $ret = PHP_EOL . 'SELECT '.implode(', '.PHP_EOL, $query_fields);
-        $ret.= PHP_EOL . sprintf(' FROM `%s` %s ', $this->table_name(), $this->table_alias);
+        $ret = PHP_EOL . 'SELECT ' . implode(', ' . PHP_EOL, $query_fields);
+        $ret .= PHP_EOL . sprintf(' FROM `%s` %s ', $this->table_name(), $this->table_alias);
 
         if (!empty($this->join)) {
-            $ret.= PHP_EOL . ' '.implode(PHP_EOL.' ', $this->join);
+            $ret .= PHP_EOL . ' ' . implode(PHP_EOL . ' ', $this->join);
         }
 
         $ret .= $this->generate_where();
 
         foreach (['group' => 'GROUP BY', 'having' => 'HAVING', 'order' => 'ORDER BY'] as $part => $prefix) {
             if (!empty($this->$part)) {
-                $ret.= PHP_EOL . " $prefix " . implode(', ', $this->$part);
+                $ret .= PHP_EOL . " $prefix " . implode(', ', $this->$part);
             }
         }
 
         if (!empty($this->limit_number)) {
             $offset = $this->limit_offset ?? 0;
             $number = $this->limit_number;
-            $ret.= PHP_EOL . " LIMIT $offset, $number";
+            $ret .= PHP_EOL . " LIMIT $offset, $number";
         }
 
         return $ret;

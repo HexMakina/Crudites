@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use HexMakina\Crudites\Interfaces\TableManipulationInterface;
 
 trait ClauseWhere
 {
@@ -41,7 +41,7 @@ trait ClauseWhere
 
     protected $where = null;
 
-    abstract public function table(TableManipulationInterface $setter = null) : TableManipulationInterface;
+    abstract public function table(TableManipulationInterface $setter = null): TableManipulationInterface;
     abstract public function table_label($table_name = null);
     abstract public function bind_name($table_name, $field, $value, $bind_label = null);
     abstract public function field_label($field, $table_name = null);
@@ -52,7 +52,7 @@ trait ClauseWhere
     {
         $this->where = $this->where ?? [];
 
-        $this->where[]= "($where_condition)";
+        $this->where[] = "($where_condition)";
 
         foreach ($where_bindings as $k => $v) {
             $this->add_binding($k, $v);
@@ -150,7 +150,7 @@ trait ClauseWhere
             $count_values = count($values);
             $in = '';
             foreach ($values as $i => $v) {
-                $placeholder_name = ':'.$table_name.'_'.$field.'_awS_in_'.$count_values.'_'.$i; // TODO dirty patching. mathematical certainty needed
+                $placeholder_name = ':' . $table_name . '_' . $field . '_awS_in_' . $count_values . '_' . $i; // TODO dirty patching. mathematical certainty needed
                 $this->add_binding($placeholder_name, $v);
                 $in .= "$placeholder_name,";
             }
@@ -212,11 +212,11 @@ trait ClauseWhere
             $search_field = $this->field_label($search_field, $search_table);
 
             if ($search_mode === self::$OP_EQ) {
-                $content_wc []= "$search_field = '$search_term' "; // TODO bindthis
+                $content_wc [] = "$search_field = '$search_term' "; // TODO bindthis
             } else // %%
             {
                 $pattern = str_replace('TERM', $search_term, $search_mode);
-                $content_wc []= " $search_field LIKE '$pattern' "; // TODO bindthis
+                $content_wc [] = " $search_field LIKE '$pattern' "; // TODO bindthis
             }
         }
 
@@ -247,7 +247,7 @@ trait ClauseWhere
     protected function generate_where()
     {
         if (!empty($this->where)) {
-            return PHP_EOL .' WHERE '. implode(PHP_EOL.' AND ', $this->where);
+            return PHP_EOL . ' WHERE ' . implode(PHP_EOL . ' AND ', $this->where);
         }
     }
 }
