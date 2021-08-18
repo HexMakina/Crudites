@@ -72,7 +72,7 @@ class Description implements TableDescriptionInterface
     }
 
     //getsetter of AIPK, default get is null, cant set to null
-    public function auto_incremented_primary_key(TableColumnInterface $setter = null) : ?TableColumnInterface
+    public function auto_incremented_primary_key(TableColumnInterface $setter = null)
     {
         return is_null($setter) ? $this->auto_incremented_primary_key : ($this->auto_incremented_primary_key = $setter);
     }
@@ -91,7 +91,7 @@ class Description implements TableDescriptionInterface
     }
 
     // TableDescriptionInterface implementation
-    public function column($name) : ?TableColumnInterface
+    public function column($name)
     {
         return $this->columns[$name] ?? null;
     }

@@ -11,7 +11,7 @@ interface TableDescriptionInterface
     //introspection
     public function add_column(TableColumnInterface $column);
     public function columns() : array;
-    public function column($name) : ?TableColumnInterface;
+    public function column($name);
 
     public function add_primary_key(TableColumnInterface $column);
     public function primary_keys($with_values = null) : array;
@@ -25,7 +25,7 @@ interface TableDescriptionInterface
     public function add_unique_key($constraint_name, $columns);
     public function unique_keys_by_name() : array;
 
-    public function auto_incremented_primary_key(TableColumnInterface $setter = null) : ?TableColumnInterface;
+    public function auto_incremented_primary_key(TableColumnInterface $setter = null);
 
     //EOF introspection
 }

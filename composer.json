@@ -4,7 +4,7 @@
     "keywords": ["php", "pdo", "crud", "mysql", "mariasql", "select", "insert", "update", "delete", "intropection", "database", "database connection"],
     "type": "package",
     "require": {
-        "php": ">=7.3"
+        "php": ">=7.0"
     },
     "license": "mit",
     "authors": [
