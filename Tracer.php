@@ -38,7 +38,7 @@ class Tracer implements TracerInterface
         $first_five = strtolower(substr($sql_statement, 0, 6));
 
         if (!isset(self::$query_codes[$first_five])) {
-            throw new \Exception('KADRO_ONLY_TRACES_CRUD');
+            throw new \InvalidArgumentException('KADRO_ONLY_TRACES_CRUD');
         }
 
         return self::$query_codes[$first_five];
