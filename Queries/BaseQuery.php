@@ -11,12 +11,8 @@ abstract class BaseQuery implements QueryInterface
 {
     private static $executions = 0;
 
-    const STATE_SUCCESS = '00000'; //PDO "error" code for "all is fine"
+    public const STATE_SUCCESS = '00000'; //PDO "error" code for "all is fine"
 
-    const CODE_CREATE =   'C';
-    const CODE_RETRIEVE = 'R';
-    const CODE_UPDATE =   'U';
-    const CODE_DELETE =   'D';
 
     protected $database = null;
     protected $table = null;
