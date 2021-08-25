@@ -140,7 +140,7 @@ abstract class BaseQuery implements QueryInterface
     {
         $bind_label = $bind_label ?? $this->bind_label($field, $table_name);
 
-        $this->bindings[$bind_label] = $value;
+        $this->add_binding($bind_label, $value);
 
         return $bind_label;
     }
@@ -189,26 +189,13 @@ abstract class BaseQuery implements QueryInterface
     public function ret($mode = null, $option = null)
     {
         if (!$this->is_executed()) {
-            try {
-                $this->run();
-            } catch (CruditesException $e) {
-                return false;
-            }
+            $this->run();
         }
+
         if (!$this->is_success()) {
             return false;
         }
 
-        // if(is_null($mode)) // nothin was specified, it's probe-time
-        // {
-        //   if($this->has_table() && !is_null($class_name = $this->table()->map_class()))
-        //   {
-        //     $mode = \PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE;
-        //     $option = $class_name;
-        //   }
-        //   else
-        //     $mode = \PDO::FETCH_ASSOC;
-        // }
         return is_null($option) ? $this->prepared_statement->fetchAll($mode) : $this->prepared_statement->fetchAll($mode, $option);
     }
 
