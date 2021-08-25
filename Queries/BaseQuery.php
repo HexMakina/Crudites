@@ -13,8 +13,6 @@ abstract class BaseQuery implements QueryInterface
 
     public const STATE_SUCCESS = '00000'; //PDO "error" code for "all is fine"
 
-
-    protected $database = null;
     protected $table = null;
     protected $statement = null;
     protected $bindings = [];
@@ -85,11 +83,6 @@ abstract class BaseQuery implements QueryInterface
         return $this->connection;
     }
 
-    public function has_table(): bool
-    {
-        return !is_null($this->table);
-    }
-
     public function table(TableManipulationInterface $setter = null): TableManipulationInterface
     {
         return is_null($setter) ? $this->table : ($this->table = $setter);
@@ -106,12 +99,12 @@ abstract class BaseQuery implements QueryInterface
         return $table_name ?? $this->table_name();
     }
 
-    public function field_label($field, $table_name = null)
+    public function field_label($field_name, $table_name = null)
     {
         if (empty($table_name)) {
-            return "`$field`";
+            return sprintf('`%s`', $field_name);
         }
-        return sprintf('`%s`.`%s`', $this->table_label($table_name), $field);
+        return sprintf('`%s`.`%s`', $this->table_label($table_name), $field_name);
     }
 
     //------------------------------------------------------------  PREP::BINDINGS
@@ -174,13 +167,6 @@ abstract class BaseQuery implements QueryInterface
         } catch (\PDOException $e) {
             throw (new CruditesException($e->getMessage()))->fromQuery($this);
         }
-        // not doing anything with it.. let it blow
-        // catch(\Exception $e)
-        // {
-        //   var_dump(get_class($e));
-        //   var_dump($e);
-        //   die;
-        // }
 
         return $this;
     }
