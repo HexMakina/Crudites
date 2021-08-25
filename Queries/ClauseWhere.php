@@ -6,22 +6,6 @@ use HexMakina\Crudites\Interfaces\TableManipulationInterface;
 
 trait ClauseWhere
 {
-    // const AND = 'AND';
-    // const OR = 'OR';
-
-    // const WHERE_LIKE_PRE = '%TERM';
-    // const WHERE_LIKE_POST = 'TERM%';
-    // const WHERE_LIKE_BOTH = '%TERM%';
-
-    // const GT = '>';
-    // const LT = '<';
-    // const EQ = '=';
-    // const GTE = '>=';
-    // const LTE = '<=';
-    // const NEQ = '<>';
-    // const LIKE = 'LIKE';
-    // const NLIKE = 'NOT LIKE';
-
     public static $OP_AND = 'AND';
     public static $OP_OR = 'OR';
 
@@ -74,10 +58,12 @@ trait ClauseWhere
     {
                return $this->aw_bind_field($table_name, $field, self::$OP_EQ, $value, $bindname);
     }
+
     public function aw_gt($field, $value, $table_name = null, $bindname = null)
     {
                return $this->aw_bind_field($table_name, $field, self::$OP_GT, $value, $bindname);
     }
+
     public function aw_lt($field, $value, $table_name = null, $bindname = null)
     {
                return $this->aw_bind_field($table_name, $field, self::$OP_LT, $value, $bindname);
@@ -87,10 +73,12 @@ trait ClauseWhere
     {
                return $this->aw_bind_field($table_name, $field, self::$OP_GTE, $value, $bindname);
     }
+
     public function aw_lte($field, $value, $table_name = null, $bindname = null)
     {
               return $this->aw_bind_field($table_name, $field, self::$OP_LTE, $value, $bindname);
     }
+
     public function aw_not_eq($field, $value, $table_name = null, $bindname = null)
     {
           return $this->aw_bind_field($table_name, $field, self::$OP_NEQ, $value, $bindname);
