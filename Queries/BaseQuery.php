@@ -64,21 +64,6 @@ abstract class BaseQuery implements QueryInterface
 
     abstract public function generate(): string;
 
-    // returns one of C, R, U, D
-    // public function is_create(){    return false;}
-    // public function is_retrieve(){  return false;}
-    // public function is_update(){    return false;}
-    // public function is_delete(){    return false;}
-
-    // public function query_code()
-    // {
-    //   if($this->is_create())        return self::CODE_CREATE;
-    //   elseif($this->is_retrieve())  return self::CODE_RETRIEVE;
-    //   elseif($this->is_update())    return self::CODE_UPDATE;
-    //   elseif($this->is_delete())    return self::CODE_DELETE;
-    //
-    //   throw new CruditesException('UNKOWN_QUERY_CODE');
-    // }
 
     //------------------------------------------------------------  GET/SETTERS
     public function statement($setter = null): string
