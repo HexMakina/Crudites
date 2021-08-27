@@ -152,7 +152,7 @@ class ColumnType
             return 'ERR_FIELD_FORMAT';
         }
 
-        if ($this->is_year() preg_match('/^[0-9]{4}$/', $field_value) !== 1) {
+        if ($this->is_year() && preg_match('/^[0-9]{4}$/', $field_value) !== 1) {
             return 'ERR_FIELD_FORMAT';
         }
 
