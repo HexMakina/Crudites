@@ -148,24 +148,24 @@ class ColumnType
             return true;
         }
 
-        if ($this->is_date_or_time()) {
-            return date_create($field_value) === false ? 'ERR_FIELD_FORMAT' : true;
+        if ($this->is_date_or_time() && date_create($field_value) === false) {
+            return 'ERR_FIELD_FORMAT';
         }
 
-        if ($this->is_year()) {
-            return preg_match('/^[0-9]{4}$/', $field_value) !== 1 ? 'ERR_FIELD_FORMAT' : true;
+        if ($this->is_year() preg_match('/^[0-9]{4}$/', $field_value) !== 1) {
+            return 'ERR_FIELD_FORMAT';
         }
 
-        if ($this->is_numeric()) {
-            return (!is_numeric($field_value)) ? 'ERR_FIELD_FORMAT' : true;
+        if ($this->is_numeric() && !is_numeric($field_value)) {
+            return 'ERR_FIELD_FORMAT';
         }
 
-        if ($this->is_string()) {
-            return ($this->length() < strlen($field_value)) ? 'ERR_FIELD_TOO_LONG' : true;
+        if ($this->is_string() && $this->length() < strlen($field_value)) {
+            return 'ERR_FIELD_TOO_LONG';
         }
 
-        if ($this->is_enum()) {
-            return !in_array($field_value, $this->enum_values()) ? 'ERR_FIELD_VALUE_RESTRICTED_BY_ENUM' : true;
+        if ($this->is_enum() && !in_array($field_value, $this->enum_values())) {
+            return 'ERR_FIELD_VALUE_RESTRICTED_BY_ENUM';
         }
 
         return true;
