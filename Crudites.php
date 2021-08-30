@@ -32,7 +32,7 @@ class Crudites
         try {
             return self::$database->inspect($table_name);
         } catch (\Exception $e) {
-            throw new CruditesException('TABLE_INTROSPECTION');
+            throw new CruditesException('TABLE_INTROSPECTION::'.$table_name);
         }
     }
 
