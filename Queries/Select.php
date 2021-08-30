@@ -23,12 +23,6 @@ class Select extends BaseQuery implements SelectInterface
     protected $limit_number = null;
     protected $limit_offset = 0;
 
-    // public function fully_qualified_column_name($label, $table_alias=null)
-    // {
-    //   // TODO analyse $label format to create a FQName
-    //   // TODO use function in constructor and select_also()
-    //   return $label;
-    // }
 
     public function __construct($select_fields = null, TableManipulationInterface $table = null, $table_alias = null)
     {
