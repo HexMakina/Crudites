@@ -2,10 +2,10 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\Crudites\CruditesException;
-use HexMakina\Crudites\Interfaces\TableManipulationInterface;
-use HexMakina\Crudites\Interfaces\ConnectionInterface;
-use HexMakina\Crudites\Interfaces\QueryInterface;
+use \HexMakina\Crudites\CruditesException;
+use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use \HexMakina\Crudites\Interfaces\ConnectionInterface;
+use \HexMakina\Crudites\Interfaces\QueryInterface;
 
 abstract class BaseQuery implements QueryInterface
 {

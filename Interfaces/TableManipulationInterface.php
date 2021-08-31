@@ -2,10 +2,10 @@
 
 namespace HexMakina\Crudites\Interfaces;
 
-use HexMakina\Crudites\Queries\Insert;
-use HexMakina\Crudites\Queries\Update;
-use HexMakina\Crudites\Queries\Delete;
-use HexMakina\Crudites\Table\Row;
+use \HexMakina\Crudites\Queries\Insert;
+use \HexMakina\Crudites\Queries\Update;
+use \HexMakina\Crudites\Queries\Delete;
+use \HexMakina\Crudites\Table\Row;
 
 interface TableManipulationInterface extends TableDescriptionInterface
 {

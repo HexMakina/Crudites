@@ -2,8 +2,8 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\Crudites\CruditesException;
-use HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use \HexMakina\Crudites\CruditesException;
+use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
 
 class Update extends BaseQuery
 {

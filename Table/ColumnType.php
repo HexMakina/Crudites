@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Table;
 
-use HexMakina\Crudites\CruditesException;
+use \HexMakina\Crudites\CruditesException;
 
 class ColumnType
 {

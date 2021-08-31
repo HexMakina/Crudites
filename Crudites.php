@@ -9,10 +9,10 @@
 
 namespace HexMakina\Crudites;
 
-use HexMakina\Crudites\Queries\BaseQuery;
-use HexMakina\Crudites\Queries\Select;
-use HexMakina\Crudites\Interfaces\DatabaseInterface;
-use HexMakina\Crudites\CruditesException;
+use \HexMakina\Crudites\Queries\BaseQuery;
+use \HexMakina\Crudites\Queries\Select;
+use \HexMakina\Crudites\Interfaces\DatabaseInterface;
+use \HexMakina\Crudites\CruditesException;
 
 class Crudites
 {

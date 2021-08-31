@@ -2,10 +2,10 @@
 
 namespace HexMakina\Crudites\Table;
 
-use HexMakina\Crudites\CruditesException;
-use HexMakina\Crudites\Interfaces\ConnectionInterface;
-use HexMakina\Crudites\Interfaces\TableDescriptionInterface;
-use HexMakina\Crudites\Interfaces\TableColumnInterface;
+use \HexMakina\Crudites\CruditesException;
+use \HexMakina\Crudites\Interfaces\ConnectionInterface;
+use \HexMakina\Crudites\Interfaces\TableDescriptionInterface;
+use \HexMakina\Crudites\Interfaces\TableColumnInterface;
 
 class Description implements TableDescriptionInterface
 {

@@ -2,9 +2,9 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\Crudites\Crudites;
-use HexMakina\Crudites\CruditesException;
-use HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use \HexMakina\Crudites\Crudites;
+use \HexMakina\Crudites\CruditesException;
+use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
 
 class Insert extends BaseQuery
 {

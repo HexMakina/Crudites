@@ -2,13 +2,13 @@
 
 namespace HexMakina\Crudites;
 
-use HexMakina\Crudites\Queries\Select;
-use HexMakina\Crudites\Queries\Describe;
-use HexMakina\Crudites\Table\Manipulation;
-use HexMakina\Crudites\Table\Column;
-use HexMakina\Crudites\Interfaces\ConnectionInterface;
-use HexMakina\Crudites\Interfaces\DatabaseInterface;
-use HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use \HexMakina\Crudites\Queries\Select;
+use \HexMakina\Crudites\Queries\Describe;
+use \HexMakina\Crudites\Table\Manipulation;
+use \HexMakina\Crudites\Table\Column;
+use \HexMakina\Crudites\Interfaces\ConnectionInterface;
+use \HexMakina\Crudites\Interfaces\DatabaseInterface;
+use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
 
 class Database implements DatabaseInterface
 {
