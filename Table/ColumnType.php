@@ -38,7 +38,7 @@ class ColumnType implements ColumnTypeInterface
             if (preg_match("/$rx/i", $specs_type, $m) === 1) {
                 $this->name = $type;
 
-                if ($this->is_enum()) {
+                if ($this->isEnum()) {
                     $this->enum_values = explode('\',\'', $m[1]);
                 } elseif (preg_match('/([\d]+)/', $specs_type, $m) === 1) {
                     $this->length = (int)$m[0];
@@ -52,75 +52,84 @@ class ColumnType implements ColumnTypeInterface
         }
     }
 
-    public function is_text(): bool
+    public function isText(): bool
     {
         return $this->name === self::TYPE_TEXT;
     }
-    public function is_string(): bool
+
+    public function isString(): bool
     {
         return $this->name === self::TYPE_STRING;
     }
 
-    public function is_boolean(): bool
+    public function isBoolean(): bool
     {
         return $this->name === self::TYPE_BOOLEAN;
     }
 
-    public function is_integer(): bool
+    public function isInteger(): bool
     {
         return $this->name === self::TYPE_INTEGER;
     }
-    public function is_float(): bool
+
+    public function isFloat(): bool
     {
         return $this->name === self::TYPE_FLOAT;
     }
-    public function is_decimal(): bool
+
+    public function isDecimal(): bool
     {
         return $this->name === self::TYPE_DECIMAL;
     }
 
-    public function is_enum(): bool
-    {
-        return $this->name === self::TYPE_ENUM;
-    }
-
-    public function is_year(): bool
-    {
-        return $this->name === self::TYPE_YEAR;
-    }
-    public function is_date(): bool
-    {
-        return $this->name === self::TYPE_DATE;
-    }
-    public function is_time(): bool
-    {
-        return $this->name === self::TYPE_TIME;
-    }
-    public function is_timestamp(): bool
-    {
-        return $this->name === self::TYPE_TIMESTAMP;
-    }
-    public function is_datetime(): bool
-    {
-        return $this->name === self::TYPE_DATETIME;
-    }
-
-    public function is_date_or_time(): bool
-    {
-        return in_array($this->name, [self::TYPE_DATE, self::TYPE_TIME, self::TYPE_TIMESTAMP, self::TYPE_DATETIME]);
-    }
-
-    public function is_numeric(): bool
+    public function isNumeric(): bool
     {
         return in_array($this->name, [self::TYPE_INTEGER, self::TYPE_FLOAT, self::TYPE_DECIMAL]);
     }
 
-    public function enum_values()
+    public function isEnum(): bool
+    {
+        return $this->name === self::TYPE_ENUM;
+    }
+
+    public function isYear(): bool
+    {
+        return $this->name === self::TYPE_YEAR;
+    }
+
+    public function isDate(): bool
+    {
+        return $this->name === self::TYPE_DATE;
+    }
+
+    public function isTime(): bool
+    {
+        return $this->name === self::TYPE_TIME;
+    }
+
+    public function isTimestamp(): bool
+    {
+        return $this->name === self::TYPE_TIMESTAMP;
+    }
+
+    public function isDatetime(): bool
+    {
+        return $this->name === self::TYPE_DATETIME;
+    }
+
+    public function isDateOrTime(): bool
+    {
+        return in_array($this->name, [self::TYPE_DATE, self::TYPE_TIME, self::TYPE_TIMESTAMP, self::TYPE_DATETIME]);
+    }
+
+
+
+    public function getEnumValues(): array
     {
         return $this->enum_values ?? [];
     }
 
-    public function length()
+    public function getLength(): int
     {
         return $this->length ?? -1;
     }
@@ -128,27 +137,27 @@ class ColumnType implements ColumnTypeInterface
 
     public function validateValue($field_value)
     {
-        if ($this->is_text()) {
+        if ($this->isText()) {
             return true;
         }
 
-        if ($this->is_date_or_time() && date_create($field_value) === false) {
+        if ($this->isDateOrTime() && date_create($field_value) === false) {
             return 'ERR_FIELD_FORMAT';
         }
 
-        if ($this->is_year() && preg_match('/^[0-9]{4}$/', $field_value) !== 1) {
+        if ($this->isYear() && preg_match('/^[0-9]{4}$/', $field_value) !== 1) {
             return 'ERR_FIELD_FORMAT';
         }
 
-        if ($this->is_numeric() && !is_numeric($field_value)) {
+        if ($this->isNumeric() && !isNumeric($field_value)) {
             return 'ERR_FIELD_FORMAT';
         }
 
-        if ($this->is_string() && $this->length() < strlen($field_value)) {
+        if ($this->isString() && $this->getLength() < strlen($field_value)) {
             return 'ERR_FIELD_TOO_LONG';
         }
 
-        if ($this->is_enum() && !in_array($field_value, $this->enum_values())) {
+        if ($this->isEnum() && !in_array($field_value, $this->getEnumValues())) {
             return 'ERR_FIELD_VALUE_RESTRICTED_BY_ENUM';
         }
 

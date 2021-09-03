@@ -39,7 +39,7 @@ class Update extends BaseQuery
 
             if ($value === '' && $column->isNullable()) {
                 $value = null;
-            } elseif (empty($value) && $column->type()->is_boolean()) { //empty '', 0, false
+            } elseif (empty($value) && $column->type()->isBoolean()) { //empty '', 0, false
                 $value = 0;
             }
 

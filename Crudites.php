@@ -137,7 +137,7 @@ class Crudites
 
         $table = self::table_name_to_Table($table);
 
-        if (is_null($column = $table->column($boolean_column_name)) || !$column->type()->is_boolean()) {
+        if (is_null($column = $table->column($boolean_column_name)) || !$column->type()->isBoolean()) {
             return false;
         }
 

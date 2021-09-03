@@ -105,7 +105,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     {
         $ret = $this->default_value;
 
-        if (!is_null($this->default_value) && ($this->type()->is_integer() || $this->type()->is_boolean())) {
+        if (!is_null($this->default_value) && ($this->type()->isInteger() || $this->type()->isBoolean())) {
             $ret = (int)$ret;
         }
 
@@ -203,7 +203,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
             return true;
         }
 
-        if ($this->type()->is_boolean()) {
+        if ($this->type()->isBoolean()) {
             return true;
         }
 
