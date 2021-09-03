@@ -45,7 +45,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
 
                 case 'Key':
                     $this->isPrimary($v === 'PRI');
-                          $this->isIndex(true);
+                    $this->isIndex(true);
                     break;
 
                 case 'Default':
@@ -200,24 +200,27 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
 
     public function validateValue($field_value = null)
     {
+        $ret = false;
+
         if ($this->isAutoIncremented()) {
-            return true;
+            $ret = true;
         }
-
-        if ($this->type()->isBoolean()) {
-            return true;
+        elseif ($this->type()->isBoolean()) {
+            $ret = true;
         }
-
-        if (is_null($field_value)) {
+        elseif (is_null($field_value)) {
             if ($this->isNullable()) {
-                return true;
+                $ret = true;
             } elseif (is_null($this->default())) {
-                return 'ERR_FIELD_REQUIRED';
+                $ret = 'ERR_FIELD_REQUIRED';
             }
         }
+        else{
+          // nothing found on the Column level, lets check for Typing error
+          $ret = $this->type()->validateValue($field_value);
+        }
 
-        // nothing found on the Column level, lets check for Typing error
-        return $this->type()->validateValue($field_value);
+        return $ret;
     }
 
 }
