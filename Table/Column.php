@@ -39,18 +39,18 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
 
         $this->default_value = $specs['Default'] ?? null;
 
-        if(isset($specs['Null'])){
-          $this->isNullable($specs['Null'] !== 'NO');
+        if (isset($specs['Null'])) {
+            $this->isNullable($specs['Null'] !== 'NO');
         }
 
-        if(isset($specs['Key'])){
-          $this->isPrimary($specs['Key'] === 'PRI');
-          $this->isIndex(true);
+        if (isset($specs['Key'])) {
+            $this->isPrimary($specs['Key'] === 'PRI');
+            $this->isIndex(true);
         }
 
-        if(isset($specs['Extra'])){
-          $this->isAutoIncremented($specs['Extra'] === 'auto_increment');
-          $this->extra = $specs['Extra'];
+        if (isset($specs['Extra'])) {
+            $this->isAutoIncremented($specs['Extra'] === 'auto_increment');
+            $this->extra = $specs['Extra'];
         }
     }
 
@@ -174,13 +174,11 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
 
         if ($this->isAutoIncremented() || $this->type()->isBoolean()) {
             $ret = true;
-        }
-        elseif (is_null($field_value)) {
+        } elseif (is_null($field_value)) {
             $ret = ($this->isNullable() || !is_null($this->default())) ? true : 'ERR_FIELD_REQUIRED';
-        }
-        else{
+        } else {
           // nothing found on the Column level, lets check for Typing error
-          $ret = $this->type()->validateValue($field_value);
+            $ret = $this->type()->validateValue($field_value);
         }
 
         return $ret;

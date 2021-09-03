@@ -2,8 +2,8 @@
 
 namespace HexMakina\Crudites\Table;
 
-use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
-use \HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use HexMakina\Crudites\CruditesException;
 
 class Row
 {

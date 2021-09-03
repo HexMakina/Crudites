@@ -2,8 +2,8 @@
 
 namespace HexMakina\Crudites\Table;
 
-use \HexMakina\Crudites\CruditesException;
-use \HexMakina\Crudites\Interfaces\ColumnTypeInterface;
+use HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\Interfaces\ColumnTypeInterface;
 
 class ColumnType implements ColumnTypeInterface
 {

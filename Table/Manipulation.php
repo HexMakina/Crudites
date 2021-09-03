@@ -2,12 +2,12 @@
 
 namespace HexMakina\Crudites\Table;
 
-use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
-use \HexMakina\Crudites\Interfaces\SelectInterface;
-use \HexMakina\Crudites\Queries\Select;
-use \HexMakina\Crudites\Queries\Insert;
-use \HexMakina\Crudites\Queries\Update;
-use \HexMakina\Crudites\Queries\Delete;
+use HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use HexMakina\Crudites\Interfaces\SelectInterface;
+use HexMakina\Crudites\Queries\Select;
+use HexMakina\Crudites\Queries\Insert;
+use HexMakina\Crudites\Queries\Update;
+use HexMakina\Crudites\Queries\Delete;
 
 class Manipulation extends Description implements TableManipulationInterface
 {
