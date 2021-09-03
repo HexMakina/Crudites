@@ -37,29 +37,25 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
         $this->name = $name;
         $this->ColumnType = new ColumnType($specs['Type']);
 
-        foreach ($specs as $k => $v) {
-            switch ($k) {
-                case 'Null':
-                    $this->isNullable($v !== 'NO');
-                    break;
+        if(isset($specs['Null'])){
+          $this->isNullable($specs['Null'] !== 'NO');
+        }
 
-                case 'Key':
-                    $this->isPrimary($v === 'PRI');
-                    $this->isIndex(true);
-                    break;
+        if(isset($specs['Key'])){
+          $this->isPrimary($specs['Key'] === 'PRI');
+          $this->isIndex(true);
+        }
 
-                case 'Default':
-                    $this->setDefaultValue($v);
-                    break;
+        if(isset($specs['Default'])){
+          $this->setDefaultValue($specs['Default']);
+        }
 
-                case 'Extra':
-                    if ($v === 'auto_increment') {
-                        $this->isAutoIncremented(true);
-                    } else {
-                        $this->setExtra($v);
-                    }
-                    break;
-            }
+        if(isset($specs['Extra'])){
+          if ($specs['Extra'] === 'auto_increment') {
+            $this->isAutoIncremented(true);
+          } else {
+            $this->setExtra($v);
+          }
         }
     }
 
