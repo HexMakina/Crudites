@@ -35,30 +35,35 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     {
         $this->table_name = is_string($table) ? $table : $table->name();
         $this->name = $name;
-        $this->ColumnType = new ColumnType($specs['Type']);
-
-        if(isset($specs['Null'])){
-          $this->isNullable($specs['Null'] !== 'NO');
-        }
-
-        if(isset($specs['Key'])){
-          $this->isPrimary($specs['Key'] === 'PRI');
-          $this->isIndex(true);
-        }
-
-        if(isset($specs['Default'])){
-          $this->setDefaultValue($specs['Default']);
-        }
-
-        if(isset($specs['Extra'])){
-          if ($specs['Extra'] === 'auto_increment') {
-            $this->isAutoIncremented(true);
-          } else {
-            $this->setExtra($v);
-          }
-        }
+        $this->processSpecs($specs);
     }
 
+    private function processSpecs($specs)
+    {
+      $this->ColumnType = new ColumnType($specs['Type']);
+
+      if(isset($specs['Null'])){
+        $this->isNullable($specs['Null'] !== 'NO');
+      }
+
+      if(isset($specs['Key'])){
+        $this->isPrimary($specs['Key'] === 'PRI');
+        $this->isIndex(true);
+      }
+
+      if(isset($specs['Default'])){
+        $this->setDefaultValue($specs['Default']);
+      }
+
+      if(isset($specs['Extra'])){
+        if ($specs['Extra'] === 'auto_increment') {
+          $this->isAutoIncremented(true);
+        } else {
+          $this->setExtra($v);
+        }
+      }
+    }
+    
     //------------------------------------------------------------  getters:field:info
     public function __toString()
     {
