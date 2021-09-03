@@ -99,7 +99,7 @@ trait ClauseJoin
         // if(count($bonding_column = $this->table()->foreign_keys_by_table()[$other_table_name] ?? []) === 1)
         if (!is_null($bonding_column = $this->table()->single_foreign_key_to($other_table))) {
             $relation_type = $relation_type ?? $bonding_column->isNullable() ? 'LEFT OUTER' : 'INNER';
-            // $joins []= [$bonding_column->table_name(), $bonding_column->name(), $other_table_alias ?? $bonding_column->foreignTableAlias(), $bonding_column->foreignColumnName()];
+            // $joins []= [$bonding_column->tableName(), $bonding_column->name(), $other_table_alias ?? $bonding_column->foreignTableAlias(), $bonding_column->foreignColumnName()];
             $joins [] = [$this->table_alias(), $bonding_column->name(), $other_table_alias ?? $bonding_column->foreignTableAlias(), $bonding_column->foreignColumnName()];
         }
         // elseif(count($bonding_column = $other_table->foreign_keys_by_table()[$this->table()->name()] ?? []) === 1)
@@ -115,9 +115,9 @@ trait ClauseJoin
                     $bonding_column = current($bonding_columns);
                     $other_table_alias = $other_table_alias ?? $bonding_column->foreignTableAlias();
 
-                    $bonding_table_label = array_search($bonding_column->table_name(), $this->joined_tables());
+                    $bonding_table_label = array_search($bonding_column->tableName(), $this->joined_tables());
                     if ($bonding_table_label === false) {
-                        $bonding_table_label = $bonding_column->table_name();
+                        $bonding_table_label = $bonding_column->tableName();
                     }
 
                     $joins = [[$bonding_table_label, $bonding_column->name(), $other_table_alias, $bonding_column->foreignColumnName()]];
@@ -139,7 +139,7 @@ trait ClauseJoin
 
                     // vd($other_table_alias);
                     $bonding_column = current($bondable_tables[$table_name]);
-                    $joins [] = [$bonding_column->table_name(), $bonding_column->name(), $bonding_column->foreignTableAlias(), $bonding_column->foreignColumnName()];
+                    $joins [] = [$bonding_column->tableName(), $bonding_column->name(), $bonding_column->foreignTableAlias(), $bonding_column->foreignColumnName()];
 
                     // $relation_type = $relation_type ?? (($parent_column->isNullable() || $bonding_column->isNullable()) ? 'LEFT OUTER' : 'INNER');
                     $relation_type = $relation_type ?? (($bonding_column->isNullable()) ? 'LEFT OUTER' : 'INNER');

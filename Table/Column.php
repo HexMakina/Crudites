@@ -91,7 +91,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     {
         return $this->ColumnType;
     }
-    public function table_name(): string
+    public function tableName(): string
     {
         return $this->table_name;
     }
@@ -147,7 +147,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
         return is_bool($setter) ? ($this->nullable = $setter) : $this->nullable;
     }
 
-    public function isHidden()
+    public function isHidden(): bool
     {
         switch ($this->name()) {
             case 'created_by':
@@ -172,6 +172,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     {
         $this->foreign_table_name = $setter;
     }
+
     public function foreignTableName(): string
     {
         return $this->foreign_table_name;
