@@ -107,7 +107,7 @@ class Database implements DatabaseInterface
                         break;
                 }
             }
-        // handling usage foreign keys
+            // handling usage foreign keys
             if (($reference = $this->getForeignKey($table_name, $column_name)) !== false) {
                 $column->isForeign(true);
                 $column->setForeignTableName($reference[0]);

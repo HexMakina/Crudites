@@ -7,7 +7,7 @@ interface TableColumnInterface
     public function name(): string;
     public function tableName(): string;
 
-    public function type(): ColumnTypeInterface
+    public function type(): ColumnTypeInterface;
 
     public function isPrimary(): bool;
     public function isForeign($setter = null): bool;

@@ -21,13 +21,13 @@ interface ColumnTypeInterface
 
   const TYPE_ENUM = 'enum';
 
-  public function isText(): bool;
-  public function isString(): bool;
-  public function getLength(): int
+  // public function isText(): bool;
+  // public function isString(): bool;
+  public function getLength(): int;
 
-  public function isBoolean(): bool;
-  public function isInteger(): bool;
-  public function isDecimal(): bool;
+  // public function isBoolean(): bool;
+  // public function isInteger(): bool;
+  // public function isDecimal(): bool;
   public function isNumeric(): bool;
 
   public function isEnum(): bool;
