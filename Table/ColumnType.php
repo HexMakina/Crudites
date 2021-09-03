@@ -3,26 +3,10 @@
 namespace HexMakina\Crudites\Table;
 
 use \HexMakina\Crudites\CruditesException;
+use \HexMakina\Crudites\Interfaces\ColumnTypeInterface;
 
-class ColumnType
+class ColumnType implements ColumnTypeInterface
 {
-    const TYPE_BOOLEAN = 'boolean';
-
-    const TYPE_INTEGER = 'integer';
-    const TYPE_FLOAT = 'float';
-    const TYPE_DECIMAL = 'decimal';
-
-    const TYPE_TEXT = 'text';
-    const TYPE_STRING = 'char';
-
-    const TYPE_DATETIME = 'datetime';
-    const TYPE_DATE = 'date';
-    const TYPE_TIMESTAMP = 'timestamp';
-    const TYPE_TIME = 'time';
-    const TYPE_YEAR = 'year';
-
-    const TYPE_ENUM = 'enum';
-
     private static $types_rx = [
     self::TYPE_BOOLEAN => 'tinyint\(1\)|boolean', // is_boolean MUST be tested before is_integer
 
