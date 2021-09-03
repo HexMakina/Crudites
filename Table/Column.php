@@ -14,7 +14,6 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     private $ColumnType = null;
 
     private $index = false;
-
     private $primary = false;
     private $auto_incremented = false;
 
@@ -41,6 +40,8 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     private function processSpecs($specs)
     {
       $this->ColumnType = new ColumnType($specs['Type']);
+      
+      $this->setDefaultValue($specs['Default'] ?? null);
 
       if(isset($specs['Null'])){
         $this->isNullable($specs['Null'] !== 'NO');
@@ -51,10 +52,6 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
         $this->isIndex(true);
       }
 
-      if(isset($specs['Default'])){
-        $this->setDefaultValue($specs['Default']);
-      }
-
       if(isset($specs['Extra'])){
         if ($specs['Extra'] === 'auto_increment') {
           $this->isAutoIncremented(true);
@@ -63,7 +60,7 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
         }
       }
     }
-    
+
     //------------------------------------------------------------  getters:field:info
     public function __toString()
     {
