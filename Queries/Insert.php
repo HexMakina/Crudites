@@ -32,7 +32,7 @@ class Insert extends BaseQuery
     public function values($assoc_data)
     {
         foreach ($this->table->columns() as $column_name => $column) {
-            if ($column->is_auto_incremented()) {
+            if ($column->isAutoIncremented()) {
                 continue;
             }
 

@@ -142,7 +142,7 @@ class ColumnType
     }
 
 
-    public function validate_value($field_value)
+    public function validateValue($field_value)
     {
         if ($this->is_text()) {
             return true;

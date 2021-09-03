@@ -9,11 +9,11 @@ interface TableColumnInterface
     public function type();
     // public function length($setter=null) : int;
 
-    public function is_primary(): bool;
-    public function is_auto_incremented(): bool;
-    public function is_nullable(): bool;
+    public function isPrimary(): bool;
+    public function isAutoIncremented(): bool;
+    public function isNullable(): bool;
 
     public function default();
 
-    public function foreign_table_name();
+    public function foreignTableName();
 }

@@ -37,7 +37,7 @@ class Update extends BaseQuery
                 continue;
             }
 
-            if ($value === '' && $column->is_nullable()) {
+            if ($value === '' && $column->isNullable()) {
                 $value = null;
             } elseif (empty($value) && $column->type()->is_boolean()) { //empty '', 0, false
                 $value = 0;

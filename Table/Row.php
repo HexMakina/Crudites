@@ -115,13 +115,13 @@ class Row
             $column = $this->table->column($field_name);
 
             // skips non exisint field name and A_I column
-            if (is_null($column) || $column->is_auto_incremented()) {
+            if (is_null($column) || $column->isAutoIncremented()) {
                 continue;
             }
 
             // replaces empty strings with null or default value
             if (trim($dat_ass[$field_name]) === '') {
-                $dat_ass[$field_name] = $column->is_nullable() ? null : $column->default();
+                $dat_ass[$field_name] = $column->isNullable() ? null : $column->default();
             }
 
             // checks for changes with loaded data. using == instead of === is risky but needed
@@ -198,7 +198,7 @@ class Row
         foreach ($this->table->columns() as $column_name => $column) {
             $field_value = $dat_ass[$column_name] ?? null;
 
-            $validation = $column->validate_value($field_value);
+            $validation = $column->validateValue($field_value);
             if ($validation !== true) {
                 $errors[$column_name] = $validation;
             }

@@ -96,12 +96,12 @@ class Database implements DatabaseInterface
 
                 switch (count($this->unique_by_table[$table_name][$column_name])) {
                     case 2: // constraint name + column
-                        $column->unique_name($unique_name);
+                        $column->uniqueName($unique_name);
                         $table->add_unique_key($unique_name, $column_name);
                         break;
 
                     default:
-                        $column->unique_group_name($unique_name);
+                        $column->uniqueGroupName($unique_name);
                         unset($this->unique_by_table[$table_name][$column_name][0]);
                         $table->add_unique_key($unique_name, $this->unique_by_table[$table_name][$column_name]);
                         break;
@@ -109,7 +109,7 @@ class Database implements DatabaseInterface
             }
         // handling usage foreign keys
             if (($reference = $this->getForeignKey($table_name, $column_name)) !== false) {
-                $column->is_foreign(true);
+                $column->isForeign(true);
                 $column->setForeignTableName($reference[0]);
                 $column->setForeignColumnName($reference[1]);
 

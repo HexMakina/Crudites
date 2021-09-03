@@ -43,9 +43,9 @@ class Description implements TableDescriptionInterface
     {
         $this->columns[$column->name()] = $column;
 
-        if ($column->is_primary()) {
+        if ($column->isPrimary()) {
             $this->add_primary_key($column);
-            if ($column->is_auto_incremented()) {
+            if ($column->isAutoIncremented()) {
                 $this->auto_incremented_primary_key($column);
             }
         }
@@ -65,8 +65,8 @@ class Description implements TableDescriptionInterface
 
     public function add_foreign_key(TableColumnInterface $column)
     {
-        $this->foreign_keys_by_table[$column->foreign_table_name()] = $this->foreign_keys_by_table[$column->foreign_table_name()] ?? [];
-        $this->foreign_keys_by_table[$column->foreign_table_name()] [] = $column;
+        $this->foreign_keys_by_table[$column->foreignTableName()] = $this->foreign_keys_by_table[$column->foreignTableName()] ?? [];
+        $this->foreign_keys_by_table[$column->foreignTableName()] [] = $column;
 
         $this->foreign_keys_by_name[$column->name()] = $column;
     }
@@ -115,7 +115,7 @@ class Description implements TableDescriptionInterface
 
         $valid_dat_ass = [];
         foreach ($this->primary_keys as $pk_name => $pk_field) {
-            if (!isset($with_values[$pk_name]) && !$pk_field->is_nullable()) {
+            if (!isset($with_values[$pk_name]) && !$pk_field->isNullable()) {
                 return [];
             }
 
@@ -160,7 +160,7 @@ class Description implements TableDescriptionInterface
         $valid_dat_ass = [];
         foreach ($this->primary_keys as $pk_name => $pk_field) {
             // empty ensures non existing keys, null and empty values
-            if (empty($dat_ass[$pk_name]) && !$pk_field->is_nullable()) {
+            if (empty($dat_ass[$pk_name]) && !$pk_field->isNullable()) {
                 return [];
             }
 
