@@ -34,31 +34,24 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     {
         $this->table_name = is_string($table) ? $table : $table->name();
         $this->name = $name;
-        $this->processSpecs($specs);
-    }
 
-    private function processSpecs($specs)
-    {
-      $this->ColumnType = new ColumnType($specs['Type']);
-      
-      $this->setDefaultValue($specs['Default'] ?? null);
+        $this->ColumnType = new ColumnType($specs['Type']);
 
-      if(isset($specs['Null'])){
-        $this->isNullable($specs['Null'] !== 'NO');
-      }
+        $this->default_value = $specs['Default'] ?? null;
 
-      if(isset($specs['Key'])){
-        $this->isPrimary($specs['Key'] === 'PRI');
-        $this->isIndex(true);
-      }
-
-      if(isset($specs['Extra'])){
-        if ($specs['Extra'] === 'auto_increment') {
-          $this->isAutoIncremented(true);
-        } else {
-          $this->setExtra($v);
+        if(isset($specs['Null'])){
+          $this->isNullable($specs['Null'] !== 'NO');
         }
-      }
+
+        if(isset($specs['Key'])){
+          $this->isPrimary($specs['Key'] === 'PRI');
+          $this->isIndex(true);
+        }
+
+        if(isset($specs['Extra'])){
+          $this->isAutoIncremented($specs['Extra'] === 'auto_increment');
+          $this->extra = $specs['Extra'];
+        }
     }
 
     //------------------------------------------------------------  getters:field:info
@@ -110,16 +103,6 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
         return $ret;
     }
 
-    public function setDefaultValue($v)
-    {
-        $this->default_value = $v;
-    }
-
-    public function setExtra($v)
-    {
-        $this->extra = $v;
-    }
-
     public function isPrimary($setter = null): bool
     {
         return is_bool($setter) ? ($this->primary = $setter) : $this->primary;
@@ -143,17 +126,6 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     public function isNullable($setter = null): bool
     {
         return is_bool($setter) ? ($this->nullable = $setter) : $this->nullable;
-    }
-
-    public function isHidden(): bool
-    {
-        switch ($this->name()) {
-            case 'created_by':
-            case 'created_on':
-            case 'password':
-                return true;
-        }
-        return false;
     }
 
     public function uniqueName($setter = null)

@@ -55,9 +55,9 @@ trait ClauseJoin
 
                 if (empty($select_also)) {
                     foreach ($foreign_table->columns() as $col) {
-                        if (!$col->isHidden()) {
+                        // if (!$col->isHidden()) {
                             $select_also [] = "$col";
-                        }
+                        // }
                     }
                 }
 
