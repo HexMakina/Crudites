@@ -202,18 +202,11 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     {
         $ret = false;
 
-        if ($this->isAutoIncremented()) {
-            $ret = true;
-        }
-        elseif ($this->type()->isBoolean()) {
+        if ($this->isAutoIncremented() || $this->type()->isBoolean()) {
             $ret = true;
         }
         elseif (is_null($field_value)) {
-            if ($this->isNullable()) {
-                $ret = true;
-            } elseif (is_null($this->default())) {
-                $ret = 'ERR_FIELD_REQUIRED';
-            }
+            $ret = ($this->isNullable() || !is_null($this->default())) ? true : 'ERR_FIELD_REQUIRED';
         }
         else{
           // nothing found on the Column level, lets check for Typing error
@@ -222,5 +215,4 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
 
         return $ret;
     }
-
 }
