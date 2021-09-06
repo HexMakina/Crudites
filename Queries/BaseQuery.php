@@ -3,9 +3,9 @@
 namespace HexMakina\Crudites\Queries;
 
 use \HexMakina\Crudites\CruditesException;
-use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
-use \HexMakina\Crudites\Interfaces\ConnectionInterface;
-use \HexMakina\Crudites\Interfaces\QueryInterface;
+use \HexMakina\Interfaces\Database\TableManipulationInterface;
+use \HexMakina\Interfaces\Database\ConnectionInterface;
+use \HexMakina\Interfaces\Database\QueryInterface;
 
 abstract class BaseQuery implements QueryInterface
 {

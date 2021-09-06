@@ -2,8 +2,8 @@
 
 namespace HexMakina\Crudites\Table;
 
-use HexMakina\Crudites\Interfaces\TableManipulationInterface;
-use HexMakina\Crudites\Interfaces\SelectInterface;
+use HexMakina\Interfaces\Database\TableManipulationInterface;
+use HexMakina\Interfaces\Database\SelectInterface;
 use HexMakina\Crudites\Queries\Select;
 use HexMakina\Crudites\Queries\Insert;
 use HexMakina\Crudites\Queries\Update;

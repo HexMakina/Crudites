@@ -4,7 +4,7 @@ namespace HexMakina\Crudites\Queries;
 
 use \HexMakina\Crudites\CruditesException;
 use \HexMakina\Crudites\Crudites;
-use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use \HexMakina\Interfaces\Database\TableManipulationInterface;
 
 trait ClauseJoin
 {

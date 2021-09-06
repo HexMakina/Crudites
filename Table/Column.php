@@ -2,9 +2,9 @@
 
 namespace HexMakina\Crudites\Table;
 
-use HexMakina\Crudites\Interfaces\ColumnTypeInterface;
+use HexMakina\Interfaces\Database\ColumnTypeInterface;
 
-class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
+class Column implements \HexMakina\Interfaces\Database\TableColumnInterface
 {
 
     private $name = null;

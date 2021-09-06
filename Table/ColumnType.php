@@ -3,7 +3,7 @@
 namespace HexMakina\Crudites\Table;
 
 use HexMakina\Crudites\CruditesException;
-use HexMakina\Crudites\Interfaces\ColumnTypeInterface;
+use HexMakina\Interfaces\Database\ColumnTypeInterface;
 
 class ColumnType implements ColumnTypeInterface
 {
@@ -149,7 +149,7 @@ class ColumnType implements ColumnTypeInterface
             return 'ERR_FIELD_FORMAT';
         }
 
-        if ($this->isNumeric() && !isNumeric($field_value)) {
+        if ($this->isNumeric() && !is_numeric($field_value)) {
             return 'ERR_FIELD_FORMAT';
         }
 

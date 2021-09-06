@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use \HexMakina\Interfaces\Database\TableManipulationInterface;
 
 trait ClauseWhere
 {

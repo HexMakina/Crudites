@@ -10,8 +10,9 @@
  */
 
 namespace HexMakina\Crudites;
+use \HexMakina\Interfaces\Database\ConnectionInterface;
 
-class Connection implements Interfaces\ConnectionInterface
+class Connection implements ConnectionInterface
 {
     private $database_name = null;
     private $pdo;
