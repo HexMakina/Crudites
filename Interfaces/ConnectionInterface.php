@@ -4,7 +4,7 @@ namespace HexMakina\Crudites\Interfaces;
 
 interface ConnectionInterface
 {
-    public function __construct($db_host, $db_port, $db_name, $username = '', $password = '');
+    public function __construct($dsn, $username = '', $password = '', $driver_options=[]);
 
     public function driver_name();
     public function database_name(): string;
