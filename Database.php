@@ -17,10 +17,10 @@ class Database implements DatabaseInterface
     private $fk_by_table = [];
     private $unique_by_table = [];
 
-    public function __construct($db_host, $db_port, $db_name, $charset = 'utf8', $username = '', $password = '')
+    public function __construct(ConnectionInterface $connection)
     {
-        $this->connection = new Connection($db_host, $db_port, $db_name, $charset, $username, $password);
-        $this->introspect(new Connection($db_host, $db_port, 'INFORMATION_SCHEMA', $charset, $username, $password));
+        $this->connection = $connection;
+        $this->introspect();
     }
 
     public function name()
@@ -33,14 +33,14 @@ class Database implements DatabaseInterface
         return $this->connection;
     }
 
-    public function introspect(ConnectionInterface $information_schema)
+    public function introspect()
     {
+        $statement = 'SELECT TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION, COLUMN_NAME, POSITION_IN_UNIQUE_CONSTRAINT, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = "%s" ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION';
 
-        $statement = sprintf('SELECT TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION, COLUMN_NAME, POSITION_IN_UNIQUE_CONSTRAINT, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = "%s" ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION', $this->name());
-        $q = new Select();
-        $q->connection($information_schema);
-        $q->statement($statement);
-        $res = $q->ret_ass();
+        $this->connection->useDatabase('INFORMATION_SCHEMA');
+        $res = $this->connection->query(sprintf($statement,$this->name()))->fetchAll();
+        $this->connection->useDatabase($this->name());
+
         foreach ($res as $key_usage) {
             $table_name = $key_usage['TABLE_NAME'];
 
