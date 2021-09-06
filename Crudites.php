@@ -53,7 +53,7 @@ class Crudites
 
     //------------------------------------------------------------  DataRetrieval
     // success: return AIPK-indexed array of results (associative array or object)
-    public static function count(Select $Query)
+    public static function count(SelectInterface $Query)
     {
         $Query->select_also(['COUNT(*) as count']);
         $res = $Query->ret_col();
