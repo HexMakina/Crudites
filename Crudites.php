@@ -10,7 +10,7 @@
 namespace HexMakina\Crudites;
 
 use \HexMakina\Crudites\Queries\BaseQuery;
-use \HexMakina\Crudites\Queries\Select;
+use \HexMakina\Crudites\Interfaces\SelectInterface;
 use \HexMakina\Crudites\Interfaces\DatabaseInterface;
 use \HexMakina\Crudites\CruditesException;
 
@@ -36,10 +36,10 @@ class Crudites
         }
     }
 
-    public static function connect($props = null)
+    public static function connect($dsn=null, $user=null, $pass=null)
     {
         // no props, means connection already exists, verify and return
-        if (!isset($props['host'], $props['port'], $props['name'], $props['char'], $props['user'], $props['pass'])) {
+        if (!isset($dsn, $user, $pass)) {
             if (is_null(self::$database)) {
                 throw new CruditesException('CONNECTION_MISSING');
             }
@@ -47,7 +47,7 @@ class Crudites
             return self::$database->connection();
         }
 
-        $conx = new Connection($props['host'], $props['port'], $props['name'], $props['char'], $props['user'], $props['pass']);
+        $conx = new Connection($dsn, $user, $pass);
         return $conx;
     }
 
@@ -64,7 +64,7 @@ class Crudites
     }
 
     // success: return AIPK-indexed array of results (associative array or object)
-    public static function retrieve(Select $Query): array
+    public static function retrieve(SelectInterface $Query): array
     {
         $pk_name = implode('_', array_keys($Query->table()->primary_keys()));
 
