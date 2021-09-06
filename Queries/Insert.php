@@ -5,6 +5,7 @@ namespace HexMakina\Crudites\Queries;
 use \HexMakina\Crudites\Crudites;
 use \HexMakina\Crudites\CruditesException;
 use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use \HexMakina\Crudites\Interfaces\QueryInterface;
 
 class Insert extends BaseQuery
 {
@@ -61,7 +62,7 @@ class Insert extends BaseQuery
         return $this->inserted_id;
     }
 
-    public function run(): BaseQuery
+    public function run(): QueryInterface
     {
         parent::run();
 
