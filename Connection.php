@@ -75,7 +75,7 @@ class Connection implements ConnectionInterface
 
     public function lastInsertId($name = null)
     {
-        return $this->pdo->lastInsertId();
+        return $this->pdo->lastInsertId($name);
     }
 
     public function errorCode(): array

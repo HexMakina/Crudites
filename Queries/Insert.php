@@ -9,7 +9,6 @@ use \HexMakina\Interfaces\Database\QueryInterface;
 class Insert extends BaseQuery
 {
     private $query_fields = [];
-    private $inserted_id = null;
 
     public function __construct(TableManipulationInterface $table, $assoc_data = [])
     {
@@ -55,20 +54,4 @@ class Insert extends BaseQuery
         return sprintf('INSERT INTO `%s` (%s) VALUES (%s)', $this->table, $fields, $values);
     }
 
-    //------------------------------------------------------------ Auto Increment Value
-    public function inserted_id()
-    {
-        return $this->inserted_id;
-    }
-
-    public function run(): QueryInterface
-    {
-        parent::run();
-
-        if ($this->isSuccess()) {
-            $this->inserted_id = $this->connection()->lastInsertId();
-        }
-
-        return $this;
-    }
 }

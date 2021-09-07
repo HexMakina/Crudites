@@ -149,7 +149,7 @@ class Row
                 $this->last_alter_query = $this->table()->insert($this->export());
                 $this->last_alter_query->run();
                 if ($this->last_alter_query->isSuccess() && !is_null($aipk = $this->last_alter_query->table()->auto_incremented_primary_key())) {
-                    $this->alterations[$aipk->name()] = $this->last_alter_query->inserted_id();
+                    $this->alterations[$aipk->name()] = $this->last_alter_query->connection()->lastInsertId();
                 }
             } else {
                 $pk_match = $this->table()->primary_keys_match($this->load);
