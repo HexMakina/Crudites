@@ -25,8 +25,8 @@ class Insert extends BaseQuery
 
         $this->addBindings($assoc_data);
     }
-
-    public function addBindings($assoc_data)
+    
+    public function addBindings($assoc_data): array
     {
         $binding_names=[];
         foreach ($this->table->columns() as $column_name => $column) {

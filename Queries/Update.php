@@ -29,7 +29,7 @@ class Update extends BaseQuery
         }
     }
 
-    public function addBindings($assoc_data)
+    public function addBindings($update_data): array
     {
         $binding_names=[];
         foreach ($update_data as $field_name => $value) {

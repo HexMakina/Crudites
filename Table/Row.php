@@ -3,9 +3,11 @@
 namespace HexMakina\Crudites\Table;
 
 use HexMakina\Interfaces\Database\TableManipulationInterface;
+use HexMakina\Interfaces\Database\RowInterface;
+use HexMakina\Interfaces\Database\QueryInterface;
 use HexMakina\Crudites\CruditesException;
 
-class Row
+class Row implements RowInterface
 {
     private $table;
 
@@ -43,12 +45,12 @@ class Row
         return $this->table;
     }
 
-    public function last_query()
+    public function last_query(): QueryInterface
     {
         return $this->last_query;
     }
 
-    public function last_alter_query()
+    public function last_alter_query(): QueryInterface
     {
         return $this->last_alter_query;
     }
