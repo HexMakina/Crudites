@@ -13,7 +13,7 @@ class CruditesException extends \Exception
 
     public function fromQuery(BaseQuery $Query)
     {
-        list($state, $code, $message) = $Query->error_info();
+        list($state, $code, $message) = $Query->errorInfo();
         $this->message = $this->transcript($state, $code, $message);
         return $this;
     }

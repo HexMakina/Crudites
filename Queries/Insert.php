@@ -24,13 +24,12 @@ class Insert extends BaseQuery
             return $this;
         }
 
-        $this->values($assoc_data);
+        $this->addBindings($assoc_data);
     }
 
-    // public function is_create(){       return true;}
-
-    public function values($assoc_data)
+    public function addBindings($assoc_data)
     {
+        $binding_names=[];
         foreach ($this->table->columns() as $column_name => $column) {
             if ($column->isAutoIncremented()) {
                 continue;
@@ -38,9 +37,10 @@ class Insert extends BaseQuery
 
             if (isset($assoc_data[$column_name])) {
                 $this->query_fields[$column_name] = $column_name;
-                $this->bindings[':' . $this->table_name() . '_' . $column_name] = $assoc_data[$column_name];
+                $binding_names[$column_name]=$this->addBinding($column_name, $assoc_data[$column_name]);
             }
         }
+        return $binding_names;
     }
 
     public function generate(): string
@@ -65,8 +65,8 @@ class Insert extends BaseQuery
     {
         parent::run();
 
-        if ($this->is_success()) {
-            $this->inserted_id = $this->connection()->last_inserted_id();
+        if ($this->isSuccess()) {
+            $this->inserted_id = $this->connection()->lastInsertId();
         }
 
         return $this;

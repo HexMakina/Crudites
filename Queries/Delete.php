@@ -24,6 +24,6 @@ class Delete extends BaseQuery
             throw new CruditesException('DELETE_USED_AS_TRUNCATE');  // prevents haphazardous generation of dangerous DELETE statement
         }
 
-        return sprintf('DELETE FROM `%s` %s ', $this->table_name(), $this->generate_where());
+        return sprintf('DELETE FROM `%s` %s ', $this->tableName(), $this->generate_where());
     }
 }

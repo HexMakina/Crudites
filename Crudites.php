@@ -70,7 +70,7 @@ class Crudites
 
         $ret = [];
 
-        if ($Query->run()->is_success()) {
+        if ($Query->run()->isSuccess()) {
             foreach ($Query->ret_ass() as $rec) {
                 $ret[$rec[$pk_name]] = $rec;
             }
@@ -142,12 +142,13 @@ class Crudites
         }
 
         // TODO: still using 'id' instead of table->primaries
+        // TODO: not using the QueryInterface Way of binding stuff
         $Query = $table->update();
         $Query->statement("UPDATE " . $table->name() . " SET $boolean_column_name = !$boolean_column_name WHERE id=:id");
-        $Query->bindings([':id' => $id]);
+        $Query->setBindings([':id' => $id]);
         $Query->run();
 
-        return $Query->is_success();
+        return $Query->isSuccess();
     }
 
     private static function table_name_to_Table($table)

@@ -40,7 +40,7 @@ class Select extends BaseQuery implements SelectInterface
 
     public function table_label($forced_value = null)
     {
-        return $forced_value ?? $this->table_alias ?? $this->table_name();
+        return $forced_value ?? $this->table_alias ?? $this->tableName();
     }
 
     public function columns($setter = null)
@@ -94,18 +94,18 @@ class Select extends BaseQuery implements SelectInterface
             $this->table_alias = $setter;
         }
 
-        return $this->table_alias ?? $this->table_name();
+        return $this->table_alias ?? $this->tableName();
     }
 
     public function group_by($clause)
     {
         if (is_string($clause)) {
-            $this->add_part('group', $this->field_label($clause, $this->table_label()));
+            $this->add_part('group', $this->backTick()$clause, $this->table_label()));
         } elseif (is_array($clause)) {
             if (isset($clause[1])) { // 0: table, 1: field
-                $this->add_part('group', $this->field_label($clause[1], $clause[0]));
+                $this->add_part('group', $this->backTick()$clause[1], $clause[0]));
             } else { // 0: field
-                $this->add_part('group', $this->field_label($clause[0], null));
+                $this->add_part('group', $this->backTick()$clause[0], null));
             }
         }
 
@@ -123,9 +123,9 @@ class Select extends BaseQuery implements SelectInterface
             $this->add_part('order', $clause);
         } elseif (is_array($clause) && count($clause) > 1) {
             if (isset($clause[2])) { // 0:table, 1:field, 2:direction
-                $this->add_part('order', sprintf('%s %s', $this->field_label($clause[1], $clause[0]), $clause[2]));
+                $this->add_part('order', sprintf('%s %s', $this->backTick()$clause[1], $clause[0]), $clause[2]));
             } elseif (isset($clause[1])) { // 0: field, 1: direction
-                $this->add_part('order', sprintf('%s %s', $this->field_label($clause[0], $this->table_label()), $clause[1]));
+                $this->add_part('order', sprintf('%s %s', $this->backTick()$clause[0], $this->table_label()), $clause[1]));
             }
         }
 
@@ -151,7 +151,7 @@ class Select extends BaseQuery implements SelectInterface
         $query_fields = empty($this->selection) ? ['*'] : $this->selection;
 
         $ret = PHP_EOL . 'SELECT ' . implode(', ' . PHP_EOL, $query_fields);
-        $ret .= PHP_EOL . sprintf(' FROM `%s` %s ', $this->table_name(), $this->table_alias);
+        $ret .= PHP_EOL . sprintf(' FROM `%s` %s ', $this->tableName(), $this->table_alias);
 
         if (!empty($this->join)) {
             $ret .= PHP_EOL . ' ' . implode(PHP_EOL . ' ', $this->join);

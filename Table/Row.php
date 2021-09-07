@@ -148,7 +148,7 @@ class Row
             if ($this->is_new()) {
                 $this->last_alter_query = $this->table()->insert($this->export());
                 $this->last_alter_query->run();
-                if ($this->last_alter_query->is_success() && !is_null($aipk = $this->last_alter_query->table()->auto_incremented_primary_key())) {
+                if ($this->last_alter_query->isSuccess() && !is_null($aipk = $this->last_alter_query->table()->auto_incremented_primary_key())) {
                     $this->alterations[$aipk->name()] = $this->last_alter_query->inserted_id();
                 }
             } else {
@@ -162,7 +162,7 @@ class Row
             return [$e->getMessage()];
         }
 
-        return $this->last_query()->is_success() ? [] : ['CRUDITES_ERR_ROW_PERSISTENCE'];
+        return $this->last_query()->isSuccess() ? [] : ['CRUDITES_ERR_ROW_PERSISTENCE'];
     }
 
     public function wipe(): bool
@@ -179,7 +179,7 @@ class Row
             }
 
             $this->last_query = $this->last_alter_query;
-            return $this->last_alter_query->is_success();
+            return $this->last_alter_query->isSuccess();
         }
 
         return false;

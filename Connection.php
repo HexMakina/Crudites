@@ -27,7 +27,7 @@ class Connection implements ConnectionInterface
 
     public function __construct($dsn, $username = '', $password = '', $driver_options=[])
     {
-        $this->validate_dsn($dsn); //throws \PDOException
+        $this->validateDSN($dsn); //throws \PDOException
         $this->dsn = $dsn;
 
         if(isset($driver_options[\PDO::ATTR_ERRMODE])) {
@@ -38,12 +38,12 @@ class Connection implements ConnectionInterface
         $this->pdo = new \PDO($dsn, $username, $password, $driver_options);
     }
 
-    public function driver_name()
+    public function driverName()
     {
         return $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
     }
 
-    public function database_name(): string
+    public function databaseName(): string
     {
         return $this->database_name;
     }
@@ -68,22 +68,22 @@ class Connection implements ConnectionInterface
         return $this->pdo->rollback();
     }
 
-    public function error_info(): array
+    public function errorInfo(): array
     {
         return $this->pdo->errorInfo();
     }
 
-    public function last_inserted_id($name = null)
+    public function lastInsertId($name = null)
     {
         return $this->pdo->lastInsertId();
     }
 
-    public function error_code(): array
+    public function errorCode(): array
     {
-        return $this->pdo->errorInfo();
+        return $this->pdo->errorCode();
     }
 
-    private function validate_dsn($dsn)
+    private function validateDSN($dsn)
     {
         $matches = [];
         if (preg_match('/^([a-z]+)\:/', $dsn, $matches) !== 1) {

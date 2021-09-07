@@ -25,7 +25,7 @@ class Database implements DatabaseInterface
 
     public function name()
     {
-        return $this->connection()->database_name();
+        return $this->connection()->databaseName();
     }
 
     public function connection(): ConnectionInterface

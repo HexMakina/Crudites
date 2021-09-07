@@ -11,12 +11,12 @@ trait ClauseJoin
     protected $joined_tables = [];
 
     abstract public function table(TableManipulationInterface $setter = null): TableManipulationInterface;
-    abstract public function table_name();
+    abstract public function tableName();
     abstract public function table_alias($setter = null);
     abstract public function table_label($table_name = null);
     abstract public function select_also($setter);
-    abstract public function field_label($field, $table_name = null);
-    abstract public function add_binding($k, $v);
+    abstract public function backTick()$field, $table_name = null);
+    abstract public function addBinding($k, $v);
     abstract public function join_raw($sql);
 
     public function add_tables($setter)
@@ -27,8 +27,8 @@ trait ClauseJoin
 
     public function eager($table_aliases = [])
     {
-        if (isset($table_aliases[$this->table_name()])) {
-            $this->table_alias($table_aliases[$this->table_name()]);
+        if (isset($table_aliases[$this->tableName()])) {
+            $this->table_alias($table_aliases[$this->tableName()]);
         }
 
         foreach ($this->table()->foreign_keys_by_table() as $foreign_table_name => $fk_columns) {
@@ -129,7 +129,7 @@ trait ClauseJoin
                     if (count($bonding_column) !== 1 || count($other_table->foreign_keys_by_table()[$table_name]) !== 1) {
                         break;
                     }
-                    // vd($this->table_name() . " $other_table_name");
+                    // vd($this->tableName() . " $other_table_name");
                     // vd($bonding_column);
 
                     $joins = [];
@@ -181,13 +181,13 @@ trait ClauseJoin
         foreach ($join_fields as $join_cond) {
             if (isset($join_cond[3])) { // 4 joins param -> t.f = t.f
                 list($table, $field, $join_table, $join_table_field) = $join_cond;
-                $join_parts [] = $this->field_label($field, $table) . ' = ' . $this->field_label($join_table_field, $join_table);
+                $join_parts [] = $this->backTick()$field, $table) . ' = ' . $this->backTick()$join_table_field, $join_table);
             } elseif (isset($join_cond[2])) { // 3 joins param -> t.f = v
                 list($table, $field, $value) = $join_cond;
                 $bind_label = ':loj_' . $join_table_alias . '_' . $table . '_' . $field;
-                $this->add_binding($bind_label, $value);
+                $this->addBinding($field, $value, null, $bind_label);
 
-                $join_parts [] = $this->field_label($field, $table) . ' = ' . $bind_label;
+                $join_parts [] = $this->backTick()$field, $table) . ' = ' . $bind_label;
             }
         }
         return sprintf('%s JOIN `%s` %s ON %s', $join_type, $join_table_name, $join_table_alias, implode(' AND ', $join_parts));

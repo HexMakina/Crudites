@@ -17,7 +17,7 @@ class Update extends BaseQuery
         $this->connection = $table->connection();
 
         if (!empty($update_data)) {
-            $this->values($update_data);
+            $this->addBindings($update_data);
         }
 
         if (!empty($conditions)) {
@@ -29,8 +29,9 @@ class Update extends BaseQuery
         }
     }
 
-    public function values($update_data)
+    public function addBindings($assoc_data)
     {
+        $binding_names=[];
         foreach ($update_data as $field_name => $value) {
             $column = $this->table->column($field_name);
             if (is_null($column)) {
@@ -42,12 +43,10 @@ class Update extends BaseQuery
             } elseif (empty($value) && $column->type()->isBoolean()) { //empty '', 0, false
                 $value = 0;
             }
-
-            $binding_name = $this->bind_label($field_name);
-            $this->add_binding($binding_name, $value);
-            $this->alterations [] = $this->field_label($field_name) . " = $binding_name";
+            $binding_names[$field_name] = $this->addBinding($field_name, $value);
+            $this->alterations [] = $this->backTick()$field_name) . ' = ' . $binding_names[$field_name];
         }
-        return $this;
+        return $binding_names;
     }
 
     public function has_alterations()

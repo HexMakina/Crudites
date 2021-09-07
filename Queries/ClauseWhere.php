@@ -27,29 +27,22 @@ trait ClauseWhere
 
     abstract public function table(TableManipulationInterface $setter = null): TableManipulationInterface;
     abstract public function table_label($table_name = null);
-    abstract public function bind_name($table_name, $field, $value, $bind_label = null);
-    abstract public function field_label($field, $table_name = null);
-    abstract public function add_binding($k, $v);
+    abstract public function backTick()$field, $table_name = null);
+    abstract public function addBinding($field, $value, $table_name=null, $bind_label=null): string;
 
-
-    public function and_where($where_condition, $where_bindings = [])
+    public function and_where($where_condition)
     {
         $this->where = $this->where ?? [];
 
         $this->where[] = "($where_condition)";
 
-        foreach ($where_bindings as $k => $v) {
-            $this->add_binding($k, $v);
-        }
-
         return $this;
     }
 
-
     public function aw_eq_or_null($field, $value, $table_name = null, $bindname = null)
     {
-        $bind_name = $this->bind_name($table_name, $field, $value, $bindname);
-        $field_name = $this->field_label($field, $table_name);
+        $bind_name = $this->addBinding($field, $value, $table_name, $bindname);
+        $field_name = $this->backTick()$field, $table_name);
 
         return $this->and_where("($field_name = $bind_name OR $field_name IS NULL)");
     }
@@ -119,7 +112,7 @@ trait ClauseWhere
 
     private function aw_bind_field($table_name, $field, $operator, $value, $bind_name = null)
     {
-        $bind_name = $this->bind_name($table_name, $field, $value, $bind_name);
+        $bind_name = $this->addBinding($field, $value, $table_name, $bind_name);
         return $this->aw_field($field, "$operator $bind_name", $table_name);
     }
 
@@ -139,7 +132,7 @@ trait ClauseWhere
             $in = '';
             foreach ($values as $i => $v) {
                 $placeholder_name = ':' . $table_name . '_' . $field . '_awS_in_' . $count_values . '_' . $i; // TODO dirty patching. mathematical certainty needed
-                $this->add_binding($placeholder_name, $v);
+                $this->addBinding($field, $v, null, $placeholder_name);
                 $in .= "$placeholder_name,";
             }
             // $this->aw_field($field, sprintf(" IN ('%s')", implode("','", $values)), $table_name);
@@ -155,19 +148,19 @@ trait ClauseWhere
 
     public function aw_field($field, $condition, $table_name = null)
     {
-        $table_field = $this->field_label($field, $table_name);
+        $table_field = $this->backTick()$field, $table_name);
         return $this->and_where("$table_field $condition");
     }
 
     public function aw_not_empty($field, $table_name = null)
     {
-        $table_field = $this->field_label($field, $table_name);
+        $table_field = $this->backTick()$field, $table_name);
         return $this->and_where("($table_field IS NOT NULL AND $table_field <> '') ");
     }
 
     public function aw_empty($field, $table_name = null)
     {
-        $table_field = $this->field_label($field, $table_name);
+        $table_field = $this->backTick()$field, $table_name);
         return $this->and_where("($table_field IS NULL OR $table_field = '')");
     }
 
@@ -197,7 +190,7 @@ trait ClauseWhere
                 $search_field = $search_mode;
                 $search_mode = self::$WHERE_LIKE_BOTH;
             }
-            $search_field = $this->field_label($search_field, $search_table);
+            $search_field = $this->backTick()$search_field, $search_table);
 
             if ($search_mode === self::$OP_EQ) {
                 $content_wc [] = "$search_field = '$search_term' "; // TODO bindthis
@@ -212,7 +205,7 @@ trait ClauseWhere
             $operator = self::valid_operator($filters_operator, self::$OP_OR);
             $content_wc = implode(" $operator ", $content_wc);
 
-            $this->and_where(" ($content_wc) ", []);
+            $this->and_where(" ($content_wc) ");
         }
     }
     // //------------------------------------------------------------  FIELDS

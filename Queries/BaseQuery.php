@@ -33,7 +33,7 @@ abstract class BaseQuery implements QueryInterface
     {
         $dbg = [];
         if (isset($this->table)) {
-            $dbg['table_name()'] = $this->table_name();
+            $dbg['table_name()'] = $this->tableName();
         }
 
         $dbg = array_merge($dbg, get_object_vars($this));
@@ -88,7 +88,7 @@ abstract class BaseQuery implements QueryInterface
         return is_null($setter) ? $this->table : ($this->table = $setter);
     }
 
-    public function table_name(): string
+    public function tableName(): string
     {
         return $this->table()->name();
     }
@@ -96,10 +96,10 @@ abstract class BaseQuery implements QueryInterface
     //------------------------------------------------------------  PREP::FIELDS
     public function table_label($table_name = null)
     {
-        return $table_name ?? $this->table_name();
+        return $table_name ?? $this->tableName();
     }
 
-    public function field_label($field_name, $table_name = null)
+    public function backTick()$field_name, $table_name = null)
     {
         if (empty($table_name)) {
             return sprintf('`%s`', $field_name);
@@ -109,33 +109,35 @@ abstract class BaseQuery implements QueryInterface
 
     //------------------------------------------------------------  PREP::BINDINGS
 
-    public function bindings($setter = null)
+    public function setBindings($dat_ass)
     {
-        if (is_null($setter) || !is_array($setter)) {
-            return $this->bindings;
-        }
-
-        $this->bindings = $setter;
-        return $this;
+      $this->bindings = $setter;
     }
 
-    public function bind_label($field, $table_name = null)
+    public function getBindings(): array
+    {
+      return $this->bindings;
+    }
+
+    public function addBindings($assoc_data): array
+    {
+      $binding_names = [];
+      foreach($assoc_data as $k => $v)
+        $binding_names[$k] = $this->addBinding($k,$v);
+
+      return $binding_names;
+    }
+
+    public function addBinding($field, $value, $table_name=null, $bind_label=null): string
+    {
+        $bind_label = $bind_label ?? $this->bindLabel($field, $table_name);
+        $this->bindings[$bind_label] = $value;
+        return $bind_label;
+    }
+
+    public function bindLabel($field, $table_name = null): string
     {
         return ':' . $this->table_label($table_name) . '_' . $field;
-    }
-
-    public function add_binding($k, $v)
-    {
-        $this->bindings[$k] = $v;
-    }
-
-    public function bind_name($table_name, $field, $value, $bind_label = null)
-    {
-        $bind_label = $bind_label ?? $this->bind_label($field, $table_name);
-
-        $this->add_binding($bind_label, $value);
-
-        return $bind_label;
     }
 
     //------------------------------------------------------------  Run
@@ -149,14 +151,14 @@ abstract class BaseQuery implements QueryInterface
             throw new CruditesException('NO_CONNECTION');
         }
         try {
-            if (!$this->is_prepared()) {
+            if (!$this->isPrepared()) {
                 $this->prepared_statement = $this->connection()->prepare($this->statement());
             }
 
-            if ($this->prepared_statement->execute($this->bindings()) !== false) { // execute returns TRUE on success or FALSE on failure.
+            if ($this->prepared_statement->execute($this->getBindings()) !== false) { // execute returns TRUE on success or FALSE on failure.
                 ++self::$executions;
 
-                $this->is_executed(true);
+                $this->isExecuted(true);
 
                 if ($this->prepared_statement->errorCode() === self::STATE_SUCCESS) {
                     $this->state = self::STATE_SUCCESS;
@@ -174,11 +176,11 @@ abstract class BaseQuery implements QueryInterface
     //------------------------------------------------------------  Return
     public function ret($mode = null, $option = null)
     {
-        if (!$this->is_executed()) {
+        if (!$this->isExecuted()) {
             $this->run();
         }
 
-        if (!$this->is_success()) {
+        if (!$this->isSuccess()) {
             return false;
         }
 
@@ -188,36 +190,36 @@ abstract class BaseQuery implements QueryInterface
     //------------------------------------------------------------ Return:count
     public function count()
     {
-        if (!$this->is_executed()) {
+        if (!$this->isExecuted()) {
             $this->run();
         }
 
-        return $this->is_success() ? $this->row_count : null;
+        return $this->isSuccess() ? $this->row_count : null;
     }
 
     //------------------------------------------------------------  Status
-    public function is_prepared(): bool
+    public function isPrepared(): bool
     {
         return !is_null($this->prepared_statement) && false !== $this->prepared_statement;
     }
 
-    public function is_executed($setter = null): bool
+    public function isExecuted($setter = null): bool
     {
         return is_null($setter) ? $this->executed === true : ($this->executed = $setter);
     }
 
-    public function is_success(): bool
+    public function isSuccess(): bool
     {
         return $this->state === self::STATE_SUCCESS;
     }
 
-    public function error_info()
+    public function errorInfo(): array
     {
-        if ($this->is_prepared()) {
+        if ($this->isPrepared()) {
             return $this->prepared_statement->errorInfo();
         }
 
-        return $this->connection()->error_info();
+        return $this->connection()->errorInfo();
     }
 
     public function compare(QueryInterface $other)
@@ -226,7 +228,7 @@ abstract class BaseQuery implements QueryInterface
             return 'statement';
         }
 
-        if (!empty(array_diff($this->bindings(), $other->bindings())) || !empty(array_diff($other->bindings(), $this->bindings()))) {
+        if (!empty(array_diff($this->getBindings(), $other->getBindings())) || !empty(array_diff($other->getBindings(), $this->getBindings()))) {
             return 'bindings';
         }
 
