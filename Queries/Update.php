@@ -49,11 +49,6 @@ class Update extends BaseQuery
         return $binding_names;
     }
 
-    public function has_alterations()
-    {
-        return !empty($this->alterations);
-    }
-
     public function generate(): string
     {
         if (empty($this->alterations)) {
