@@ -100,12 +100,12 @@ class Select extends BaseQuery implements SelectInterface
     public function group_by($clause)
     {
         if (is_string($clause)) {
-            $this->add_part('group', $this->backTick()$clause, $this->table_label()));
+            $this->add_part('group', $this->backTick($clause, $this->table_label()));
         } elseif (is_array($clause)) {
             if (isset($clause[1])) { // 0: table, 1: field
-                $this->add_part('group', $this->backTick()$clause[1], $clause[0]));
+                $this->add_part('group', $this->backTick($clause[1], $clause[0]));
             } else { // 0: field
-                $this->add_part('group', $this->backTick()$clause[0], null));
+                $this->add_part('group', $this->backTick($clause[0], null));
             }
         }
 
@@ -123,9 +123,9 @@ class Select extends BaseQuery implements SelectInterface
             $this->add_part('order', $clause);
         } elseif (is_array($clause) && count($clause) > 1) {
             if (isset($clause[2])) { // 0:table, 1:field, 2:direction
-                $this->add_part('order', sprintf('%s %s', $this->backTick()$clause[1], $clause[0]), $clause[2]));
+                $this->add_part('order', sprintf('%s %s', $this->backTick($clause[1], $clause[0]), $clause[2]));
             } elseif (isset($clause[1])) { // 0: field, 1: direction
-                $this->add_part('order', sprintf('%s %s', $this->backTick()$clause[0], $this->table_label()), $clause[1]));
+                $this->add_part('order', sprintf('%s %s', $this->backTick($clause[0], $this->table_label()), $clause[1]));
             }
         }
 

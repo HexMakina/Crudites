@@ -27,7 +27,7 @@ trait ClauseWhere
 
     abstract public function table(TableManipulationInterface $setter = null): TableManipulationInterface;
     abstract public function table_label($table_name = null);
-    abstract public function backTick()$field, $table_name = null);
+    abstract public function backTick($field, $table_name = null);
     abstract public function addBinding($field, $value, $table_name=null, $bind_label=null): string;
 
     public function and_where($where_condition)
@@ -42,7 +42,7 @@ trait ClauseWhere
     public function aw_eq_or_null($field, $value, $table_name = null, $bindname = null)
     {
         $bind_name = $this->addBinding($field, $value, $table_name, $bindname);
-        $field_name = $this->backTick()$field, $table_name);
+        $field_name = $this->backTick($field, $table_name);
 
         return $this->and_where("($field_name = $bind_name OR $field_name IS NULL)");
     }
@@ -148,19 +148,19 @@ trait ClauseWhere
 
     public function aw_field($field, $condition, $table_name = null)
     {
-        $table_field = $this->backTick()$field, $table_name);
+        $table_field = $this->backTick($field, $table_name);
         return $this->and_where("$table_field $condition");
     }
 
     public function aw_not_empty($field, $table_name = null)
     {
-        $table_field = $this->backTick()$field, $table_name);
+        $table_field = $this->backTick($field, $table_name);
         return $this->and_where("($table_field IS NOT NULL AND $table_field <> '') ");
     }
 
     public function aw_empty($field, $table_name = null)
     {
-        $table_field = $this->backTick()$field, $table_name);
+        $table_field = $this->backTick($field, $table_name);
         return $this->and_where("($table_field IS NULL OR $table_field = '')");
     }
 
@@ -190,7 +190,7 @@ trait ClauseWhere
                 $search_field = $search_mode;
                 $search_mode = self::$WHERE_LIKE_BOTH;
             }
-            $search_field = $this->backTick()$search_field, $search_table);
+            $search_field = $this->backTick($search_field, $search_table);
 
             if ($search_mode === self::$OP_EQ) {
                 $content_wc [] = "$search_field = '$search_term' "; // TODO bindthis

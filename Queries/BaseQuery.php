@@ -99,7 +99,7 @@ abstract class BaseQuery implements QueryInterface
         return $table_name ?? $this->tableName();
     }
 
-    public function backTick()$field_name, $table_name = null)
+    public function backTick($field_name, $table_name = null): string
     {
         if (empty($table_name)) {
             return sprintf('`%s`', $field_name);

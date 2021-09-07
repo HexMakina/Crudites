@@ -44,7 +44,7 @@ class Update extends BaseQuery
                 $value = 0;
             }
             $binding_names[$field_name] = $this->addBinding($field_name, $value);
-            $this->alterations [] = $this->backTick()$field_name) . ' = ' . $binding_names[$field_name];
+            $this->alterations [] = $this->backTick($field_name) . ' = ' . $binding_names[$field_name];
         }
         return $binding_names;
     }
