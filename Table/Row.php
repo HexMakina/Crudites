@@ -84,7 +84,7 @@ class Row implements RowInterface
      */
     public function load($dat_ass)
     {
-        $pks = $this->table()->primary_keys_match($dat_ass);
+        $pks = $this->table()->primaryKeysMatch($dat_ass);
 
         if (empty($pks)) {
             return $this;
@@ -145,11 +145,11 @@ class Row implements RowInterface
             if ($this->isNew()) {
                 $this->last_alter_query = $this->table()->insert($this->export());
                 $this->last_alter_query->run();
-                if ($this->last_alter_query->isSuccess() && !is_null($aipk = $this->last_alter_query->table()->auto_incremented_primary_key())) {
+                if ($this->last_alter_query->isSuccess() && !is_null($aipk = $this->last_alter_query->table()->autoIncrementedPrimaryKey())) {
                     $this->alterations[$aipk->name()] = $this->last_alter_query->connection()->lastInsertId();
                 }
             } else {
-                $pk_match = $this->table()->primary_keys_match($this->load);
+                $pk_match = $this->table()->primaryKeysMatch($this->load);
                 $this->last_alter_query = $this->table()->update($this->alterations, $pk_match);
                 $this->last_alter_query->run();
             }
@@ -167,7 +167,7 @@ class Row implements RowInterface
         $dat_ass = $this->load ?? $this->fresh ?? $this->alterations;
 
         // need The Primary key, then you can wipe at ease
-        if (!empty($pk_match = $this->table()->primary_keys_match($dat_ass))) {
+        if (!empty($pk_match = $this->table()->primaryKeysMatch($dat_ass))) {
             $this->last_alter_query = $this->table->delete($pk_match);
             try {
                 $this->last_alter_query->run();

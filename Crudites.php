@@ -66,7 +66,7 @@ class Crudites
     // success: return AIPK-indexed array of results (associative array or object)
     public static function retrieve(SelectInterface $Query): array
     {
-        $pk_name = implode('_', array_keys($Query->table()->primary_keys()));
+        $pk_name = implode('_', array_keys($Query->table()->primaryKeys()));
 
         $ret = [];
 

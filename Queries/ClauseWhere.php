@@ -79,7 +79,7 @@ trait ClauseWhere
 
     public function aw_primary($pk_values)
     {
-        $pks = $this->table()->primary_keys_match($pk_values);
+        $pks = $this->table()->primaryKeysMatch($pk_values);
 
         if (empty($pks)) {
             $this->and_where('1=0');

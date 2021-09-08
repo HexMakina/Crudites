@@ -31,7 +31,7 @@ trait ClauseJoin
             $this->table_alias($table_aliases[$this->tableName()]);
         }
 
-        foreach ($this->table()->foreign_keys_by_table() as $foreign_table_name => $fk_columns) {
+        foreach ($this->table()->foreignKeysByTable() as $foreign_table_name => $fk_columns) {
             $foreign_table = Crudites::inspect($foreign_table_name);
 
             $single_fk = count($fk_columns) === 1; //assumption
@@ -96,14 +96,14 @@ trait ClauseJoin
 
         // 1. ? this->table.other_table_id -> $other_table.id
         // 2. ? this_table.id -> $other_table.this_table_id)
-        // if(count($bonding_column = $this->table()->foreign_keys_by_table()[$other_table_name] ?? []) === 1)
-        if (!is_null($bonding_column = $this->table()->single_foreign_key_to($other_table))) {
+        // if(count($bonding_column = $this->table()->foreignKeysByTable()[$other_table_name] ?? []) === 1)
+        if (!is_null($bonding_column = $this->table()->singleForeignKeyTo($other_table))) {
             $relation_type = $relation_type ?? $bonding_column->isNullable() ? 'LEFT OUTER' : 'INNER';
             // $joins []= [$bonding_column->tableName(), $bonding_column->name(), $other_table_alias ?? $bonding_column->foreignTableAlias(), $bonding_column->foreignColumnName()];
             $joins [] = [$this->table_alias(), $bonding_column->name(), $other_table_alias ?? $bonding_column->foreignTableAlias(), $bonding_column->foreignColumnName()];
         }
-        // elseif(count($bonding_column = $other_table->foreign_keys_by_table()[$this->table()->name()] ?? []) === 1)
-        elseif (!is_null($bonding_column = $other_table->single_foreign_key_to($this->table()))) {
+        // elseif(count($bonding_column = $other_table->foreignKeysByTable()[$this->table()->name()] ?? []) === 1)
+        elseif (!is_null($bonding_column = $other_table->singleForeignKeyTo($this->table()))) {
             // vd(__FUNCTION__.' : '.$other_table.' has fk to '.$this->table());
             $relation_type = $relation_type ?? 'LEFT OUTER';
             $joins [] = [$this->table_label(), $bonding_column->foreignColumnName(), $other_table_alias ?? $other_table->name(), $bonding_column->name()];
@@ -123,10 +123,10 @@ trait ClauseJoin
                     $joins = [[$bonding_table_label, $bonding_column->name(), $other_table_alias, $bonding_column->foreignColumnName()]];
                     $relation_type = $relation_type ?? (($bonding_column->isNullable()) ? 'LEFT OUTER' : 'INNER');
                 }
-            } elseif (count($intersections = array_intersect_key($other_table->foreign_keys_by_table(), $bondable_tables)) > 0) {
+            } elseif (count($intersections = array_intersect_key($other_table->foreignKeysByTable(), $bondable_tables)) > 0) {
                 $other_table_alias = $other_table_alias ?? $other_table->name();
                 foreach ($intersections as $table_name => $bonding_column) {
-                    if (count($bonding_column) !== 1 || count($other_table->foreign_keys_by_table()[$table_name]) !== 1) {
+                    if (count($bonding_column) !== 1 || count($other_table->foreignKeysByTable()[$table_name]) !== 1) {
                         break;
                     }
                     // vd($this->tableName() . " $other_table_name");
@@ -200,9 +200,9 @@ trait ClauseJoin
 
     private function joinable_tables(): array
     {
-        $joinable_tables = $this->table()->foreign_keys_by_table();
+        $joinable_tables = $this->table()->foreignKeysByTable();
         foreach ($this->joined_tables() as $join_table) {
-            $joinable_tables += Crudites::inspect($join_table)->foreign_keys_by_table();
+            $joinable_tables += Crudites::inspect($join_table)->foreignKeysByTable();
         }
 
         return $joinable_tables;

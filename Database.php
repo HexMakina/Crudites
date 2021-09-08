@@ -97,13 +97,13 @@ class Database implements DatabaseInterface
                 switch (count($this->unique_by_table[$table_name][$column_name])) {
                     case 2: // constraint name + column
                         $column->uniqueName($unique_name);
-                        $table->add_unique_key($unique_name, $column_name);
+                        $table->addUniqueKey($unique_name, $column_name);
                         break;
 
                     default:
                         $column->uniqueGroupName($unique_name);
                         unset($this->unique_by_table[$table_name][$column_name][0]);
-                        $table->add_unique_key($unique_name, $this->unique_by_table[$table_name][$column_name]);
+                        $table->addUniqueKey($unique_name, $this->unique_by_table[$table_name][$column_name]);
                         break;
                 }
             }
@@ -113,9 +113,9 @@ class Database implements DatabaseInterface
                 $column->setForeignTableName($reference[0]);
                 $column->setForeignColumnName($reference[1]);
 
-                $table->add_foreign_key($column);
+                $table->addForeignKey($column);
             }
-            $table->add_column($column);
+            $table->addColumn($column);
         }
       // ddt($table);
         $this->table_cache[$table_name] = $table;
