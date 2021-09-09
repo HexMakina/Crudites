@@ -156,7 +156,8 @@ abstract class BaseQuery implements QueryInterface
                 $this->prepared_statement = $this->connection()->prepare($this->statement());
             }
 
-            if ($this->prepared_statement->execute($this->getBindings()) !== false) { // execute returns TRUE on success or FALSE on failure.
+            if ($this->prepared_statement->execute($this->getBindings()) !== false) {
+                // execute returns TRUE on success or FALSE on failure.
                 ++self::$executions;
 
                 $this->isExecuted(true);
@@ -185,7 +186,11 @@ abstract class BaseQuery implements QueryInterface
             return false;
         }
 
-        return is_null($option) ? $this->prepared_statement->fetchAll($mode) : $this->prepared_statement->fetchAll($mode, $option);
+        if (is_null($option)) {
+            return $this->prepared_statement->fetchAll($mode);
+        }
+
+        return $this->prepared_statement->fetchAll($mode, $option);
     }
 
     //------------------------------------------------------------ Return:count
@@ -229,7 +234,10 @@ abstract class BaseQuery implements QueryInterface
             return 'statement';
         }
 
-        if (!empty(array_diff($this->getBindings(), $other->getBindings())) || !empty(array_diff($other->getBindings(), $this->getBindings()))) {
+        if (
+            !empty(array_diff($this->getBindings(), $other->getBindings()))
+            || !empty(array_diff($other->getBindings(), $this->getBindings()))
+        ) {
             return 'bindings';
         }
 

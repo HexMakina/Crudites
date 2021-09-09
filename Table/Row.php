@@ -28,7 +28,10 @@ class Row implements RowInterface
 
     public function __toString()
     {
-        return PHP_EOL . 'load: ' . json_encode($this->load) . PHP_EOL . 'alterations: ' . json_encode(array_keys($this->alterations));
+        return PHP_EOL . 'load: '
+        . json_encode($this->load)
+        . PHP_EOL . 'alterations: '
+        . json_encode(array_keys($this->alterations));
     }
 
     public function __debugInfo(): array

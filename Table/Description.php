@@ -16,7 +16,8 @@ class Description implements TableDescriptionInterface
 
     protected $columns = [];
 
-    protected $auto_incremented_primary_key = null;
+    // auto_incremented_primary_key
+    protected $aipk = null;
 
     protected $primary_keys = [];
     protected $foreign_keys_by_name = [];
@@ -74,7 +75,7 @@ class Description implements TableDescriptionInterface
     //getsetter of AIPK, default get is null, cant set to null
     public function autoIncrementedPrimaryKey(TableColumnInterface $setter = null)
     {
-        return is_null($setter) ? $this->auto_incremented_primary_key : ($this->auto_incremented_primary_key = $setter);
+        return is_null($setter) ? $this->aipk : ($this->aipk = $setter);
     }
 
     //------------------------------------------------------------  getters
@@ -124,7 +125,7 @@ class Description implements TableDescriptionInterface
         return $valid_dat_ass;
     }
 
-    public function match_uniqueness($dat_ass): array
+    public function matchUniqueness($dat_ass): array
     {
         if (!is_array($dat_ass)) { // aipk value
             return $this->primaryKeysMatch($dat_ass);
@@ -134,7 +135,7 @@ class Description implements TableDescriptionInterface
             return $ret;
         }
 
-        if (!empty($ret = $this->unique_keys_match($dat_ass))) {
+        if (!empty($ret = $this->uniqueKeysMatch($dat_ass))) {
             return $ret;
         }
 
@@ -170,7 +171,7 @@ class Description implements TableDescriptionInterface
         return $valid_dat_ass;
     }
 
-    public function unique_keys_match($dat_ass): array
+    public function uniqueKeysMatch($dat_ass): array
     {
         if (count($this->uniqueKeysByName()) === 0 || !is_array($dat_ass)) {
             return [];

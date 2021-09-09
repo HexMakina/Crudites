@@ -93,15 +93,17 @@ class Crudites
         return $res;
     }
 
-    public static function distinct_for($table, $column_name, $filter_by_value = null)
+    public static function distinctFor($table, $column_name, $filter_by_value = null)
     {
-        $table = self::table_name_to_Table($table);
+        $table = self::tableNameToTable($table);
 
         if (is_null($table->column($column_name))) {
             throw new CruditesException('TABLE_REQUIRES_COLUMN');
         }
 
-        $Query = $table->select(["DISTINCT `$column_name`"])->whereNotEmpty($column_name)->orderBy([$table->name(), $column_name, 'ASC']);
+        $Query = $table->select(["DISTINCT `$column_name`"])
+          ->whereNotEmpty($column_name)
+          ->orderBy([$table->name(), $column_name, 'ASC']);
 
         if (!is_null($filter_by_value)) {
             $Query->whereLike($column_name, "%$filter_by_value%");
@@ -112,15 +114,16 @@ class Crudites
         return $Query->retCol();
     }
 
-    public static function distinct_for_with_id($table, $column_name, $filter_by_value = null)
+    public static function distinctForWithId($table, $column_name, $filter_by_value = null)
     {
-        $table = self::table_name_to_Table($table);
+        $table = self::tableNameToTable($table);
 
         if (is_null($table->column($column_name))) {
             throw new CruditesException('TABLE_REQUIRES_COLUMN');
         }
 
-        $Query = $table->select(["DISTINCT `id`,`$column_name`"])->whereNotEmpty($column_name)->orderBy([$table->name(), $column_name, 'ASC']);
+        $Query = $table->select(["DISTINCT `id`,`$column_name`"])
+          ->whereNotEmpty($column_name)->orderBy([$table->name(), $column_name, 'ASC']);
 
         if (!is_null($filter_by_value)) {
             $Query->whereLike($column_name, "%$filter_by_value%");
@@ -132,10 +135,10 @@ class Crudites
     //------------------------------------------------------------  DataManipulation Helpers
     // returns true on success, false on failure or throws an exception
     // throws Exception on failure
-    public static function toggle_boolean($table, $boolean_column_name, $id): bool
+    public static function toggleBoolean($table, $boolean_column_name, $id): bool
     {
 
-        $table = self::table_name_to_Table($table);
+        $table = self::tableNameToTable($table);
 
         if (is_null($column = $table->column($boolean_column_name)) || !$column->type()->isBoolean()) {
             return false;
@@ -144,14 +147,20 @@ class Crudites
         // TODO: still using 'id' instead of table->primaries
         // TODO: not using the QueryInterface Way of binding stuff
         $Query = $table->update();
-        $Query->statement("UPDATE " . $table->name() . " SET $boolean_column_name = !$boolean_column_name WHERE id=:id");
+        $statement = sprintf(
+            "UPDATE %s SET %s = !%s WHERE id=:id",
+            $table->name(),
+            $boolean_column_name,
+            $boolean_column_name
+        );
+        $Query->statement($statement);
         $Query->setBindings([':id' => $id]);
         $Query->run();
 
         return $Query->isSuccess();
     }
 
-    private static function table_name_to_Table($table)
+    private static function tableNameToTable($table)
     {
         return is_string($table) ? self::inspect($table) : $table;
     }
