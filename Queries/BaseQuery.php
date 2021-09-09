@@ -2,10 +2,10 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use \HexMakina\Crudites\CruditesException;
-use \HexMakina\BlackBox\Database\TableManipulationInterface;
-use \HexMakina\BlackBox\Database\ConnectionInterface;
-use \HexMakina\BlackBox\Database\QueryInterface;
+use HexMakina\Crudites\CruditesException;
+use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\ConnectionInterface;
+use HexMakina\BlackBox\Database\QueryInterface;
 
 abstract class BaseQuery implements QueryInterface
 {
@@ -111,24 +111,25 @@ abstract class BaseQuery implements QueryInterface
 
     public function setBindings($dat_ass)
     {
-      $this->bindings = $setter;
+        $this->bindings = $setter;
     }
 
     public function getBindings(): array
     {
-      return $this->bindings;
+        return $this->bindings;
     }
 
     public function addBindings($assoc_data): array
     {
-      $binding_names = [];
-      foreach($assoc_data as $k => $v)
-        $binding_names[$k] = $this->addBinding($k,$v);
+        $binding_names = [];
+        foreach ($assoc_data as $k => $v) {
+            $binding_names[$k] = $this->addBinding($k, $v);
+        }
 
-      return $binding_names;
+        return $binding_names;
     }
 
-    public function addBinding($field, $value, $table_name=null, $bind_label=null): string
+    public function addBinding($field, $value, $table_name = null, $bind_label = null): string
     {
         $bind_label = $bind_label ?? $this->bindLabel($field, $table_name);
         $this->bindings[$bind_label] = $value;

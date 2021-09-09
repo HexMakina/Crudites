@@ -2,9 +2,9 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use \HexMakina\Crudites\CruditesException;
-use \HexMakina\Crudites\Crudites;
-use \HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\Crudites;
+use HexMakina\BlackBox\Database\TableManipulationInterface;
 
 trait ClauseJoin
 {

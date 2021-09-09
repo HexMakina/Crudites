@@ -10,7 +10,8 @@
  */
 
 namespace HexMakina\Crudites;
-use \HexMakina\BlackBox\Database\ConnectionInterface;
+
+use HexMakina\BlackBox\Database\ConnectionInterface;
 
 class Connection implements ConnectionInterface
 {
@@ -25,13 +26,13 @@ class Connection implements ConnectionInterface
     ];
 
 
-    public function __construct($dsn, $username = '', $password = '', $driver_options=[])
+    public function __construct($dsn, $username = '', $password = '', $driver_options = [])
     {
         $this->validateDSN($dsn); //throws \PDOException
         $this->dsn = $dsn;
 
-        if(isset($driver_options[\PDO::ATTR_ERRMODE])) {
-          unset($driver_options[\PDO::ATTR_ERRMODE]); // mandatory for CRUDITES error handler
+        if (isset($driver_options[\PDO::ATTR_ERRMODE])) {
+            unset($driver_options[\PDO::ATTR_ERRMODE]); // mandatory for CRUDITES error handler
         }
 
         $driver_options = array_merge(self::$driver_default_options, $driver_options);
@@ -91,11 +92,11 @@ class Connection implements ConnectionInterface
         }
 
         if (!in_array($matches[1], \PDO::getAvailableDrivers(), true)) {
-          throw new \PDOException('DSN_UNAVAILABLE_DRIVER');
+            throw new \PDOException('DSN_UNAVAILABLE_DRIVER');
         }
 
-        if(preg_match('/dbname=(.+);/', $dsn, $matches)!==1){
-          throw new \PDOException('DSN_NO_DBNAME');
+        if (preg_match('/dbname=(.+);/', $dsn, $matches) !== 1) {
+            throw new \PDOException('DSN_NO_DBNAME');
         }
 
         $this->database_name = $matches[1];
@@ -119,6 +120,6 @@ class Connection implements ConnectionInterface
 
     public function useDatabase($db_name)
     {
-      $this->pdo->query(sprintf('USE `%s`;',$db_name));
+        $this->pdo->query(sprintf('USE `%s`;', $db_name));
     }
 }

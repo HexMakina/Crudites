@@ -9,10 +9,10 @@
 
 namespace HexMakina\Crudites;
 
-use \HexMakina\Crudites\Queries\BaseQuery;
-use \HexMakina\BlackBox\Database\SelectInterface;
-use \HexMakina\BlackBox\Database\DatabaseInterface;
-use \HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\Queries\BaseQuery;
+use HexMakina\BlackBox\Database\SelectInterface;
+use HexMakina\BlackBox\Database\DatabaseInterface;
+use HexMakina\Crudites\CruditesException;
 
 class Crudites
 {
@@ -32,11 +32,11 @@ class Crudites
         try {
             return self::$database->inspect($table_name);
         } catch (\Exception $e) {
-            throw new CruditesException('TABLE_INTROSPECTION::'.$table_name);
+            throw new CruditesException('TABLE_INTROSPECTION::' . $table_name);
         }
     }
 
-    public static function connect($dsn=null, $user=null, $pass=null)
+    public static function connect($dsn = null, $user = null, $pass = null)
     {
         // no props, means connection already exists, verify and return
         if (!isset($dsn, $user, $pass)) {

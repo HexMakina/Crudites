@@ -2,8 +2,8 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use \HexMakina\Crudites\CruditesException;
-use \HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\Crudites\CruditesException;
+use HexMakina\BlackBox\Database\TableManipulationInterface;
 
 class Update extends BaseQuery
 {
@@ -31,7 +31,7 @@ class Update extends BaseQuery
 
     public function addBindings($update_data): array
     {
-        $binding_names=[];
+        $binding_names = [];
         foreach ($update_data as $field_name => $value) {
             $column = $this->table->column($field_name);
             if (is_null($column)) {

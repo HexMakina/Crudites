@@ -2,8 +2,8 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use \HexMakina\BlackBox\Database\TableDescriptionInterface;
-use \HexMakina\Crudites\CruditesException;
+use HexMakina\BlackBox\Database\TableDescriptionInterface;
+use HexMakina\Crudites\CruditesException;
 
 class Delete extends BaseQuery
 {

@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites;
 
-use \HexMakina\Crudites\Queries\BaseQuery;
+use HexMakina\Crudites\Queries\BaseQuery;
 
 class CruditesException extends \Exception
 {

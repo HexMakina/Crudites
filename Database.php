@@ -2,13 +2,13 @@
 
 namespace HexMakina\Crudites;
 
-use \HexMakina\Crudites\Queries\Select;
-use \HexMakina\Crudites\Queries\Describe;
-use \HexMakina\Crudites\Table\Manipulation;
-use \HexMakina\Crudites\Table\Column;
-use \HexMakina\BlackBox\Database\ConnectionInterface;
-use \HexMakina\BlackBox\Database\DatabaseInterface;
-use \HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\Crudites\Queries\Select;
+use HexMakina\Crudites\Queries\Describe;
+use HexMakina\Crudites\Table\Manipulation;
+use HexMakina\Crudites\Table\Column;
+use HexMakina\BlackBox\Database\ConnectionInterface;
+use HexMakina\BlackBox\Database\DatabaseInterface;
+use HexMakina\BlackBox\Database\TableManipulationInterface;
 
 class Database implements DatabaseInterface
 {
@@ -38,7 +38,7 @@ class Database implements DatabaseInterface
         $statement = 'SELECT TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION, COLUMN_NAME, POSITION_IN_UNIQUE_CONSTRAINT, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = "%s" ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION';
 
         $this->connection->useDatabase('INFORMATION_SCHEMA');
-        $res = $this->connection->query(sprintf($statement,$this->name()))->fetchAll();
+        $res = $this->connection->query(sprintf($statement, $this->name()))->fetchAll();
         $this->connection->useDatabase($this->name());
 
         foreach ($res as $key_usage) {

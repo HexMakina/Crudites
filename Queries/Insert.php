@@ -2,9 +2,9 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use \HexMakina\Crudites\CruditesException;
-use \HexMakina\BlackBox\Database\TableManipulationInterface;
-use \HexMakina\BlackBox\Database\QueryInterface;
+use HexMakina\Crudites\CruditesException;
+use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\QueryInterface;
 
 class Insert extends BaseQuery
 {
@@ -28,7 +28,7 @@ class Insert extends BaseQuery
     
     public function addBindings($assoc_data): array
     {
-        $binding_names=[];
+        $binding_names = [];
         foreach ($this->table->columns() as $column_name => $column) {
             if ($column->isAutoIncremented()) {
                 continue;
@@ -36,7 +36,7 @@ class Insert extends BaseQuery
 
             if (isset($assoc_data[$column_name])) {
                 $this->query_fields[$column_name] = $column_name;
-                $binding_names[$column_name]=$this->addBinding($column_name, $assoc_data[$column_name]);
+                $binding_names[$column_name] = $this->addBinding($column_name, $assoc_data[$column_name]);
             }
         }
         return $binding_names;
@@ -53,5 +53,4 @@ class Insert extends BaseQuery
 
         return sprintf('INSERT INTO `%s` (%s) VALUES (%s)', $this->table, $fields, $values);
     }
-
 }
