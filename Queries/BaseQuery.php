@@ -2,10 +2,11 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\Crudites\CruditesException;
-use HexMakina\BlackBox\Database\TableManipulationInterface;
-use HexMakina\BlackBox\Database\ConnectionInterface;
-use HexMakina\BlackBox\Database\QueryInterface;
+use \HexMakina\Crudites\CruditesException;
+use \HexMakina\BlackBox\Database\TableManipulationInterface;
+use \HexMakina\BlackBox\Database\ConnectionInterface;
+use \HexMakina\BlackBox\Database\QueryInterface;
+use \HexMakina\BlackBox\Database\QueryInterface;
 
 abstract class BaseQuery implements QueryInterface
 {
