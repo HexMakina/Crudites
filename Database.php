@@ -35,7 +35,20 @@ class Database implements DatabaseInterface
 
     public function introspect()
     {
-        $statement = 'SELECT TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION, COLUMN_NAME, POSITION_IN_UNIQUE_CONSTRAINT, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = "%s" ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION';
+        $fields = [
+          'TABLE_NAME',
+          'CONSTRAINT_NAME',
+          'ORDINAL_POSITION',
+          'COLUMN_NAME',
+          'POSITION_IN_UNIQUE_CONSTRAINT',
+          'REFERENCED_TABLE_NAME',
+          'REFERENCED_COLUMN_NAME'
+        ];
+
+        $statement = 'SELECT ' . implode(', ', $fields)
+        . ' FROM KEY_COLUMN_USAGE'
+        . ' WHERE TABLE_SCHEMA = "%s"'
+        . ' ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION';
 
         $this->connection->useDatabase('INFORMATION_SCHEMA');
         $res = $this->connection->query(sprintf($statement, $this->name()))->fetchAll();
@@ -45,20 +58,29 @@ class Database implements DatabaseInterface
             $table_name = $key_usage['TABLE_NAME'];
 
             if (isset($key_usage['REFERENCED_TABLE_NAME'])) { // FOREIGN KEYS
-                $this->fk_by_table[$table_name] = $this->fk_by_table[$table_name] ?? [];
-                $this->fk_by_table[$table_name][$key_usage['COLUMN_NAME']] = [$key_usage['REFERENCED_TABLE_NAME'], $key_usage['REFERENCED_COLUMN_NAME']];
+                $this->addForeignKeyByTable($table_name, $key_usage);
+
+                // $this->fk_by_table[$table_name] = $this->fk_by_table[$table_name] ?? [];
+                // $this->fk_by_table[$table_name][$key_usage['COLUMN_NAME']] = [$key_usage['REFERENCED_TABLE_NAME'], $key_usage['REFERENCED_COLUMN_NAME']];
             }
 
             if (!isset($key_usage['POSITION_IN_UNIQUE_CONSTRAINT'])) { // PRIMARY & UNIQUES
-                $constraint_name = $key_usage['CONSTRAINT_NAME'];
-                $column_name = $key_usage['COLUMN_NAME'];
-
-                $this->unique_by_table[$table_name] = $this->unique_by_table[$table_name] ?? [];
-                $this->unique_by_table[$table_name][$constraint_name] = $this->unique_by_table[$table_name][$constraint_name] ?? [];
-                $this->unique_by_table[$table_name][$constraint_name][$key_usage['ORDINAL_POSITION']] = $column_name;
+                $this->addUniqueKeyByTable($table_name, $key_usage);
+                // $constraint_name = $key_usage['CONSTRAINT_NAME'];
+                // $column_name = $key_usage['COLUMN_NAME'];
+                //
+                // $this->unique_by_table[$table_name] = $this->unique_by_table[$table_name] ?? [];
+                // $this->unique_by_table[$table_name][$constraint_name] = $this->unique_by_table[$table_name][$constraint_name] ?? [];
+                // $this->unique_by_table[$table_name][$constraint_name][$key_usage['ORDINAL_POSITION']] = $column_name;
             }
         }
 
+        $this->refactorConstraintNameIndex();
+    }
+
+    // vague memory that it makes later operation easier. written on the spot.. testing will reveal it's true nature
+    private function refactorConstraintNameIndex()
+    {
         foreach ($this->unique_by_table as $table_name => $uniques) {
             foreach ($uniques as $constraint_name => $columns) {
                 foreach ($columns as $column_name) {
@@ -67,6 +89,22 @@ class Database implements DatabaseInterface
                 unset($this->unique_by_table[$table_name][$constraint_name]);
             }
         }
+    }
+
+    private function addUniqueKeyByTable($table_name, $key_usage)
+    {
+        $constraint_name = $key_usage['CONSTRAINT_NAME'];
+        $column_name = $key_usage['COLUMN_NAME'];
+
+        $this->unique_by_table[$table_name] = $this->unique_by_table[$table_name] ?? [];
+        $this->unique_by_table[$table_name][$constraint_name] = $this->unique_by_table[$table_name][$constraint_name] ?? [];
+        $this->unique_by_table[$table_name][$constraint_name][$key_usage['ORDINAL_POSITION']] = $column_name;
+    }
+
+    private function addForeignKeyByTable($table_name, $key_usage)
+    {
+        $this->fk_by_table[$table_name] = $this->fk_by_table[$table_name] ?? [];
+        $this->fk_by_table[$table_name][$key_usage['COLUMN_NAME']] = [$key_usage['REFERENCED_TABLE_NAME'], $key_usage['REFERENCED_COLUMN_NAME']];
     }
 
     public function inspect($table_name): TableManipulationInterface
