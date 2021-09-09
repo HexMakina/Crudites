@@ -19,13 +19,12 @@ class Insert extends BaseQuery
         $this->table = $table;
         $this->connection = $table->connection();
 
-        if (empty($assoc_data)) {
-            return $this;
+        if (!empty($assoc_data)) {
+            $this->addBindings($assoc_data);
         }
 
-        $this->addBindings($assoc_data);
     }
-    
+
     public function addBindings($assoc_data): array
     {
         $binding_names = [];
