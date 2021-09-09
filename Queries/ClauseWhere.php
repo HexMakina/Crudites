@@ -131,7 +131,8 @@ trait ClauseWhere
             $count_values = count($values);
             $in = '';
             foreach ($values as $i => $v) {
-                $placeholder_name = ':' . $table_name . '_' . $field . '_awS_in_' . $count_values . '_' . $i; // TODO dirty patching. mathematical certainty needed
+                // TODO dirty patching. mathematical certainty needed
+                $placeholder_name = ':' . $table_name . '_' . $field . '_awS_in_' . $count_values . '_' . $i;
                 $this->addBinding($field, $v, null, $placeholder_name);
                 $in .= "$placeholder_name,";
             }
@@ -169,7 +170,9 @@ trait ClauseWhere
      * @param $search_table     String to filter
      * @param $filters_operator Object, inclusive or exclusive search
      */
-    public function whereFilterContent($filters_content, $search_table = null, $filters_operator = null) // sub array filters[$content]
+
+     // sub array filters[$content]
+    public function whereFilterContent($filters_content, $search_table = null, $filters_operator = null)
     {
         if (!isset($filters_content['term']) || !isset($filters_content['fields'])) {
             return $this;
@@ -202,14 +205,14 @@ trait ClauseWhere
         }
 
         if (!empty($content_wc)) {
-            $operator = self::valid_operator($filters_operator, self::$OP_OR);
+            $operator = self::validWhereOperator($filters_operator, self::$OP_OR);
             $content_wc = implode(" $operator ", $content_wc);
 
             $this->where(" ($content_wc) ");
         }
     }
     // //------------------------------------------------------------  FIELDS
-    protected static function valid_operator($operator, $default)
+    protected static function validWhereOperator($operator, $default)
     {
         $operator = strtoupper("$operator");
         $choices = [self::$OP_AND, self::$OP_OR];
@@ -225,7 +228,7 @@ trait ClauseWhere
         throw new \Exception('ERR_INVALID_QUERY_OPERATOR');
     }
 
-    protected function generate_where()
+    protected function generateWhere()
     {
         if (!empty($this->where)) {
             return PHP_EOL . ' WHERE ' . implode(PHP_EOL . ' AND ', $this->where);

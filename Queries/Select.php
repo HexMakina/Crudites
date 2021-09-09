@@ -62,30 +62,16 @@ class Select extends BaseQuery implements SelectInterface
         return $this;
     }
 
-    public function select_less($column_alias)
-    {
-
-        foreach ($column_alias as $alias) {
-            foreach ($this->selection as $i => $column_and_alias) {
-                if (strpos($column_and_alias, $alias) === 0) {
-                    unset($this->selection[$i]);
-                    break;
-                }
-            }
-        }
-        return $this;
-    }
-
-    private function add_part($group, $part)
+    private function addPart($group, $part)
     {
         $this->$group = $this->$group ?? [];
         array_push($this->$group, $part);
         return $this;
     }
 
-    public function join_raw($sql)
+    public function joinRaw($sql)
     {
-        return $this->add_part('join', $sql);
+        return $this->addPart('join', $sql);
     }
 
     public function tableAlias($setter = null)
@@ -100,12 +86,12 @@ class Select extends BaseQuery implements SelectInterface
     public function groupBy($clause)
     {
         if (is_string($clause)) {
-            $this->add_part('group', $this->backTick($clause, $this->tableLabel()));
+            $this->addPart('group', $this->backTick($clause, $this->tableLabel()));
         } elseif (is_array($clause)) {
             if (isset($clause[1])) { // 0: table, 1: field
-                $this->add_part('group', $this->backTick($clause[1], $clause[0]));
+                $this->addPart('group', $this->backTick($clause[1], $clause[0]));
             } else { // 0: field
-                $this->add_part('group', $this->backTick($clause[0], null));
+                $this->addPart('group', $this->backTick($clause[0], null));
             }
         }
 
@@ -114,18 +100,24 @@ class Select extends BaseQuery implements SelectInterface
 
     public function having($condition)
     {
-        return $this->add_part('having', $condition);
+        return $this->addPart('having', $condition);
     }
 
     public function orderBy($clause)
     {
         if (is_string($clause)) {
-            $this->add_part('order', $clause);
+            $this->addPart('order', $clause);
         } elseif (is_array($clause) && count($clause) > 1) {
             if (isset($clause[2])) { // 0:table, 1:field, 2:direction
-                $this->add_part('order', sprintf('%s %s', $this->backTick($clause[1], $clause[0]), $clause[2]));
+                $this->addPart(
+                    'order',
+                    sprintf('%s %s', $this->backTick($clause[1], $clause[0]), $clause[2])
+                );
             } elseif (isset($clause[1])) { // 0: field, 1: direction
-                $this->add_part('order', sprintf('%s %s', $this->backTick($clause[0], $this->tableLabel()), $clause[1]));
+                $this->addPart(
+                    'order',
+                    sprintf('%s %s', $this->backTick($clause[0], $this->tableLabel()), $clause[1])
+                );
             }
         }
 
@@ -157,7 +149,7 @@ class Select extends BaseQuery implements SelectInterface
             $ret .= PHP_EOL . ' ' . implode(PHP_EOL . ' ', $this->join);
         }
 
-        $ret .= $this->generate_where();
+        $ret .= $this->generateWhere();
 
         foreach (['group' => 'GROUP BY', 'having' => 'HAVING', 'order' => 'ORDER BY'] as $part => $prefix) {
             if (!empty($this->$part)) {
@@ -184,15 +176,18 @@ class Select extends BaseQuery implements SelectInterface
     public function retNum()
     {
         return $this->ret(\PDO::FETCH_NUM);
-    } //ret:
+    }
+    //ret:
     public function retAss()
     {
         return $this->ret(\PDO::FETCH_ASSOC);
-    } //ret: array indexed by column name
+    }
+    //ret: array indexed by column name
     public function retCol()
     {
         return $this->ret(\PDO::FETCH_COLUMN);
-    } //ret: all values of a single column from the result set
+    }
+    //ret: all values of a single column from the result set
     public function retPar()
     {
         return $this->ret(\PDO::FETCH_KEY_PAIR);

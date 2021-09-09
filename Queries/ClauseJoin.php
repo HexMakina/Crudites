@@ -17,9 +17,9 @@ trait ClauseJoin
     abstract public function selectAlso($setter);
     abstract public function backTick($field, $table_name = null);
     abstract public function addBinding($k, $v);
-    abstract public function join_raw($sql);
+    abstract public function joinRaw($sql);
 
-    public function add_tables($setter)
+    public function addTables($setter)
     {
         $this->joined_tables = array_merge($this->joined_tables, is_array($setter) ? $setter : [$setter]);
         return $this;
@@ -61,7 +61,7 @@ trait ClauseJoin
                     }
                 }
 
-                $this->auto_join([$foreign_table, $foreign_table_alias], $select_also);
+                $this->autoJoin([$foreign_table, $foreign_table_alias], $select_also);
             }
         }
     }
@@ -69,18 +69,18 @@ trait ClauseJoin
 
     public function join($table_names, $joins, $join_type = '')
     {
-        list($join_table_name,$join_table_alias) = self::process_param_table_names($table_names);
+        list($join_table_name,$join_table_alias) = self::processParamTableNames($table_names);
 
         if (preg_match('/^(INNER|LEFT|RIGHT|FULL)(\sOUTER)?/i', $join_type) !== 1) {
             $join_type = '';
         }
 
-        $this->join_raw($this->generate_join($join_type, $join_table_name, $join_table_alias, $joins));
+        $this->joinRaw($this->generateJoin($join_type, $join_table_name, $join_table_alias, $joins));
 
         return $this;
     }
 
-    public function auto_join($other_table, $select_also = [], $relation_type = null)
+    public function autoJoin($other_table, $select_also = [], $relation_type = null)
     {
         $other_table_alias = null;
 
@@ -101,21 +101,19 @@ trait ClauseJoin
             $relation_type = $relation_type ?? $bonding_column->isNullable() ? 'LEFT OUTER' : 'INNER';
             // $joins []= [$bonding_column->tableName(), $bonding_column->name(), $other_table_alias ?? $bonding_column->foreignTableAlias(), $bonding_column->foreignColumnName()];
             $joins [] = [$this->tableAlias(), $bonding_column->name(), $other_table_alias ?? $bonding_column->foreignTableAlias(), $bonding_column->foreignColumnName()];
-        }
-        // elseif(count($bonding_column = $other_table->foreignKeysByTable()[$this->table()->name()] ?? []) === 1)
-        elseif (!is_null($bonding_column = $other_table->singleForeignKeyTo($this->table()))) {
+        } elseif (!is_null($bonding_column = $other_table->singleForeignKeyTo($this->table()))) {
             // vd(__FUNCTION__.' : '.$other_table.' has fk to '.$this->table());
             $relation_type = $relation_type ?? 'LEFT OUTER';
             $joins [] = [$this->tableLabel(), $bonding_column->foreignColumnName(), $other_table_alias ?? $other_table->name(), $bonding_column->name()];
         } else {
-            $bondable_tables = $this->joinable_tables();
+            $bondable_tables = $this->joinableTables();
             if (isset($bondable_tables[$other_table_name])) {
                 $bonding_columns = $bondable_tables[$other_table_name];
                 if (count($bonding_columns) === 1) {
                     $bonding_column = current($bonding_columns);
                     $other_table_alias = $other_table_alias ?? $bonding_column->foreignTableAlias();
 
-                    $bonding_table_label = array_search($bonding_column->tableName(), $this->joined_tables());
+                    $bonding_table_label = array_search($bonding_column->tableName(), $this->joinedTables());
                     if ($bonding_table_label === false) {
                         $bonding_table_label = $bonding_column->tableName();
                     }
@@ -151,7 +149,7 @@ trait ClauseJoin
         if (!empty($joins)) {
             // vd('ottojoin: '.$this->table()->name().' with '.$other_table_name.' as '.$other_table_alias);
             $this->join([$other_table_name, $other_table_alias], $joins, $relation_type);
-            $this->add_tables([$other_table_alias => $other_table_name]);
+            $this->addTables([$other_table_alias => $other_table_name]);
 
 
             // if(is_null($select_also) empty($select_also))
@@ -173,7 +171,7 @@ trait ClauseJoin
         return $other_table_alias;
     }
 
-    protected function generate_join($join_type, $join_table_name, $join_table_alias = null, $join_fields)
+    protected function generateJoin($join_type, $join_table_name, $join_table_alias = null, $join_fields = [])
     {
         $join_table_alias = $join_table_alias ?? $join_table_name;
 
@@ -193,22 +191,22 @@ trait ClauseJoin
         return sprintf('%s JOIN `%s` %s ON %s', $join_type, $join_table_name, $join_table_alias, implode(' AND ', $join_parts));
     }
 
-    private function joined_tables()
+    private function joinedTables()
     {
         return $this->joined_tables;
     }
 
-    private function joinable_tables(): array
+    private function joinableTables(): array
     {
         $joinable_tables = $this->table()->foreignKeysByTable();
-        foreach ($this->joined_tables() as $join_table) {
+        foreach ($this->joinedTables() as $join_table) {
             $joinable_tables += Crudites::inspect($join_table)->foreignKeysByTable();
         }
 
         return $joinable_tables;
     }
 
-    private static function process_param_table_names($table_names): array
+    private static function processParamTableNames($table_names): array
     {
         if (is_array($table_names) && isset($table_names[1])) {
             return $table_names;

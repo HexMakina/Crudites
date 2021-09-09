@@ -21,9 +21,10 @@ class Delete extends BaseQuery
     public function generate(): string
     {
         if (empty($this->where)) {
-            throw new CruditesException('DELETE_USED_AS_TRUNCATE');  // prevents haphazardous generation of dangerous DELETE statement
+            // prevents haphazardous generation of dangerous DELETE statement
+            throw new CruditesException('DELETE_USED_AS_TRUNCATE');
         }
 
-        return sprintf('DELETE FROM `%s` %s ', $this->tableName(), $this->generate_where());
+        return sprintf('DELETE FROM `%s` %s ', $this->tableName(), $this->generateWhere());
     }
 }

@@ -59,8 +59,9 @@ class Update extends BaseQuery
         if (empty($this->where)) {
             throw new CruditesException('UPDATE_NO_CONDITIONS');
         }
-
-        $ret = sprintf('UPDATE `%s` SET %s %s;', $this->table->name(), implode(', ', $this->alterations), $this->generate_where());
+        $set = implode(', ', $this->alterations);
+        $where = $this->generateWhere();
+        $ret = sprintf('UPDATE `%s` SET %s %s;', $this->table->name(), $set, $where);
         return $ret;
     }
 }
