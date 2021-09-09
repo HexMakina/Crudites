@@ -2,8 +2,8 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use \HexMakina\Interfaces\Database\TableManipulationInterface;
-use \HexMakina\Interfaces\Database\SelectInterface;
+use \HexMakina\BlackBox\Database\TableManipulationInterface;
+use \HexMakina\BlackBox\Database\SelectInterface;
 use \HexMakina\Crudites\CruditesException;
 
 class Select extends BaseQuery implements SelectInterface

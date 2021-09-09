@@ -3,8 +3,8 @@
 namespace HexMakina\Crudites\Queries;
 
 use \HexMakina\Crudites\CruditesException;
-use \HexMakina\Interfaces\Database\TableManipulationInterface;
-use \HexMakina\Interfaces\Database\QueryInterface;
+use \HexMakina\BlackBox\Database\TableManipulationInterface;
+use \HexMakina\BlackBox\Database\QueryInterface;
 
 class Insert extends BaseQuery
 {

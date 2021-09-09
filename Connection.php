@@ -10,7 +10,7 @@
  */
 
 namespace HexMakina\Crudites;
-use \HexMakina\Interfaces\Database\ConnectionInterface;
+use \HexMakina\BlackBox\Database\ConnectionInterface;
 
 class Connection implements ConnectionInterface
 {

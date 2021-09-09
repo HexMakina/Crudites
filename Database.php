@@ -6,9 +6,9 @@ use \HexMakina\Crudites\Queries\Select;
 use \HexMakina\Crudites\Queries\Describe;
 use \HexMakina\Crudites\Table\Manipulation;
 use \HexMakina\Crudites\Table\Column;
-use \HexMakina\Interfaces\Database\ConnectionInterface;
-use \HexMakina\Interfaces\Database\DatabaseInterface;
-use \HexMakina\Interfaces\Database\TableManipulationInterface;
+use \HexMakina\BlackBox\Database\ConnectionInterface;
+use \HexMakina\BlackBox\Database\DatabaseInterface;
+use \HexMakina\BlackBox\Database\TableManipulationInterface;
 
 class Database implements DatabaseInterface
 {

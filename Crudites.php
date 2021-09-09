@@ -10,8 +10,8 @@
 namespace HexMakina\Crudites;
 
 use \HexMakina\Crudites\Queries\BaseQuery;
-use \HexMakina\Interfaces\Database\SelectInterface;
-use \HexMakina\Interfaces\Database\DatabaseInterface;
+use \HexMakina\BlackBox\Database\SelectInterface;
+use \HexMakina\BlackBox\Database\DatabaseInterface;
 use \HexMakina\Crudites\CruditesException;
 
 class Crudites

@@ -3,7 +3,7 @@
 namespace HexMakina\Crudites\Table;
 
 use HexMakina\Crudites\CruditesException;
-use HexMakina\Interfaces\Database\ColumnTypeInterface;
+use HexMakina\BlackBox\Database\ColumnTypeInterface;
 
 class ColumnType implements ColumnTypeInterface
 {

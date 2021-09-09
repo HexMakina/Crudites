@@ -2,9 +2,9 @@
 
 namespace HexMakina\Crudites\Table;
 
-use HexMakina\Interfaces\Database\TableManipulationInterface;
-use HexMakina\Interfaces\Database\RowInterface;
-use HexMakina\Interfaces\Database\QueryInterface;
+use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\RowInterface;
+use HexMakina\BlackBox\Database\QueryInterface;
 use HexMakina\Crudites\CruditesException;
 
 class Row implements RowInterface

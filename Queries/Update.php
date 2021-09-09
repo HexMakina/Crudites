@@ -3,7 +3,7 @@
 namespace HexMakina\Crudites\Queries;
 
 use \HexMakina\Crudites\CruditesException;
-use \HexMakina\Interfaces\Database\TableManipulationInterface;
+use \HexMakina\BlackBox\Database\TableManipulationInterface;
 
 class Update extends BaseQuery
 {

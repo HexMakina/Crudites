@@ -2,10 +2,10 @@
 
 namespace HexMakina\Crudites\Table;
 
-use HexMakina\Interfaces\Database\TableManipulationInterface;
-use HexMakina\Interfaces\Database\SelectInterface;
-use HexMakina\Interfaces\Database\QueryInterface;
-use HexMakina\Interfaces\Database\RowInterface;
+use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\SelectInterface;
+use HexMakina\BlackBox\Database\QueryInterface;
+use HexMakina\BlackBox\Database\RowInterface;
 use HexMakina\Crudites\Queries\Select;
 use HexMakina\Crudites\Queries\Insert;
 use HexMakina\Crudites\Queries\Update;
