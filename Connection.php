@@ -118,8 +118,9 @@ class Connection implements ConnectionInterface
         return $this->pdo->exec($sql_statement);
     }
 
-    public function useDatabase($db_name)
+    public function useDatabase($name)
     {
-        $this->pdo->query(sprintf('USE `%s`;', $db_name));
+        $this->database_name = $name;
+        $this->pdo->query(sprintf('USE `%s`;', $name));
     }
 }
