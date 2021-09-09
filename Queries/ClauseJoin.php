@@ -1,4 +1,4 @@
-<?php
+  <?php
 
 namespace HexMakina\Crudites\Queries;
 
@@ -16,7 +16,7 @@ trait ClauseJoin
     abstract public function tableLabel($table_name = null);
     abstract public function selectAlso($setter);
     abstract public function backTick($field, $table_name = null);
-    abstract public function addBinding($k, $v);
+    abstract public function addBinding($field, $value, $table_name = null, $bind_label = null): string;
     abstract public function joinRaw($sql);
 
     public function addTables($setter)
