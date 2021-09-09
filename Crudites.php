@@ -55,8 +55,8 @@ class Crudites
     // success: return AIPK-indexed array of results (associative array or object)
     public static function count(SelectInterface $Query)
     {
-        $Query->select_also(['COUNT(*) as count']);
-        $res = $Query->ret_col();
+        $Query->selectAlso(['COUNT(*) as count']);
+        $res = $Query->retCol();
         if (is_array($res)) {
             return intval(current($res));
         }
@@ -71,7 +71,7 @@ class Crudites
         $ret = [];
 
         if ($Query->run()->isSuccess()) {
-            foreach ($Query->ret_ass() as $rec) {
+            foreach ($Query->retAss() as $rec) {
                 $ret[$rec[$pk_name]] = $rec;
             }
         }
@@ -101,15 +101,15 @@ class Crudites
             throw new CruditesException('TABLE_REQUIRES_COLUMN');
         }
 
-        $Query = $table->select(["DISTINCT `$column_name`"])->aw_not_empty($column_name)->order_by([$table->name(), $column_name, 'ASC']);
+        $Query = $table->select(["DISTINCT `$column_name`"])->whereNotEmpty($column_name)->orderBy([$table->name(), $column_name, 'ASC']);
 
         if (!is_null($filter_by_value)) {
-            $Query->aw_like($column_name, "%$filter_by_value%");
+            $Query->whereLike($column_name, "%$filter_by_value%");
         }
 
-        $Query->order_by($column_name, 'DESC');
+        $Query->orderBy($column_name, 'DESC');
         // ddt($Query);
-        return $Query->ret_col();
+        return $Query->retCol();
     }
 
     public static function distinct_for_with_id($table, $column_name, $filter_by_value = null)
@@ -120,13 +120,13 @@ class Crudites
             throw new CruditesException('TABLE_REQUIRES_COLUMN');
         }
 
-        $Query = $table->select(["DISTINCT `id`,`$column_name`"])->aw_not_empty($column_name)->order_by([$table->name(), $column_name, 'ASC']);
+        $Query = $table->select(["DISTINCT `id`,`$column_name`"])->whereNotEmpty($column_name)->orderBy([$table->name(), $column_name, 'ASC']);
 
         if (!is_null($filter_by_value)) {
-            $Query->aw_like($column_name, "%$filter_by_value%");
+            $Query->whereLike($column_name, "%$filter_by_value%");
         }
 
-        return $Query->ret_par();
+        return $Query->retPar();
     }
 
     //------------------------------------------------------------  DataManipulation Helpers

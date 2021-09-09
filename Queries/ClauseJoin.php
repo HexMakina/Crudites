@@ -12,9 +12,9 @@ trait ClauseJoin
 
     abstract public function table(TableManipulationInterface $setter = null): TableManipulationInterface;
     abstract public function tableName();
-    abstract public function table_alias($setter = null);
-    abstract public function table_label($table_name = null);
-    abstract public function select_also($setter);
+    abstract public function tableAlias($setter = null);
+    abstract public function tableLabel($table_name = null);
+    abstract public function selectAlso($setter);
     abstract public function backTick($field, $table_name = null);
     abstract public function addBinding($k, $v);
     abstract public function join_raw($sql);
@@ -28,7 +28,7 @@ trait ClauseJoin
     public function eager($table_aliases = [])
     {
         if (isset($table_aliases[$this->tableName()])) {
-            $this->table_alias($table_aliases[$this->tableName()]);
+            $this->tableAlias($table_aliases[$this->tableName()]);
         }
 
         foreach ($this->table()->foreignKeysByTable() as $foreign_table_name => $fk_columns) {
@@ -100,13 +100,13 @@ trait ClauseJoin
         if (!is_null($bonding_column = $this->table()->singleForeignKeyTo($other_table))) {
             $relation_type = $relation_type ?? $bonding_column->isNullable() ? 'LEFT OUTER' : 'INNER';
             // $joins []= [$bonding_column->tableName(), $bonding_column->name(), $other_table_alias ?? $bonding_column->foreignTableAlias(), $bonding_column->foreignColumnName()];
-            $joins [] = [$this->table_alias(), $bonding_column->name(), $other_table_alias ?? $bonding_column->foreignTableAlias(), $bonding_column->foreignColumnName()];
+            $joins [] = [$this->tableAlias(), $bonding_column->name(), $other_table_alias ?? $bonding_column->foreignTableAlias(), $bonding_column->foreignColumnName()];
         }
         // elseif(count($bonding_column = $other_table->foreignKeysByTable()[$this->table()->name()] ?? []) === 1)
         elseif (!is_null($bonding_column = $other_table->singleForeignKeyTo($this->table()))) {
             // vd(__FUNCTION__.' : '.$other_table.' has fk to '.$this->table());
             $relation_type = $relation_type ?? 'LEFT OUTER';
-            $joins [] = [$this->table_label(), $bonding_column->foreignColumnName(), $other_table_alias ?? $other_table->name(), $bonding_column->name()];
+            $joins [] = [$this->tableLabel(), $bonding_column->foreignColumnName(), $other_table_alias ?? $other_table->name(), $bonding_column->name()];
         } else {
             $bondable_tables = $this->joinable_tables();
             if (isset($bondable_tables[$other_table_name])) {
@@ -165,7 +165,7 @@ trait ClauseJoin
                     }
 
                     // vd($computed_selection);
-                    $this->select_also($computed_selection);
+                    $this->selectAlso($computed_selection);
                 }
             }
         }

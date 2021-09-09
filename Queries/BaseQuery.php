@@ -94,7 +94,7 @@ abstract class BaseQuery implements QueryInterface
     }
 
     //------------------------------------------------------------  PREP::FIELDS
-    public function table_label($table_name = null)
+    public function tableLabel($table_name = null)
     {
         return $table_name ?? $this->tableName();
     }
@@ -104,7 +104,7 @@ abstract class BaseQuery implements QueryInterface
         if (empty($table_name)) {
             return sprintf('`%s`', $field_name);
         }
-        return sprintf('`%s`.`%s`', $this->table_label($table_name), $field_name);
+        return sprintf('`%s`.`%s`', $this->tableLabel($table_name), $field_name);
     }
 
     //------------------------------------------------------------  PREP::BINDINGS
@@ -138,7 +138,7 @@ abstract class BaseQuery implements QueryInterface
 
     public function bindLabel($field, $table_name = null): string
     {
-        return ':' . $this->table_label($table_name) . '_' . $field;
+        return ':' . $this->tableLabel($table_name) . '_' . $field;
     }
 
     //------------------------------------------------------------  Run

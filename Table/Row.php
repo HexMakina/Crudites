@@ -90,8 +90,8 @@ class Row implements RowInterface
             return $this;
         }
 
-        $this->last_query = $this->table()->select()->aw_primary($pks);
-        $res = $this->last_query->ret_ass();
+        $this->last_query = $this->table()->select()->wherePrimary($pks);
+        $res = $this->last_query->retAss();
 
         $this->load = (is_array($res) && count($res) === 1) ? current($res) : null;
 

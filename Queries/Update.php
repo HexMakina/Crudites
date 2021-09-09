@@ -22,9 +22,9 @@ class Update extends BaseQuery
 
         if (!empty($conditions)) {
             if (is_array($conditions)) {
-                $this->aw_fields_eq($conditions);
+                $this->whereFieldsEQ($conditions);
             } elseif (is_string($conditions)) {
-                $this->and_where($conditions);
+                $this->where($conditions);
             }
         }
     }

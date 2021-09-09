@@ -14,7 +14,7 @@ class Delete extends BaseQuery
         $this->table = $table;
         $this->connection = $table->connection();
         if (!empty($conditions)) {
-            $this->aw_fields_eq($conditions);
+            $this->whereFieldsEQ($conditions);
         }
     }
 

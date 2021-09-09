@@ -38,7 +38,7 @@ class Select extends BaseQuery implements SelectInterface
         }
     }
 
-    public function table_label($forced_value = null)
+    public function tableLabel($forced_value = null)
     {
         return $forced_value ?? $this->table_alias ?? $this->tableName();
     }
@@ -56,7 +56,7 @@ class Select extends BaseQuery implements SelectInterface
         return $this;
     }
 
-    public function select_also($setter)
+    public function selectAlso($setter)
     {
         $this->selection = array_merge($this->selection, is_array($setter) ? $setter : [$setter]);
         return $this;
@@ -88,7 +88,7 @@ class Select extends BaseQuery implements SelectInterface
         return $this->add_part('join', $sql);
     }
 
-    public function table_alias($setter = null)
+    public function tableAlias($setter = null)
     {
         if (!is_null($setter)) {
             $this->table_alias = $setter;
@@ -97,10 +97,10 @@ class Select extends BaseQuery implements SelectInterface
         return $this->table_alias ?? $this->tableName();
     }
 
-    public function group_by($clause)
+    public function groupBy($clause)
     {
         if (is_string($clause)) {
-            $this->add_part('group', $this->backTick($clause, $this->table_label()));
+            $this->add_part('group', $this->backTick($clause, $this->tableLabel()));
         } elseif (is_array($clause)) {
             if (isset($clause[1])) { // 0: table, 1: field
                 $this->add_part('group', $this->backTick($clause[1], $clause[0]));
@@ -117,7 +117,7 @@ class Select extends BaseQuery implements SelectInterface
         return $this->add_part('having', $condition);
     }
 
-    public function order_by($clause)
+    public function orderBy($clause)
     {
         if (is_string($clause)) {
             $this->add_part('order', $clause);
@@ -125,7 +125,7 @@ class Select extends BaseQuery implements SelectInterface
             if (isset($clause[2])) { // 0:table, 1:field, 2:direction
                 $this->add_part('order', sprintf('%s %s', $this->backTick($clause[1], $clause[0]), $clause[2]));
             } elseif (isset($clause[1])) { // 0: field, 1: direction
-                $this->add_part('order', sprintf('%s %s', $this->backTick($clause[0], $this->table_label()), $clause[1]));
+                $this->add_part('order', sprintf('%s %s', $this->backTick($clause[0], $this->tableLabel()), $clause[1]));
             }
         }
 
@@ -176,28 +176,28 @@ class Select extends BaseQuery implements SelectInterface
 
     //------------------------------------------------------------ SELECT:FETCHING RESULT
 
-    public function ret_obj($c = null)
+    public function retObj($c = null)
     {
         return is_null($c) ? $this->ret(\PDO::FETCH_OBJ) : $this->ret(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, $c);
     }
 
-    public function ret_num()
+    public function retNum()
     {
         return $this->ret(\PDO::FETCH_NUM);
     } //ret:
-    public function ret_ass()
+    public function retAss()
     {
         return $this->ret(\PDO::FETCH_ASSOC);
     } //ret: array indexed by column name
-    public function ret_col()
+    public function retCol()
     {
         return $this->ret(\PDO::FETCH_COLUMN);
     } //ret: all values of a single column from the result set
-    public function ret_par()
+    public function retPar()
     {
         return $this->ret(\PDO::FETCH_KEY_PAIR);
     }
-    public function ret_key()
+    public function retKey()
     {
         return $this->ret(\PDO::FETCH_UNIQUE);
     }
