@@ -50,9 +50,10 @@ class Database implements DatabaseInterface
         . ' WHERE TABLE_SCHEMA = "%s"'
         . ' ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION';
 
+        $previous_database_name = $this->connection()->databaseName();
         $this->connection->useDatabase('INFORMATION_SCHEMA');
         $res = $this->connection->query(sprintf($statement, $this->name()))->fetchAll();
-        $this->connection->useDatabase($this->name());
+        $this->connection->useDatabase($previous_database_name);
 
         foreach ($res as $key_usage) {
             $table_name = $key_usage['TABLE_NAME'];
@@ -113,7 +114,6 @@ class Database implements DatabaseInterface
             return $this->table_cache[$table_name];
         }
 
-
         $describe = (new Describe($table_name));
         $describe->connection($this->connection());
         $description = $describe->ret();
@@ -155,7 +155,7 @@ class Database implements DatabaseInterface
             }
             $table->addColumn($column);
         }
-      // ddt($table);
+
         $this->table_cache[$table_name] = $table;
 
         return $this->table_cache[$table_name];
