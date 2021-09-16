@@ -127,18 +127,12 @@ class Description implements TableDescriptionInterface
 
     public function matchUniqueness($dat_ass): array
     {
-        $ret = [];
+        $ret = $this->primaryKeysMatch($dat_ass);
 
-        if (!empty($ret = $this->primaryKeysMatch($dat_ass))) {
-            return $ret;
-        }
+        if(empty($ret))
+          $ret = $this->uniqueKeysMatch($dat_ass);
 
-        if (!empty($ret = $this->uniqueKeysMatch($dat_ass))) {
-            return $ret;
-        }
-
-
-        return [];
+        return $ret;
     }
 
     /*
