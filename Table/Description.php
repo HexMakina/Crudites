@@ -127,9 +127,7 @@ class Description implements TableDescriptionInterface
 
     public function matchUniqueness($dat_ass): array
     {
-        if (!is_array($dat_ass)) { // aipk value
-            return $this->primaryKeysMatch($dat_ass);
-        }
+        $ret = [];
 
         if (!empty($ret = $this->primaryKeysMatch($dat_ass))) {
             return $ret;
@@ -138,6 +136,7 @@ class Description implements TableDescriptionInterface
         if (!empty($ret = $this->uniqueKeysMatch($dat_ass))) {
             return $ret;
         }
+
 
         return [];
     }
@@ -150,6 +149,7 @@ class Description implements TableDescriptionInterface
 
     public function primaryKeysMatch($dat_ass): array
     {
+
         if (count($this->primaryKeys()) === 0) {
             throw new CruditesException('NO_PRIMARY_KEYS_DEFINED');
         }
@@ -173,6 +173,7 @@ class Description implements TableDescriptionInterface
 
     public function uniqueKeysMatch($dat_ass): array
     {
+
         if (count($this->uniqueKeysByName()) === 0 || !is_array($dat_ass)) {
             return [];
         }
