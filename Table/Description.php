@@ -129,8 +129,9 @@ class Description implements TableDescriptionInterface
     {
         $ret = $this->primaryKeysMatch($dat_ass);
 
-        if(empty($ret))
-          $ret = $this->uniqueKeysMatch($dat_ass);
+        if (empty($ret)) {
+            $ret = $this->uniqueKeysMatch($dat_ass);
+        }
 
         return $ret;
     }

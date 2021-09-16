@@ -56,7 +56,6 @@ class Database implements DatabaseInterface
         $this->connection->useDatabase($previous_database_name);
 
         foreach ($res as $key_usage) {
-
             $table_name = $key_usage['TABLE_NAME'];
 
             if (isset($key_usage['REFERENCED_TABLE_NAME'])) { // FOREIGN KEYS

@@ -22,7 +22,6 @@ class Insert extends BaseQuery
         if (!empty($assoc_data)) {
             $this->addBindings($assoc_data);
         }
-
     }
 
     public function addBindings($assoc_data): array
