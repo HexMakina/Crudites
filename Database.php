@@ -52,10 +52,11 @@ class Database implements DatabaseInterface
 
         $previous_database_name = $this->connection()->databaseName();
         $this->connection->useDatabase('INFORMATION_SCHEMA');
-        $res = $this->connection->query(sprintf($statement, $this->name()))->fetchAll();
+        $res = $this->connection->query(sprintf($statement, $previous_database_name))->fetchAll();
         $this->connection->useDatabase($previous_database_name);
 
         foreach ($res as $key_usage) {
+
             $table_name = $key_usage['TABLE_NAME'];
 
             if (isset($key_usage['REFERENCED_TABLE_NAME'])) { // FOREIGN KEYS
@@ -128,7 +129,7 @@ class Database implements DatabaseInterface
         foreach ($description as $column_name => $specs) {
             $column = new Column($table, $column_name, $specs);
 
-          // handling usage constraints
+            // handling usage constraints
             if (isset($this->unique_by_table[$table_name][$column_name])) {
                 $unique_name = $this->unique_by_table[$table_name][$column_name][0];
 
