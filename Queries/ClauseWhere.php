@@ -189,7 +189,7 @@ trait ClauseWhere
 
         $content_wc = [];
         foreach ($filters_content['fields'] as $search_field => $search_mode) {
-            if (isNumeric($search_field)) {
+            if (is_numeric($search_field)) {
                 $search_field = $search_mode;
                 $search_mode = self::$WHERE_LIKE_BOTH;
             }
