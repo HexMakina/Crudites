@@ -111,7 +111,7 @@ abstract class BaseQuery implements QueryInterface
 
     public function setBindings($dat_ass)
     {
-        $this->bindings = $setter;
+        $this->bindings = $dat_ass;
     }
 
     public function getBindings(): array
