@@ -13,6 +13,6 @@ class Describe
 
     public function __toString()
     {
-      return sprintf('DESCRIBE `%s`;', $this->table_name);
+        return sprintf('DESCRIBE `%s`;', $this->table_name);
     }
 }

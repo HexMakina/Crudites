@@ -122,8 +122,9 @@ class Database implements DatabaseInterface
     private function describe($table_name): array
     {
         $query = $this->connection()->query((new Describe($table_name)));
-        if($query === false)
-          throw new CruditesException('TABLE_DESCRIBE_FAILURE');
+        if ($query === false) {
+            throw new CruditesException('TABLE_DESCRIBE_FAILURE');
+        }
 
         return $query->fetchAll(\PDO::FETCH_UNIQUE);
     }
