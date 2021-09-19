@@ -18,6 +18,7 @@ abstract class BaseQuery implements QueryInterface
 
     protected $statement = null;
     protected $bindings = [];
+    protected $binding_names = [];
 
     protected $connection = null;
     protected $executed = false;
@@ -130,6 +131,11 @@ abstract class BaseQuery implements QueryInterface
         return $this->bindings;
     }
 
+    public function getBindingNames(): array
+    {
+        return $this->binding_names;
+    }
+    
     public function addBindings($assoc_data): array
     {
         $binding_names = [];
@@ -144,6 +150,8 @@ abstract class BaseQuery implements QueryInterface
     {
         $bind_label = $bind_label ?? $this->bindLabel($field, $table_name);
         $this->bindings[$bind_label] = $value;
+        $this->binding_names[$field] = $bind_label;
+
         return $bind_label;
     }
 
