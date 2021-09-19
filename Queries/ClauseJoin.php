@@ -14,17 +14,14 @@ trait ClauseJoin
     abstract public function tableName();
     abstract public function tableAlias($setter = null);
     abstract public function tableLabel($table_name = null);
-    abstract public function selectAlso($setter);
     abstract public function backTick($field, $table_name = null);
     abstract public function addBinding($field, $value, $table_name = null, $bind_label = null): string;
-    abstract public function joinRaw($sql);
 
     public function addTables($setter)
     {
         $this->joined_tables = array_merge($this->joined_tables, is_array($setter) ? $setter : [$setter]);
         return $this;
     }
-
 
     public function join($table_names, $joins, $join_type = '')
     {
@@ -39,6 +36,10 @@ trait ClauseJoin
         return $this;
     }
 
+    public function joinRaw($sql)
+    {
+        return $this->addPart('join', $sql);
+    }
 
     protected function generateJoin($join_type, $join_table_name, $join_table_alias = null, $join_fields = [])
     {
@@ -67,7 +68,8 @@ trait ClauseJoin
 
     private static function processParamTableNames($table_names): array
     {
-        if (is_array($table_names) && isset($table_names[1])) {
+        // it's an array with two indexes, all fine
+        if (is_array($table_names) && isset($table_names[1]) && !isset($table_names[2])) {
             return $table_names;
         }
 
@@ -79,6 +81,6 @@ trait ClauseJoin
             return [$table_names, $table_names];
         }
 
-        throw new CruditesException('INVALID_PARAM_TABLE_NAMES');
+        throw new \InvalidArgumentException('INVALID_PARAM_TABLE_NAMES');
     }
 }

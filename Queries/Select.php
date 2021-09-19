@@ -12,7 +12,6 @@ class Select extends BaseQuery implements SelectInterface
     use ClauseWhere;
 
     protected $selection = [];
-    protected $table_alias = null;
     protected $join = [];
 
     protected $group = [];
@@ -64,23 +63,9 @@ class Select extends BaseQuery implements SelectInterface
 
     private function addPart($group, $part)
     {
-        $this->$group = $this->$group ?? [];
-        array_push($this->$group, $part);
+        $this->{$group} = $this->{$group} ?? [];
+        array_push($this->{$group}, $part);
         return $this;
-    }
-
-    public function joinRaw($sql)
-    {
-        return $this->addPart('join', $sql);
-    }
-
-    public function tableAlias($setter = null)
-    {
-        if (!is_null($setter)) {
-            $this->table_alias = $setter;
-        }
-
-        return $this->table_alias ?? $this->tableName();
     }
 
     public function groupBy($clause)

@@ -14,6 +14,8 @@ abstract class BaseQuery implements QueryInterface
     private const STATE_SUCCESS = '00000'; //PDO "error" code for "all is fine"
 
     protected $table = null;
+    protected $table_alias = null;
+
     protected $statement = null;
     protected $bindings = [];
 
@@ -97,6 +99,15 @@ abstract class BaseQuery implements QueryInterface
     public function tableLabel($table_name = null)
     {
         return $table_name ?? $this->tableName();
+    }
+
+    public function tableAlias($setter = null): string
+    {
+        if (!is_null($setter)) {
+            $this->table_alias = $setter;
+        }
+
+        return $this->table_alias ?? $this->tableName();
     }
 
     public function backTick($field_name, $table_name = null): string
