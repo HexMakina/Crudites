@@ -2,30 +2,17 @@
 
 namespace HexMakina\Crudites\Queries;
 
-class Describe extends BaseQuery
+class Describe
 {
-    private $table_name = null; // table objects are not a thing here.. table() return null;
+    private $table_name = null;
 
     public function __construct($table_name)
     {
         $this->table_name = $table_name;
     }
 
-    // implements BaseQuery, pretty basic stuff
-    public function generate(): string
+    public function __toString()
     {
-        return sprintf('DESCRIBE `%s`;', $this->table_name);
-    }
-
-    // overwrites BaseQuery, bypassing null table object
-    public function tableName(): string
-    {
-        return $this->table_name;
-    }
-
-    // overwrites BaseQuery, return description as key value pair
-    public function ret($mode = null, $option = null)
-    {
-        return parent::ret(\PDO::FETCH_UNIQUE); // fetch by key
+      return sprintf('DESCRIBE `%s`;', $this->table_name);
     }
 }
