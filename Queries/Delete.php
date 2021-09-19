@@ -7,6 +7,7 @@ use HexMakina\Crudites\CruditesException;
 
 class Delete extends BaseQuery
 {
+    use ClauseJoin;
     use ClauseWhere;
 
     public function __construct(TableDescriptionInterface $table, $conditions = [])

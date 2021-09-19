@@ -8,8 +8,9 @@ use HexMakina\BlackBox\Database\QueryInterface;
 
 class Insert extends BaseQuery
 {
+    use ClauseJoin;
+    
     private $query_fields = [];
-
     public function __construct(TableManipulationInterface $table, $assoc_data = [])
     {
         if (!is_array($assoc_data) || empty($assoc_data)) {

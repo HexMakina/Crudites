@@ -7,6 +7,7 @@ use HexMakina\BlackBox\Database\TableManipulationInterface;
 
 class Update extends BaseQuery
 {
+    use ClauseJoin;
     use ClauseWhere;
 
     private $alterations = [];
