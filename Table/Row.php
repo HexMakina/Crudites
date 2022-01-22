@@ -157,23 +157,26 @@ class Row implements RowInterface
         return $this->lastQuery()->isSuccess() ? [] : ['CRUDITES_ERR_ROW_PERSISTENCE'];
     }
 
-    private function create(){
-      $this->last_alter_query = $this->table()->insert($this->export());
-      $this->lastAlterQuery()->run();
+    private function create()
+    {
+        $this->last_alter_query = $this->table()->insert($this->export());
+        $this->lastAlterQuery()->run();
 
       // creation might lead to auto_incremented changes
       // recovering auto_incremented value and pushing it in alterations tracker
-      if ($this->lastAlterQuery()->isSuccess()) {
-          $aipk = $this->lastAlterQuery()->table()->autoIncrementedPrimaryKey();
-          if(!is_null($aipk))
-            $this->alterations[$aipk->name()] = $this->lastAlterQuery()->connection()->lastInsertId();
-      }
+        if ($this->lastAlterQuery()->isSuccess()) {
+            $aipk = $this->lastAlterQuery()->table()->autoIncrementedPrimaryKey();
+            if (!is_null($aipk)) {
+                $this->alterations[$aipk->name()] = $this->lastAlterQuery()->connection()->lastInsertId();
+            }
+        }
     }
 
-    private function update(){
-      $pk_match = $this->table()->primaryKeysMatch($this->load);
-      $this->last_alter_query = $this->table()->update($this->alterations, $pk_match);
-      $this->last_alter_query->run();
+    private function update()
+    {
+        $pk_match = $this->table()->primaryKeysMatch($this->load);
+        $this->last_alter_query = $this->table()->update($this->alterations, $pk_match);
+        $this->last_alter_query->run();
     }
 
     public function wipe(): bool
