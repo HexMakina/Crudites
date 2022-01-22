@@ -18,25 +18,34 @@ class Connection implements ConnectionInterface
     private $database_name = null;
     private $pdo;
     private $dsn;
+    private $source;
 
     private static $driver_default_options = [
-    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, // the one option you cannot change
     \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
     \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
     ];
 
-
+    /*
+     * @throws CruditesException when $dsn is parsed by Source
+     */
     public function __construct($dsn, $username = '', $password = '', $driver_options = [])
     {
-        $this->validateDSN($dsn); //throws \PDOException
-        $this->dsn = $dsn;
+        $this->source = new Source($dsn);
 
         if (isset($driver_options[\PDO::ATTR_ERRMODE])) {
-            unset($driver_options[\PDO::ATTR_ERRMODE]); // mandatory for CRUDITES error handler
+            unset($driver_options[\PDO::ATTR_ERRMODE]);
         }
 
         $driver_options = array_merge(self::$driver_default_options, $driver_options);
-        $this->pdo = new \PDO($dsn, $username, $password, $driver_options);
+        $this->pdo = new \PDO($this->source->DSN(), $username, $password, $driver_options);
+    }
+
+    // database level
+    public function useDatabase($name)
+    {
+        $this->database_name = $name;
+        $this->pdo->query(sprintf('USE `%s`;', $name));
     }
 
     public function driverName()
@@ -46,62 +55,13 @@ class Connection implements ConnectionInterface
 
     public function databaseName(): string
     {
-        return $this->database_name;
+        return $this->source->name();
     }
 
+    // statements
     public function prepare($sql_statement, $options = [])
     {
         return $this->pdo->prepare($sql_statement, $options);
-    }
-
-    public function transact(): bool
-    {
-        return $this->pdo->beginTransaction();
-    }
-
-    public function commit(): bool
-    {
-        return $this->pdo->commit();
-    }
-
-    public function rollback(): bool
-    {
-        return $this->pdo->rollback();
-    }
-
-    public function errorInfo(): array
-    {
-        return $this->pdo->errorInfo();
-    }
-
-    public function lastInsertId($name = null)
-    {
-        return $this->pdo->lastInsertId($name);
-    }
-
-    public function errorCode(): ?string
-    {
-        return $this->pdo->errorCode();
-    }
-
-    private function validateDSN($dsn)
-    {
-        $matches = [];
-        if (preg_match('/^([a-z]+)\:/', $dsn, $matches) !== 1) {
-            throw new \PDOException('DSN_NO_DRIVER');
-        }
-
-        if (!in_array($matches[1], \PDO::getAvailableDrivers(), true)) {
-            throw new \PDOException('DSN_UNAVAILABLE_DRIVER');
-        }
-
-        if (preg_match('/dbname=(.+);/', $dsn, $matches) !== 1) {
-            throw new \PDOException('DSN_NO_DBNAME');
-        }
-
-        $this->database_name = $matches[1];
-
-        return true;
     }
 
     public function query($sql_statement, $fetch_mode = null, $fetch_col_num = null)
@@ -118,9 +78,36 @@ class Connection implements ConnectionInterface
         return $this->pdo->exec($sql_statement);
     }
 
-    public function useDatabase($name)
+    // transactions
+    public function transact(): bool
     {
-        $this->database_name = $name;
-        $this->pdo->query(sprintf('USE `%s`;', $name));
+        return $this->pdo->beginTransaction();
     }
+    public function commit(): bool
+    {
+        return $this->pdo->commit();
+    }
+
+    public function rollback(): bool
+    {
+        return $this->pdo->rollback();
+    }
+
+    // success & errors
+    public function lastInsertId($name = null){
+        return $this->pdo->lastInsertId($name);
+    }
+
+    public function errorInfo(): array
+    {
+        return $this->pdo->errorInfo();
+    }
+
+    public function errorCode(): ?string
+    {
+        return $this->pdo->errorCode();
+    }
+
+
+
 }
