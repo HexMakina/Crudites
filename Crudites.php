@@ -10,8 +10,8 @@
 namespace HexMakina\Crudites;
 
 use HexMakina\Crudites\Queries\BaseQuery;
-use HexMakina\Crudites\Queries\Select;
-use HexMakina\Crudites\Interfaces\DatabaseInterface;
+use HexMakina\BlackBox\Database\SelectInterface;
+use HexMakina\BlackBox\Database\DatabaseInterface;
 use HexMakina\Crudites\CruditesException;
 
 class Crudites
@@ -32,14 +32,14 @@ class Crudites
         try {
             return self::$database->inspect($table_name);
         } catch (\Exception $e) {
-            throw new CruditesException('TABLE_INTROSPECTION');
+            throw new CruditesException('TABLE_INTROSPECTION::' . $table_name);
         }
     }
 
-    public static function connect($props = null)
+    public static function connect($dsn = null, $user = null, $pass = null)
     {
         // no props, means connection already exists, verify and return
-        if (!isset($props['host'], $props['port'], $props['name'], $props['char'], $props['user'], $props['pass'])) {
+        if (!isset($dsn, $user, $pass)) {
             if (is_null(self::$database)) {
                 throw new CruditesException('CONNECTION_MISSING');
             }
@@ -47,16 +47,16 @@ class Crudites
             return self::$database->connection();
         }
 
-        $conx = new Connection($props['host'], $props['port'], $props['name'], $props['char'], $props['user'], $props['pass']);
+        $conx = new Connection($dsn, $user, $pass);
         return $conx;
     }
 
     //------------------------------------------------------------  DataRetrieval
     // success: return AIPK-indexed array of results (associative array or object)
-    public static function count(Select $Query)
+    public static function count(SelectInterface $Query)
     {
-        $Query->select_also(['COUNT(*) as count']);
-        $res = $Query->ret_col();
+        $Query->selectAlso(['COUNT(*) as count']);
+        $res = $Query->retCol();
         if (is_array($res)) {
             return intval(current($res));
         }
@@ -64,14 +64,14 @@ class Crudites
     }
 
     // success: return AIPK-indexed array of results (associative array or object)
-    public static function retrieve(Select $Query): array
+    public static function retrieve(SelectInterface $Query): array
     {
-        $pk_name = implode('_', array_keys($Query->table()->primary_keys()));
+        $pk_name = implode('_', array_keys($Query->table()->primaryKeys()));
 
         $ret = [];
 
-        if ($Query->run()->is_success()) {
-            foreach ($Query->ret_ass() as $rec) {
+        if ($Query->run()->isSuccess()) {
+            foreach ($Query->retAss() as $rec) {
                 $ret[$rec[$pk_name]] = $rec;
             }
         }
@@ -93,64 +93,74 @@ class Crudites
         return $res;
     }
 
-    public static function distinct_for($table, $column_name, $filter_by_value = null)
+    public static function distinctFor($table, $column_name, $filter_by_value = null)
     {
-        $table = self::table_name_to_Table($table);
+        $table = self::tableNameToTable($table);
 
         if (is_null($table->column($column_name))) {
             throw new CruditesException('TABLE_REQUIRES_COLUMN');
         }
 
-        $Query = $table->select(["DISTINCT `$column_name`"])->aw_not_empty($column_name)->order_by([$table->name(), $column_name, 'ASC']);
+        $Query = $table->select(["DISTINCT `$column_name`"])
+          ->whereNotEmpty($column_name)
+          ->orderBy([$table->name(), $column_name, 'ASC']);
 
         if (!is_null($filter_by_value)) {
-            $Query->aw_like($column_name, "%$filter_by_value%");
+            $Query->whereLike($column_name, "%$filter_by_value%");
         }
 
-        $Query->order_by($column_name, 'DESC');
+        $Query->orderBy($column_name, 'DESC');
         // ddt($Query);
-        return $Query->ret_col();
+        return $Query->retCol();
     }
 
-    public static function distinct_for_with_id($table, $column_name, $filter_by_value = null)
+    public static function distinctForWithId($table, $column_name, $filter_by_value = null)
     {
-        $table = self::table_name_to_Table($table);
+        $table = self::tableNameToTable($table);
 
         if (is_null($table->column($column_name))) {
             throw new CruditesException('TABLE_REQUIRES_COLUMN');
         }
 
-        $Query = $table->select(["DISTINCT `id`,`$column_name`"])->aw_not_empty($column_name)->order_by([$table->name(), $column_name, 'ASC']);
+        $Query = $table->select(["DISTINCT `id`,`$column_name`"])
+          ->whereNotEmpty($column_name)->orderBy([$table->name(), $column_name, 'ASC']);
 
         if (!is_null($filter_by_value)) {
-            $Query->aw_like($column_name, "%$filter_by_value%");
+            $Query->whereLike($column_name, "%$filter_by_value%");
         }
 
-        return $Query->ret_par();
+        return $Query->retPar();
     }
 
     //------------------------------------------------------------  DataManipulation Helpers
     // returns true on success, false on failure or throws an exception
     // throws Exception on failure
-    public static function toggle_boolean($table, $boolean_column_name, $id): bool
+    public static function toggleBoolean($table, $boolean_column_name, $id): bool
     {
 
-        $table = self::table_name_to_Table($table);
+        $table = self::tableNameToTable($table);
 
-        if (is_null($column = $table->column($boolean_column_name)) || !$column->type()->is_boolean()) {
+        if (is_null($column = $table->column($boolean_column_name)) || !$column->type()->isBoolean()) {
             return false;
         }
 
         // TODO: still using 'id' instead of table->primaries
+        // TODO: not using the QueryInterface Way of binding stuff
         $Query = $table->update();
-        $Query->statement("UPDATE " . $table->name() . " SET $boolean_column_name = !$boolean_column_name WHERE id=:id");
-        $Query->bindings([':id' => $id]);
+        $statement = sprintf(
+            "UPDATE %s SET %s = !%s WHERE id=:id",
+            $table->name(),
+            $boolean_column_name,
+            $boolean_column_name
+        );
+        $Query->statement($statement);
+        $Query->setBindings([':id' => $id]);
         $Query->run();
 
-        return $Query->is_success();
+        return $Query->isSuccess();
     }
 
-    private static function table_name_to_Table($table)
+    private static function tableNameToTable($table)
     {
         return is_string($table) ? self::inspect($table) : $table;
     }
