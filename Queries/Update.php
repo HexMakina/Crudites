@@ -3,10 +3,11 @@
 namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\CruditesException;
-use HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use HexMakina\BlackBox\Database\TableManipulationInterface;
 
 class Update extends BaseQuery
 {
+    use ClauseJoin;
     use ClauseWhere;
 
     private $alterations = [];
@@ -17,42 +18,36 @@ class Update extends BaseQuery
         $this->connection = $table->connection();
 
         if (!empty($update_data)) {
-            $this->values($update_data);
+            $this->addBindings($update_data);
         }
 
         if (!empty($conditions)) {
             if (is_array($conditions)) {
-                $this->aw_fields_eq($conditions);
+                $this->whereFieldsEQ($conditions);
             } elseif (is_string($conditions)) {
-                $this->and_where($conditions);
+                $this->where($conditions);
             }
         }
     }
 
-    public function values($update_data)
+    public function addBindings($update_data): array
     {
+        $binding_names = [];
         foreach ($update_data as $field_name => $value) {
             $column = $this->table->column($field_name);
             if (is_null($column)) {
                 continue;
             }
 
-            if ($value === '' && $column->is_nullable()) {
+            if ($value === '' && $column->isNullable()) {
                 $value = null;
-            } elseif (empty($value) && $column->type()->is_boolean()) { //empty '', 0, false
+            } elseif (empty($value) && $column->type()->isBoolean()) { //empty '', 0, false
                 $value = 0;
             }
-
-            $binding_name = $this->bind_label($field_name);
-            $this->add_binding($binding_name, $value);
-            $this->alterations [] = $this->field_label($field_name) . " = $binding_name";
+            $binding_names[$field_name] = $this->addBinding($field_name, $value);
+            $this->alterations [] = $this->backTick($field_name) . ' = ' . $binding_names[$field_name];
         }
-        return $this;
-    }
-
-    public function has_alterations()
-    {
-        return !empty($this->alterations);
+        return $binding_names;
     }
 
     public function generate(): string
@@ -65,8 +60,9 @@ class Update extends BaseQuery
         if (empty($this->where)) {
             throw new CruditesException('UPDATE_NO_CONDITIONS');
         }
-
-        $ret = sprintf('UPDATE `%s` SET %s %s;', $this->table->name(), implode(', ', $this->alterations), $this->generate_where());
+        $set = implode(', ', $this->alterations);
+        $where = $this->generateWhere();
+        $ret = sprintf('UPDATE `%s` SET %s %s;', $this->table->name(), $set, $where);
         return $ret;
     }
 }
