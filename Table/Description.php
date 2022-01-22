@@ -66,9 +66,11 @@ class Description implements TableDescriptionInterface
 
     public function addForeignKey(TableColumnInterface $column)
     {
-        $this->foreign_keys_by_table[$column->foreignTableName()] = $this->foreign_keys_by_table[$column->foreignTableName()] ?? [];
-        $this->foreign_keys_by_table[$column->foreignTableName()] [] = $column;
+        if (!isset($this->foreign_keys_by_table[$column->foreignTableName()])) {
+            $this->foreign_keys_by_table[$column->foreignTableName()] = [];
+        }
 
+        $this->foreign_keys_by_table[$column->foreignTableName()] [] = $column;
         $this->foreign_keys_by_name[$column->name()] = $column;
     }
 
