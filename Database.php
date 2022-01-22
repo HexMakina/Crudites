@@ -6,9 +6,9 @@ use HexMakina\Crudites\Queries\Select;
 use HexMakina\Crudites\Queries\Describe;
 use HexMakina\Crudites\Table\Manipulation;
 use HexMakina\Crudites\Table\Column;
-use HexMakina\Crudites\Interfaces\ConnectionInterface;
-use HexMakina\Crudites\Interfaces\DatabaseInterface;
-use HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use HexMakina\BlackBox\Database\ConnectionInterface;
+use HexMakina\BlackBox\Database\DatabaseInterface;
+use HexMakina\BlackBox\Database\TableManipulationInterface;
 
 class Database implements DatabaseInterface
 {
@@ -17,56 +17,20 @@ class Database implements DatabaseInterface
     private $fk_by_table = [];
     private $unique_by_table = [];
 
-    public function __construct($db_host, $db_port, $db_name, $charset = 'utf8', $username = '', $password = '')
+    public function __construct(ConnectionInterface $connection)
     {
-        $this->connection = new Connection($db_host, $db_port, $db_name, $charset, $username, $password);
-        $this->introspect(new Connection($db_host, $db_port, 'INFORMATION_SCHEMA', $charset, $username, $password));
+        $this->connection = $connection;
+        $this->introspect();
     }
 
     public function name()
     {
-        return $this->connection()->database_name();
+        return $this->connection()->databaseName();
     }
 
     public function connection(): ConnectionInterface
     {
         return $this->connection;
-    }
-
-    public function introspect(ConnectionInterface $information_schema)
-    {
-
-        $statement = sprintf('SELECT TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION, COLUMN_NAME, POSITION_IN_UNIQUE_CONSTRAINT, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = "%s" ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION', $this->name());
-        $q = new Select();
-        $q->connection($information_schema);
-        $q->statement($statement);
-        $res = $q->ret_ass();
-        foreach ($res as $key_usage) {
-            $table_name = $key_usage['TABLE_NAME'];
-
-            if (isset($key_usage['REFERENCED_TABLE_NAME'])) { // FOREIGN KEYS
-                $this->fk_by_table[$table_name] = $this->fk_by_table[$table_name] ?? [];
-                $this->fk_by_table[$table_name][$key_usage['COLUMN_NAME']] = [$key_usage['REFERENCED_TABLE_NAME'], $key_usage['REFERENCED_COLUMN_NAME']];
-            }
-
-            if (!isset($key_usage['POSITION_IN_UNIQUE_CONSTRAINT'])) { // PRIMARY & UNIQUES
-                $constraint_name = $key_usage['CONSTRAINT_NAME'];
-                $column_name = $key_usage['COLUMN_NAME'];
-
-                $this->unique_by_table[$table_name] = $this->unique_by_table[$table_name] ?? [];
-                $this->unique_by_table[$table_name][$constraint_name] = $this->unique_by_table[$table_name][$constraint_name] ?? [];
-                $this->unique_by_table[$table_name][$constraint_name][$key_usage['ORDINAL_POSITION']] = $column_name;
-            }
-        }
-
-        foreach ($this->unique_by_table as $table_name => $uniques) {
-            foreach ($uniques as $constraint_name => $columns) {
-                foreach ($columns as $column_name) {
-                    $this->unique_by_table[$table_name][$column_name] = [0 => $constraint_name] + $columns;
-                }
-                unset($this->unique_by_table[$table_name][$constraint_name]);
-            }
-        }
     }
 
     public function inspect($table_name): TableManipulationInterface
@@ -75,10 +39,7 @@ class Database implements DatabaseInterface
             return $this->table_cache[$table_name];
         }
 
-
-        $describe = (new Describe($table_name));
-        $describe->connection($this->connection());
-        $description = $describe->ret();
+        $description = $this->describe($table_name);
 
       // TODO test this when all is back to normal 2021.03.09
         if ($description === false) {
@@ -90,41 +51,120 @@ class Database implements DatabaseInterface
         foreach ($description as $column_name => $specs) {
             $column = new Column($table, $column_name, $specs);
 
-          // handling usage constraints
+            // handling usage constraints
             if (isset($this->unique_by_table[$table_name][$column_name])) {
                 $unique_name = $this->unique_by_table[$table_name][$column_name][0];
 
                 switch (count($this->unique_by_table[$table_name][$column_name])) {
                     case 2: // constraint name + column
-                        $column->unique_name($unique_name);
-                        $table->add_unique_key($unique_name, $column_name);
+                        $column->uniqueName($unique_name);
+                        $table->addUniqueKey($unique_name, $column_name);
                         break;
 
                     default:
-                        $column->unique_group_name($unique_name);
+                        $column->uniqueGroupName($unique_name);
                         unset($this->unique_by_table[$table_name][$column_name][0]);
-                        $table->add_unique_key($unique_name, $this->unique_by_table[$table_name][$column_name]);
+                        $table->addUniqueKey($unique_name, $this->unique_by_table[$table_name][$column_name]);
                         break;
                 }
             }
-        // handling usage foreign keys
+            // handling foreign keys
             if (($reference = $this->getForeignKey($table_name, $column_name)) !== false) {
-                $column->is_foreign(true);
+                $column->isForeign(true);
                 $column->setForeignTableName($reference[0]);
                 $column->setForeignColumnName($reference[1]);
 
-                $table->add_foreign_key($column);
+                $table->addForeignKey($column);
             }
-            $table->add_column($column);
+            $table->addColumn($column);
         }
-      // ddt($table);
+
         $this->table_cache[$table_name] = $table;
 
         return $this->table_cache[$table_name];
     }
 
-    public function getForeignKey($table_name, $column_name)
+
+    private function getForeignKey($table_name, $column_name)
     {
         return $this->fk_by_table[$table_name][$column_name] ?? false;
+    }
+
+    // vague memory that it makes later operation easier. written on the spot.. testing will reveal it's true nature
+    private function refactorConstraintNameIndex()
+    {
+        foreach ($this->unique_by_table as $table_name => $uniques) {
+            foreach ($uniques as $constraint_name => $columns) {
+                foreach ($columns as $column_name) {
+                    $this->unique_by_table[$table_name][$column_name] = [0 => $constraint_name] + $columns;
+                }
+                unset($this->unique_by_table[$table_name][$constraint_name]);
+            }
+        }
+    }
+
+    private function addUniqueKeyByTable($table_name, $key_usage)
+    {
+        $constraint_name = $key_usage['CONSTRAINT_NAME'];
+        $column_name = $key_usage['COLUMN_NAME'];
+
+        $this->unique_by_table[$table_name] = $this->unique_by_table[$table_name] ?? [];
+        $this->unique_by_table[$table_name][$constraint_name] = $this->unique_by_table[$table_name][$constraint_name] ?? [];
+        $this->unique_by_table[$table_name][$constraint_name][$key_usage['ORDINAL_POSITION']] = $column_name;
+    }
+
+    private function addForeignKeyByTable($table_name, $key_usage)
+    {
+        $this->fk_by_table[$table_name] = $this->fk_by_table[$table_name] ?? [];
+        $this->fk_by_table[$table_name][$key_usage['COLUMN_NAME']] = [$key_usage['REFERENCED_TABLE_NAME'], $key_usage['REFERENCED_COLUMN_NAME']];
+    }
+
+    private function describe($table_name): array
+    {
+        $query = $this->connection()->query((new Describe($table_name)));
+        if ($query === false) {
+            throw new CruditesException('TABLE_DESCRIBE_FAILURE');
+        }
+
+        return $query->fetchAll(\PDO::FETCH_UNIQUE);
+    }
+
+    private function introspect()
+    {
+        $fields = [
+          'TABLE_NAME',
+          'CONSTRAINT_NAME',
+          'ORDINAL_POSITION',
+          'COLUMN_NAME',
+          'POSITION_IN_UNIQUE_CONSTRAINT',
+          'REFERENCED_TABLE_NAME',
+          'REFERENCED_COLUMN_NAME'
+        ];
+
+        $statement = 'SELECT ' . implode(', ', $fields)
+        . ' FROM KEY_COLUMN_USAGE'
+        . ' WHERE TABLE_SCHEMA = "%s"'
+        . ' ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION';
+
+        $previous_database_name = $this->connection()->databaseName();
+        $this->connection->useDatabase('INFORMATION_SCHEMA');
+        $res = $this->connection->query(sprintf($statement, $previous_database_name))->fetchAll();
+        $this->connection->useDatabase($previous_database_name);
+
+        foreach ($res as $key_usage) {
+            $table_name = $key_usage['TABLE_NAME'];
+
+            // FOREIGN KEYS
+            if (isset($key_usage['REFERENCED_TABLE_NAME'])) {
+                $this->addForeignKeyByTable($table_name, $key_usage);
+            }
+
+            // PRIMARY & UNIQUES
+            if (!isset($key_usage['POSITION_IN_UNIQUE_CONSTRAINT'])) {
+                $this->addUniqueKeyByTable($table_name, $key_usage);
+            }
+        }
+
+        $this->refactorConstraintNameIndex();
     }
 }
