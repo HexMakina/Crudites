@@ -2,10 +2,12 @@
 
 namespace HexMakina\Crudites\Table;
 
-use HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\RowInterface;
+use HexMakina\BlackBox\Database\QueryInterface;
 use HexMakina\Crudites\CruditesException;
 
-class Row
+class Row implements RowInterface
 {
     private $table;
 
@@ -26,7 +28,10 @@ class Row
 
     public function __toString()
     {
-        return PHP_EOL . 'load: ' . json_encode($this->load) . PHP_EOL . 'alterations: ' . json_encode(array_keys($this->alterations));
+        return PHP_EOL . 'load: '
+        . json_encode($this->load)
+        . PHP_EOL . 'alterations: '
+        . json_encode(array_keys($this->alterations));
     }
 
     public function __debugInfo(): array
@@ -43,27 +48,22 @@ class Row
         return $this->table;
     }
 
-    public function last_query()
+    public function lastQuery(): QueryInterface
     {
         return $this->last_query;
     }
 
-    public function last_alter_query()
+    public function lastAlterQuery(): QueryInterface
     {
         return $this->last_alter_query;
     }
 
-    public function is_new(): bool
+    public function isNew(): bool
     {
         return empty($this->load);
     }
 
-    public function is_loaded(): bool
-    {
-        return !$this->is_new();
-    }
-
-    public function is_altered(): bool
+    public function isAltered(): bool
     {
         return !empty($this->alterations);
     }
@@ -87,14 +87,14 @@ class Row
      */
     public function load($dat_ass)
     {
-        $pks = $this->table()->primary_keys_match($dat_ass);
+        $pks = $this->table()->primaryKeysMatch($dat_ass);
 
         if (empty($pks)) {
             return $this;
         }
 
-        $this->last_query = $this->table()->select()->aw_primary($pks);
-        $res = $this->last_query->ret_ass();
+        $this->last_query = $this->table()->select()->wherePrimary($pks);
+        $res = $this->last_query->retAss();
 
         $this->load = (is_array($res) && count($res) === 1) ? current($res) : null;
 
@@ -115,13 +115,13 @@ class Row
             $column = $this->table->column($field_name);
 
             // skips non exisint field name and A_I column
-            if (is_null($column) || $column->is_auto_incremented()) {
+            if (is_null($column) || $column->isAutoIncremented()) {
                 continue;
             }
 
             // replaces empty strings with null or default value
             if (trim($dat_ass[$field_name]) === '') {
-                $dat_ass[$field_name] = $column->is_nullable() ? null : $column->default();
+                $dat_ass[$field_name] = $column->isNullable() ? null : $column->default();
             }
 
             // checks for changes with loaded data. using == instead of === is risky but needed
@@ -136,7 +136,7 @@ class Row
     public function persist(): array
     {
 
-        if (!$this->is_new() && !$this->is_altered()) { // existing record with no alterations
+        if (!$this->isNew() && !$this->isAltered()) { // existing record with no alterations
             return [];
         }
 
@@ -145,14 +145,14 @@ class Row
         }
 
         try {
-            if ($this->is_new()) {
+            if ($this->isNew()) {
                 $this->last_alter_query = $this->table()->insert($this->export());
                 $this->last_alter_query->run();
-                if ($this->last_alter_query->is_success() && !is_null($aipk = $this->last_alter_query->table()->auto_incremented_primary_key())) {
-                    $this->alterations[$aipk->name()] = $this->last_alter_query->inserted_id();
+                if ($this->last_alter_query->isSuccess() && !is_null($aipk = $this->last_alter_query->table()->autoIncrementedPrimaryKey())) {
+                    $this->alterations[$aipk->name()] = $this->last_alter_query->connection()->lastInsertId();
                 }
             } else {
-                $pk_match = $this->table()->primary_keys_match($this->load);
+                $pk_match = $this->table()->primaryKeysMatch($this->load);
                 $this->last_alter_query = $this->table()->update($this->alterations, $pk_match);
                 $this->last_alter_query->run();
             }
@@ -162,7 +162,7 @@ class Row
             return [$e->getMessage()];
         }
 
-        return $this->last_query()->is_success() ? [] : ['CRUDITES_ERR_ROW_PERSISTENCE'];
+        return $this->lastQuery()->isSuccess() ? [] : ['CRUDITES_ERR_ROW_PERSISTENCE'];
     }
 
     public function wipe(): bool
@@ -170,7 +170,7 @@ class Row
         $dat_ass = $this->load ?? $this->fresh ?? $this->alterations;
 
         // need The Primary key, then you can wipe at ease
-        if (!empty($pk_match = $this->table()->primary_keys_match($dat_ass))) {
+        if (!empty($pk_match = $this->table()->primaryKeysMatch($dat_ass))) {
             $this->last_alter_query = $this->table->delete($pk_match);
             try {
                 $this->last_alter_query->run();
@@ -179,7 +179,7 @@ class Row
             }
 
             $this->last_query = $this->last_alter_query;
-            return $this->last_alter_query->is_success();
+            return $this->last_alter_query->isSuccess();
         }
 
         return false;
@@ -198,7 +198,7 @@ class Row
         foreach ($this->table->columns() as $column_name => $column) {
             $field_value = $dat_ass[$column_name] ?? null;
 
-            $validation = $column->validate_value($field_value);
+            $validation = $column->validateValue($field_value);
             if ($validation !== true) {
                 $errors[$column_name] = $validation;
             }
