@@ -135,7 +135,6 @@ class Row implements RowInterface
 
     public function persist(): array
     {
-
         if (!$this->isNew() && !$this->isAltered()) { // existing record with no alterations
             return [];
         }
@@ -146,23 +145,35 @@ class Row implements RowInterface
 
         try {
             if ($this->isNew()) {
-                $this->last_alter_query = $this->table()->insert($this->export());
-                $this->last_alter_query->run();
-                if ($this->last_alter_query->isSuccess() && !is_null($aipk = $this->last_alter_query->table()->autoIncrementedPrimaryKey())) {
-                    $this->alterations[$aipk->name()] = $this->last_alter_query->connection()->lastInsertId();
-                }
+                $this->create();
             } else {
-                $pk_match = $this->table()->primaryKeysMatch($this->load);
-                $this->last_alter_query = $this->table()->update($this->alterations, $pk_match);
-                $this->last_alter_query->run();
+                $this->update();
             }
-
-            $this->last_query = $this->last_alter_query;
+            $this->last_query = $this->lastAlterQuery();
         } catch (CruditesException $e) {
             return [$e->getMessage()];
         }
 
         return $this->lastQuery()->isSuccess() ? [] : ['CRUDITES_ERR_ROW_PERSISTENCE'];
+    }
+
+    private function create(){
+      $this->last_alter_query = $this->table()->insert($this->export());
+      $this->lastAlterQuery()->run();
+
+      // creation might lead to auto_incremented changes
+      // recovering auto_incremented value and pushing it in alterations tracker
+      if ($this->lastAlterQuery()->isSuccess()) {
+          $aipk = $this->lastAlterQuery()->table()->autoIncrementedPrimaryKey();
+          if(!is_null($aipk))
+            $this->alterations[$aipk->name()] = $this->lastAlterQuery()->connection()->lastInsertId();
+      }
+    }
+
+    private function update(){
+      $pk_match = $this->table()->primaryKeysMatch($this->load);
+      $this->last_alter_query = $this->table()->update($this->alterations, $pk_match);
+      $this->last_alter_query->run();
     }
 
     public function wipe(): bool
