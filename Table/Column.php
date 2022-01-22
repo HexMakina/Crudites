@@ -2,7 +2,9 @@
 
 namespace HexMakina\Crudites\Table;
 
-class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
+use HexMakina\BlackBox\Database\ColumnTypeInterface;
+
+class Column implements \HexMakina\BlackBox\Database\TableColumnInterface
 {
 
     private $name = null;
@@ -12,7 +14,6 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     private $ColumnType = null;
 
     private $index = false;
-
     private $primary = false;
     private $auto_incremented = false;
 
@@ -33,8 +34,24 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     {
         $this->table_name = is_string($table) ? $table : $table->name();
         $this->name = $name;
+
         $this->ColumnType = new ColumnType($specs['Type']);
-        $this->import_describe($specs);
+
+        $this->default_value = $specs['Default'] ?? null;
+
+        if (isset($specs['Null'])) {
+            $this->isNullable($specs['Null'] !== 'NO');
+        }
+
+        if (isset($specs['Key'])) {
+            $this->isPrimary($specs['Key'] === 'PRI');
+            $this->isIndex(true);
+        }
+
+        if (isset($specs['Extra'])) {
+            $this->isAutoIncremented($specs['Extra'] === 'auto_increment');
+            $this->extra = $specs['Extra'];
+        }
     }
 
     //------------------------------------------------------------  getters:field:info
@@ -61,7 +78,11 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
         return $this->name;
     }
 
-    public function table_name(): string
+    public function type(): ColumnTypeInterface
+    {
+        return $this->ColumnType;
+    }
+    public function tableName(): string
     {
         return $this->table_name;
     }
@@ -75,39 +96,44 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     {
         $ret = $this->default_value;
 
-        if (!is_null($this->default_value) && ($this->type()->is_integer() || $this->type()->is_boolean())) {
+        if (!is_null($this->default_value) && ($this->type()->isInteger() || $this->type()->isBoolean())) {
             $ret = (int)$ret;
         }
 
         return $ret;
     }
 
-    public function setDefaultValue($v)
-    {
-        $this->default_value = $v;
-    }
-
-    public function setExtra($v)
-    {
-        $this->extra = $v;
-    }
-
-    public function is_primary($setter = null): bool
+    public function isPrimary($setter = null): bool
     {
         return is_bool($setter) ? ($this->primary = $setter) : $this->primary;
     }
 
-    public function is_foreign($setter = null): bool
+    public function isForeign($setter = null): bool
     {
         return is_bool($setter) ? ($this->foreign = $setter) : $this->foreign;
     }
 
-    public function unique_name($setter = null)
+    public function isIndex($setter = null): bool
+    {
+        return is_bool($setter) ? ($this->index = $setter) : $this->index;
+    }
+
+    public function isAutoIncremented($setter = null): bool
+    {
+        return is_bool($setter) ? ($this->auto_incremented = $setter) : $this->auto_incremented;
+    }
+
+    public function isNullable($setter = null): bool
+    {
+        return is_bool($setter) ? ($this->nullable = $setter) : $this->nullable;
+    }
+
+    public function uniqueName($setter = null)
     {
         return ($this->unique_name = ($setter ?? $this->unique_name));
     }
 
-    public function unique_group_name($setter = null)
+    public function uniqueGroupName($setter = null)
     {
         return ($this->unique_group_name = ($setter ?? $this->unique_group_name));
     }
@@ -116,15 +142,16 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     {
         $this->foreign_table_name = $setter;
     }
-    public function foreign_table_name(): string
+
+    public function foreignTableName(): string
     {
         return $this->foreign_table_name;
     }
 
-    public function foreign_table_alias(): string
+    public function foreignTableAlias(): string
     {
-        $ret = $this->foreign_table_name();
-        if (preg_match('/(.+)_(' . $this->foreign_column_name() . ')$/', $this->name(), $m)) {
+        $ret = $this->foreignTableName();
+        if (preg_match('/(.+)_(' . $this->foreignColumnName() . ')$/', $this->name(), $m)) {
             $ret = $m[1];
         }
 
@@ -135,101 +162,25 @@ class Column implements \HexMakina\Crudites\Interfaces\TableColumnInterface
     {
         $this->foreign_column_name = $setter;
     }
-    public function foreign_column_name(): string
+
+    public function foreignColumnName(): string
     {
         return $this->foreign_column_name;
     }
 
-
-    public function is_index($setter = null): bool
+    public function validateValue($field_value = null)
     {
-        return is_bool($setter) ? ($this->index = $setter) : $this->index;
-    }
+        $ret = false;
 
-    public function is_auto_incremented($setter = null): bool
-    {
-        return is_bool($setter) ? ($this->auto_incremented = $setter) : $this->auto_incremented;
-    }
-
-    public function is_nullable($setter = null): bool
-    {
-        return is_bool($setter) ? ($this->nullable = $setter) : $this->nullable;
-    }
-
-    //------------------------------------------------------------  getters:field:info:type
-    // public function type($setter=null)
-    // {
-    //   return is_null($setter) ? $this->type : ($this->type=$setter);
-    // }
-    public function type()
-    {
-        return $this->ColumnType;
-    }
-
-    // public function length($setter=null) : int
-    // {
-    //   return is_null($setter) ? ($this->type_length ?? -1) : ($this->type_length=$setter);
-    // }
-
-    public function import_describe($specs)
-    {
-        foreach ($specs as $k => $v) {
-            switch ($k) {
-                case 'Null':
-                    $this->is_nullable($v !== 'NO');
-                    break;
-
-                case 'Key':
-                    $this->is_primary($v === 'PRI');
-                          $this->is_index(true);
-                    break;
-
-                case 'Default':
-                    $this->setDefaultValue($v);
-                    break;
-
-                case 'Extra':
-                    if ($v === 'auto_increment') {
-                        $this->is_auto_incremented(true);
-                    } else {
-                        $this->setExtra($v);
-                    }
-                    break;
-            }
-        }
-        return $this;
-    }
-
-    public function validate_value($field_value = null)
-    {
-        if ($this->is_auto_incremented()) {
-            return true;
+        if ($this->isAutoIncremented() || $this->type()->isBoolean()) {
+            $ret = true;
+        } elseif (is_null($field_value)) {
+            $ret = ($this->isNullable() || !is_null($this->default())) ? true : 'ERR_FIELD_REQUIRED';
+        } else {
+          // nothing found on the Column level, lets check for Typing error
+            $ret = $this->type()->validateValue($field_value);
         }
 
-        if ($this->type()->is_boolean()) {
-            return true;
-        }
-
-        if (is_null($field_value)) {
-            if ($this->is_nullable()) {
-                return true;
-            } elseif (is_null($this->default())) {
-                return 'ERR_FIELD_REQUIRED';
-            }
-        }
-
-        // nothing found on the Column level, lets check for Typing error
-        return $this->type()->validate_value($field_value);
-    }
-
-    public function is_hidden()
-    {
-        switch ($this->name()) {
-            case 'created_by':
-            case 'created_on':
-            case 'password':
-                return true;
-        }
-        return false;
+        return $ret;
     }
 }
