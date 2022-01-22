@@ -11,31 +11,40 @@
 
 namespace HexMakina\Crudites;
 
-class Connection implements Interfaces\ConnectionInterface
+use HexMakina\BlackBox\Database\ConnectionInterface;
+
+class Connection implements ConnectionInterface
 {
     private $database_name = null;
     private $pdo;
+    private $dsn;
 
-    private static $driver_options = [
-    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, // mandatory in CRUDITES error handler
+    private static $driver_default_options = [
+    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
     \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
     \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
     ];
 
-    public function __construct($db_host, $db_port, $db_name, $charset = 'utf8', $username = '', $password = '')
+
+    public function __construct($dsn, $username = '', $password = '', $driver_options = [])
     {
-        $this->database_name = $db_name;
-        $dsn = "mysql:host=$db_host;port=$db_port;dbname=$db_name;charset=$charset";
-        $this->validate_dsn($dsn); //throws \PDOException
-        $this->pdo = new \PDO($dsn, $username, $password, self::$driver_options);
+        $this->validateDSN($dsn); //throws \PDOException
+        $this->dsn = $dsn;
+
+        if (isset($driver_options[\PDO::ATTR_ERRMODE])) {
+            unset($driver_options[\PDO::ATTR_ERRMODE]); // mandatory for CRUDITES error handler
+        }
+
+        $driver_options = array_merge(self::$driver_default_options, $driver_options);
+        $this->pdo = new \PDO($dsn, $username, $password, $driver_options);
     }
 
-    public function driver_name()
+    public function driverName()
     {
         return $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
     }
 
-    public function database_name(): string
+    public function databaseName(): string
     {
         return $this->database_name;
     }
@@ -60,35 +69,37 @@ class Connection implements Interfaces\ConnectionInterface
         return $this->pdo->rollback();
     }
 
-    public function error_info(): array
+    public function errorInfo(): array
     {
         return $this->pdo->errorInfo();
     }
 
-    public function last_inserted_id($name = null)
+    public function lastInsertId($name = null)
     {
-        return $this->pdo->lastInsertId();
+        return $this->pdo->lastInsertId($name);
     }
 
-    public function error_code(): array
+    public function errorCode(): ?string
     {
-        return $this->pdo->errorInfo();
+        return $this->pdo->errorCode();
     }
 
-    private function validate_dsn($dsn)
+    private function validateDSN($dsn)
     {
-        $matches = null;
+        $matches = [];
         if (preg_match('/^([a-z]+)\:/', $dsn, $matches) !== 1) {
-            throw new \PDOException('DSN Error: bad format');
+            throw new \PDOException('DSN_NO_DRIVER');
         }
 
-        $dsn_driver = $matches[1];
-        $available_drivers = \PDO::getAvailableDrivers();
-        if (!in_array($dsn_driver, $available_drivers, true)) {
-            $err_msg = 'DSN Error: "%s" was given, "%s" are available';
-            $err_msg = sprintf($err_msg, $dsn_driver, implode(', ', \PDO::getAvailableDrivers()));
-            throw new \PDOException($err_msg);
+        if (!in_array($matches[1], \PDO::getAvailableDrivers(), true)) {
+            throw new \PDOException('DSN_UNAVAILABLE_DRIVER');
         }
+
+        if (preg_match('/dbname=(.+);/', $dsn, $matches) !== 1) {
+            throw new \PDOException('DSN_NO_DBNAME');
+        }
+
+        $this->database_name = $matches[1];
 
         return true;
     }
@@ -105,5 +116,11 @@ class Connection implements Interfaces\ConnectionInterface
     public function alter($sql_statement)
     {
         return $this->pdo->exec($sql_statement);
+    }
+
+    public function useDatabase($name)
+    {
+        $this->database_name = $name;
+        $this->pdo->query(sprintf('USE `%s`;', $name));
     }
 }
