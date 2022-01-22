@@ -94,7 +94,8 @@ class Connection implements ConnectionInterface
     }
 
     // success & errors
-    public function lastInsertId($name = null){
+    public function lastInsertId($name = null)
+    {
         return $this->pdo->lastInsertId($name);
     }
 
@@ -107,7 +108,4 @@ class Connection implements ConnectionInterface
     {
         return $this->pdo->errorCode();
     }
-
-
-
 }

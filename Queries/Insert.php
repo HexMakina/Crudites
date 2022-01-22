@@ -20,7 +20,7 @@ class Insert extends BaseQuery
         $this->connection = $table->connection();
 
         if (!empty($assoc_data)) {
-          $this->addBindings($assoc_data);
+            $this->addBindings($assoc_data);
         }
     }
 
@@ -33,7 +33,7 @@ class Insert extends BaseQuery
             }
 
             if (isset($assoc_data[$column_name])) {
-              $ret[$column_name] = $this->addBinding($column_name, $assoc_data[$column_name]);
+                $ret[$column_name] = $this->addBinding($column_name, $assoc_data[$column_name]);
             }
         }
         return $ret;
