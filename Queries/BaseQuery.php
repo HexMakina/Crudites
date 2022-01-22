@@ -74,7 +74,7 @@ abstract class BaseQuery implements QueryInterface
     // public function is_update(){    return false;}
     // public function is_delete(){    return false;}
 
-    // public function query_code()
+    // public function queryCode()
     // {
     //   if($this->is_create())        return self::CODE_CREATE;
     //   elseif($this->is_retrieve())  return self::CODE_RETRIEVE;
