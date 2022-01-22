@@ -3,26 +3,10 @@
 namespace HexMakina\Crudites\Table;
 
 use HexMakina\Crudites\CruditesException;
+use HexMakina\BlackBox\Database\ColumnTypeInterface;
 
-class ColumnType
+class ColumnType implements ColumnTypeInterface
 {
-    const TYPE_BOOLEAN = 'boolean';
-
-    const TYPE_INTEGER = 'integer';
-    const TYPE_FLOAT = 'float';
-    const TYPE_DECIMAL = 'decimal';
-
-    const TYPE_TEXT = 'text';
-    const TYPE_STRING = 'char';
-
-    const TYPE_DATETIME = 'datetime';
-    const TYPE_DATE = 'date';
-    const TYPE_TIMESTAMP = 'timestamp';
-    const TYPE_TIME = 'time';
-    const TYPE_YEAR = 'year';
-
-    const TYPE_ENUM = 'enum';
-
     private static $types_rx = [
     self::TYPE_BOOLEAN => 'tinyint\(1\)|boolean', // is_boolean MUST be tested before is_integer
 
@@ -54,7 +38,7 @@ class ColumnType
             if (preg_match("/$rx/i", $specs_type, $m) === 1) {
                 $this->name = $type;
 
-                if ($this->is_enum()) {
+                if ($this->isEnum()) {
                     $this->enum_values = explode('\',\'', $m[1]);
                 } elseif (preg_match('/([\d]+)/', $specs_type, $m) === 1) {
                     $this->length = (int)$m[0];
@@ -68,104 +52,113 @@ class ColumnType
         }
     }
 
-    public function is_text(): bool
+    public function isText(): bool
     {
         return $this->name === self::TYPE_TEXT;
     }
-    public function is_string(): bool
+
+    public function isString(): bool
     {
         return $this->name === self::TYPE_STRING;
     }
 
-    public function is_boolean(): bool
+    public function isBoolean(): bool
     {
         return $this->name === self::TYPE_BOOLEAN;
     }
 
-    public function is_integer(): bool
+    public function isInteger(): bool
     {
         return $this->name === self::TYPE_INTEGER;
     }
-    public function is_float(): bool
+
+    public function isFloat(): bool
     {
         return $this->name === self::TYPE_FLOAT;
     }
-    public function is_decimal(): bool
+
+    public function isDecimal(): bool
     {
         return $this->name === self::TYPE_DECIMAL;
     }
 
-    public function is_enum(): bool
-    {
-        return $this->name === self::TYPE_ENUM;
-    }
-
-    public function is_year(): bool
-    {
-        return $this->name === self::TYPE_YEAR;
-    }
-    public function is_date(): bool
-    {
-        return $this->name === self::TYPE_DATE;
-    }
-    public function is_time(): bool
-    {
-        return $this->name === self::TYPE_TIME;
-    }
-    public function is_timestamp(): bool
-    {
-        return $this->name === self::TYPE_TIMESTAMP;
-    }
-    public function is_datetime(): bool
-    {
-        return $this->name === self::TYPE_DATETIME;
-    }
-
-    public function is_date_or_time(): bool
-    {
-        return in_array($this->name, [self::TYPE_DATE, self::TYPE_TIME, self::TYPE_TIMESTAMP, self::TYPE_DATETIME]);
-    }
-
-    public function is_numeric(): bool
+    public function isNumeric(): bool
     {
         return in_array($this->name, [self::TYPE_INTEGER, self::TYPE_FLOAT, self::TYPE_DECIMAL]);
     }
 
-    public function enum_values()
+    public function isEnum(): bool
+    {
+        return $this->name === self::TYPE_ENUM;
+    }
+
+    public function isYear(): bool
+    {
+        return $this->name === self::TYPE_YEAR;
+    }
+
+    public function isDate(): bool
+    {
+        return $this->name === self::TYPE_DATE;
+    }
+
+    public function isTime(): bool
+    {
+        return $this->name === self::TYPE_TIME;
+    }
+
+    public function isTimestamp(): bool
+    {
+        return $this->name === self::TYPE_TIMESTAMP;
+    }
+
+    public function isDatetime(): bool
+    {
+        return $this->name === self::TYPE_DATETIME;
+    }
+
+    public function isDateOrTime(): bool
+    {
+        return in_array($this->name, [self::TYPE_DATE, self::TYPE_TIME, self::TYPE_TIMESTAMP, self::TYPE_DATETIME]);
+    }
+
+
+
+    public function getEnumValues(): array
     {
         return $this->enum_values ?? [];
     }
 
-    public function length()
+    public function getLength(): int
     {
         return $this->length ?? -1;
     }
 
 
-    public function validate_value($field_value)
+    public function validateValue($field_value)
     {
-        if ($this->is_text()) {
+        if ($this->isText()) {
             return true;
         }
 
-        if ($this->is_date_or_time()) {
-            return date_create($field_value) === false ? 'ERR_FIELD_FORMAT' : true;
+        if ($this->isDateOrTime() && date_create($field_value) === false) {
+            return 'ERR_FIELD_FORMAT';
         }
 
-        if ($this->is_year()) {
-            return preg_match('/^[0-9]{4}$/', $field_value) !== 1 ? 'ERR_FIELD_FORMAT' : true;
+        if ($this->isYear() && preg_match('/^[0-9]{4}$/', $field_value) !== 1) {
+            return 'ERR_FIELD_FORMAT';
         }
 
-        if ($this->is_numeric()) {
-            return (!is_numeric($field_value)) ? 'ERR_FIELD_FORMAT' : true;
+        if ($this->isNumeric() && !is_numeric($field_value)) {
+            return 'ERR_FIELD_FORMAT';
         }
 
-        if ($this->is_string()) {
-            return ($this->length() < strlen($field_value)) ? 'ERR_FIELD_TOO_LONG' : true;
+        if ($this->isString() && $this->getLength() < strlen($field_value)) {
+            return 'ERR_FIELD_TOO_LONG';
         }
 
-        if ($this->is_enum()) {
-            return !in_array($field_value, $this->enum_values()) ? 'ERR_FIELD_VALUE_RESTRICTED_BY_ENUM' : true;
+        if ($this->isEnum() && !in_array($field_value, $this->getEnumValues())) {
+            return 'ERR_FIELD_VALUE_RESTRICTED_BY_ENUM';
         }
 
         return true;

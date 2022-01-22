@@ -2,26 +2,10 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use HexMakina\BlackBox\Database\TableManipulationInterface;
 
 trait ClauseWhere
 {
-    // const AND = 'AND';
-    // const OR = 'OR';
-
-    // const WHERE_LIKE_PRE = '%TERM';
-    // const WHERE_LIKE_POST = 'TERM%';
-    // const WHERE_LIKE_BOTH = '%TERM%';
-
-    // const GT = '>';
-    // const LT = '<';
-    // const EQ = '=';
-    // const GTE = '>=';
-    // const LTE = '<=';
-    // const NEQ = '<>';
-    // const LIKE = 'LIKE';
-    // const NLIKE = 'NOT LIKE';
-
     public static $OP_AND = 'AND';
     public static $OP_OR = 'OR';
 
@@ -42,145 +26,143 @@ trait ClauseWhere
     protected $where = null;
 
     abstract public function table(TableManipulationInterface $setter = null): TableManipulationInterface;
-    abstract public function table_label($table_name = null);
-    abstract public function bind_name($table_name, $field, $value, $bind_label = null);
-    abstract public function field_label($field, $table_name = null);
-    abstract public function add_binding($k, $v);
+    abstract public function tableLabel($table_name = null);
+    abstract public function backTick($field, $table_name = null);
+    abstract public function addBinding($field, $value, $table_name = null, $bind_label = null): string;
 
-
-    public function and_where($where_condition, $where_bindings = [])
+    public function where($where_condition)
     {
         $this->where = $this->where ?? [];
 
         $this->where[] = "($where_condition)";
 
-        foreach ($where_bindings as $k => $v) {
-            $this->add_binding($k, $v);
-        }
-
         return $this;
     }
 
+    public function whereEqualOrNull($field, $value, $table_name = null, $bindname = null)
+    {
+        $bind_name = $this->addBinding($field, $value, $table_name, $bindname);
+        $field_name = $this->backTick($field, $table_name);
 
-    public function aw_eq_or_null($field, $value, $table_name = null, $bindname = null)
-    {
-        $bind_name = $this->bind_name($table_name, $field, $value, $bindname);
-        $field_name = $this->field_label($field, $table_name);
-
-        return $this->and_where("($field_name = $bind_name OR $field_name IS NULL)");
-    }
-
-    public function aw_eq($field, $value, $table_name = null, $bindname = null)
-    {
-               return $this->aw_bind_field($table_name, $field, self::$OP_EQ, $value, $bindname);
-    }
-    public function aw_gt($field, $value, $table_name = null, $bindname = null)
-    {
-               return $this->aw_bind_field($table_name, $field, self::$OP_GT, $value, $bindname);
-    }
-    public function aw_lt($field, $value, $table_name = null, $bindname = null)
-    {
-               return $this->aw_bind_field($table_name, $field, self::$OP_LT, $value, $bindname);
+        return $this->where("($field_name = $bind_name OR $field_name IS NULL)");
     }
 
-    public function aw_gte($field, $value, $table_name = null, $bindname = null)
+    public function whereEQ($field, $value, $table_name = null, $bindname = null)
     {
-               return $this->aw_bind_field($table_name, $field, self::$OP_GTE, $value, $bindname);
-    }
-    public function aw_lte($field, $value, $table_name = null, $bindname = null)
-    {
-              return $this->aw_bind_field($table_name, $field, self::$OP_LTE, $value, $bindname);
-    }
-    public function aw_not_eq($field, $value, $table_name = null, $bindname = null)
-    {
-          return $this->aw_bind_field($table_name, $field, self::$OP_NEQ, $value, $bindname);
+               return $this->whereBindField($table_name, $field, self::$OP_EQ, $value, $bindname);
     }
 
-    public function aw_primary($pk_values)
+    public function whereGT($field, $value, $table_name = null, $bindname = null)
     {
-        $pks = $this->table()->primary_keys_match($pk_values);
+               return $this->whereBindField($table_name, $field, self::$OP_GT, $value, $bindname);
+    }
+
+    public function whereLT($field, $value, $table_name = null, $bindname = null)
+    {
+               return $this->whereBindField($table_name, $field, self::$OP_LT, $value, $bindname);
+    }
+
+    public function whereGTE($field, $value, $table_name = null, $bindname = null)
+    {
+               return $this->whereBindField($table_name, $field, self::$OP_GTE, $value, $bindname);
+    }
+
+    public function whereLTE($field, $value, $table_name = null, $bindname = null)
+    {
+              return $this->whereBindField($table_name, $field, self::$OP_LTE, $value, $bindname);
+    }
+
+    public function whereNotEQ($field, $value, $table_name = null, $bindname = null)
+    {
+          return $this->whereBindField($table_name, $field, self::$OP_NEQ, $value, $bindname);
+    }
+
+    public function wherePrimary($pk_values)
+    {
+        $pks = $this->table()->primaryKeysMatch($pk_values);
 
         if (empty($pks)) {
-            $this->and_where('1=0');
+            $this->where('1=0');
         } else {
-            $this->aw_fields_eq($pks);
+            $this->whereFieldsEQ($pks);
         }
 
         return $this;
     }
 
-    public function aw_like($field, $prep_value, $table_name = null, $bindname = null)
+    public function whereLike($field, $prep_value, $table_name = null, $bindname = null)
     {
-        return $this->aw_bind_field($table_name, $field, self::$OP_LIKE, $prep_value, $bindname);
+        return $this->whereBindField($table_name, $field, self::$OP_LIKE, $prep_value, $bindname);
     }
-    public function aw_not_like($field, $prep_value, $table_name = null, $bindname = null)
+    public function whereNotLike($field, $prep_value, $table_name = null, $bindname = null)
     {
-        return $this->aw_bind_field($table_name, $field, self::$OP_NLIKE, $prep_value, $bindname);
+        return $this->whereBindField($table_name, $field, self::$OP_NLIKE, $prep_value, $bindname);
     }
 
 
-    public function aw_fields_eq($assoc_data, $table_name = null)
+    public function whereFieldsEQ($assoc_data, $table_name = null)
     {
-        $table_name = $this->table_label($table_name);
+        $table_name = $this->tableLabel($table_name);
         foreach ($assoc_data as $field => $value) {
-            $this->aw_bind_field($table_name, $field, self::$OP_EQ, $value);
+            $this->whereBindField($table_name, $field, self::$OP_EQ, $value);
         }
 
         return $this;
     }
 
-    private function aw_bind_field($table_name, $field, $operator, $value, $bind_name = null)
+    private function whereBindField($table_name, $field, $operator, $value, $bind_name = null)
     {
-        $bind_name = $this->bind_name($table_name, $field, $value, $bind_name);
-        return $this->aw_field($field, "$operator $bind_name", $table_name);
+        $bind_name = $this->addBinding($field, $value, $table_name, $bind_name);
+        return $this->whereField($field, "$operator $bind_name", $table_name);
     }
 
-    public function aw_numeric_in($field, $values, $table_name = null)
+    public function whereNumericIn($field, $values, $table_name = null)
     {
         if (is_array($values) && !empty($values)) {
-            return $this->aw_field($field, sprintf(' IN (%s)', implode(',', $values)), $table_name);
+            return $this->whereField($field, sprintf(' IN (%s)', implode(',', $values)), $table_name);
         }
 
         return $this;
     }
 
-    public function aw_string_in($field, $values, $table_name = null)
+    public function whereStringIn($field, $values, $table_name = null)
     {
         if (is_array($values) && !empty($values)) {
             $count_values = count($values);
             $in = '';
             foreach ($values as $i => $v) {
-                $placeholder_name = ':' . $table_name . '_' . $field . '_awS_in_' . $count_values . '_' . $i; // TODO dirty patching. mathematical certainty needed
-                $this->add_binding($placeholder_name, $v);
+                // TODO dirty patching. mathematical certainty needed
+                $placeholder_name = ':' . $table_name . '_' . $field . '_awS_in_' . $count_values . '_' . $i;
+                $this->addBinding($field, $v, null, $placeholder_name);
                 $in .= "$placeholder_name,";
             }
-            // $this->aw_field($field, sprintf(" IN ('%s')", implode("','", $values)), $table_name);
-            $this->aw_field($field, sprintf(" IN (%s)", rtrim($in, ',')), $table_name);
+            // $this->whereField($field, sprintf(" IN ('%s')", implode("','", $values)), $table_name);
+            $this->whereField($field, sprintf(" IN (%s)", rtrim($in, ',')), $table_name);
         }
         return $this;
     }
 
-    public function aw_is_null($field, $table_name = null)
+    public function whereIsNull($field, $table_name = null)
     {
-        return $this->aw_field($field, 'IS NULL', $table_name);
+        return $this->whereField($field, 'IS NULL', $table_name);
     }
 
-    public function aw_field($field, $condition, $table_name = null)
+    public function whereField($field, $condition, $table_name = null)
     {
-        $table_field = $this->field_label($field, $table_name);
-        return $this->and_where("$table_field $condition");
+        $table_field = $this->backTick($field, $table_name);
+        return $this->where("$table_field $condition");
     }
 
-    public function aw_not_empty($field, $table_name = null)
+    public function whereNotEmpty($field, $table_name = null)
     {
-        $table_field = $this->field_label($field, $table_name);
-        return $this->and_where("($table_field IS NOT NULL AND $table_field <> '') ");
+        $table_field = $this->backTick($field, $table_name);
+        return $this->where("($table_field IS NOT NULL AND $table_field <> '') ");
     }
 
-    public function aw_empty($field, $table_name = null)
+    public function whereEmpty($field, $table_name = null)
     {
-        $table_field = $this->field_label($field, $table_name);
-        return $this->and_where("($table_field IS NULL OR $table_field = '')");
+        $table_field = $this->backTick($field, $table_name);
+        return $this->where("($table_field IS NULL OR $table_field = '')");
     }
 
     /**
@@ -188,14 +170,16 @@ trait ClauseWhere
      * @param $search_table     String to filter
      * @param $filters_operator Object, inclusive or exclusive search
      */
-    public function aw_filter_content($filters_content, $search_table = null, $filters_operator = null) // sub array filters[$content]
+
+     // sub array filters[$content]
+    public function whereFilterContent($filters_content, $search_table = null, $filters_operator = null)
     {
         if (!isset($filters_content['term']) || !isset($filters_content['fields'])) {
             return $this;
         }
 
         if (is_null($search_table)) {
-            $search_table = $this->table_label();
+            $search_table = $this->tableLabel();
         }
 
         $search_term = trim($filters_content['term']);
@@ -209,7 +193,7 @@ trait ClauseWhere
                 $search_field = $search_mode;
                 $search_mode = self::$WHERE_LIKE_BOTH;
             }
-            $search_field = $this->field_label($search_field, $search_table);
+            $search_field = $this->backTick($search_field, $search_table);
 
             if ($search_mode === self::$OP_EQ) {
                 $content_wc [] = "$search_field = '$search_term' "; // TODO bindthis
@@ -221,14 +205,14 @@ trait ClauseWhere
         }
 
         if (!empty($content_wc)) {
-            $operator = self::valid_operator($filters_operator, self::$OP_OR);
+            $operator = self::validWhereOperator($filters_operator, self::$OP_OR);
             $content_wc = implode(" $operator ", $content_wc);
 
-            $this->and_where(" ($content_wc) ", []);
+            $this->where(" ($content_wc) ");
         }
     }
     // //------------------------------------------------------------  FIELDS
-    protected static function valid_operator($operator, $default)
+    protected static function validWhereOperator($operator, $default)
     {
         $operator = strtoupper("$operator");
         $choices = [self::$OP_AND, self::$OP_OR];
@@ -244,7 +228,7 @@ trait ClauseWhere
         throw new \Exception('ERR_INVALID_QUERY_OPERATOR');
     }
 
-    protected function generate_where()
+    protected function generateWhere()
     {
         if (!empty($this->where)) {
             return PHP_EOL . ' WHERE ' . implode(PHP_EOL . ' AND ', $this->where);

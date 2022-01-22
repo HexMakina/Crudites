@@ -2,8 +2,8 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\Crudites\Interfaces\TableManipulationInterface;
-use HexMakina\Crudites\Interfaces\SelectInterface;
+use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\SelectInterface;
 use HexMakina\Crudites\CruditesException;
 
 class Select extends BaseQuery implements SelectInterface
@@ -12,7 +12,6 @@ class Select extends BaseQuery implements SelectInterface
     use ClauseWhere;
 
     protected $selection = [];
-    protected $table_alias = null;
     protected $join = [];
 
     protected $group = [];
@@ -23,12 +22,6 @@ class Select extends BaseQuery implements SelectInterface
     protected $limit_number = null;
     protected $limit_offset = 0;
 
-    // public function fully_qualified_column_name($label, $table_alias=null)
-    // {
-    //   // TODO analyse $label format to create a FQName
-    //   // TODO use function in constructor and select_also()
-    //   return $label;
-    // }
 
     public function __construct($select_fields = null, TableManipulationInterface $table = null, $table_alias = null)
     {
@@ -44,9 +37,9 @@ class Select extends BaseQuery implements SelectInterface
         }
     }
 
-    public function table_label($forced_value = null)
+    public function tableLabel($forced_value = null)
     {
-        return $forced_value ?? $this->table_alias ?? $this->table_name();
+        return $forced_value ?? $this->table_alias ?? $this->tableName();
     }
 
     public function columns($setter = null)
@@ -62,56 +55,28 @@ class Select extends BaseQuery implements SelectInterface
         return $this;
     }
 
-    public function select_also($setter)
+    public function selectAlso($setter)
     {
         $this->selection = array_merge($this->selection, is_array($setter) ? $setter : [$setter]);
         return $this;
     }
 
-    public function select_less($column_alias)
+    private function addPart($group, $part)
     {
-
-        foreach ($column_alias as $alias) {
-            foreach ($this->selection as $i => $column_and_alias) {
-                if (strpos($column_and_alias, $alias) === 0) {
-                    unset($this->selection[$i]);
-                    break;
-                }
-            }
-        }
+        $this->{$group} = $this->{$group} ?? [];
+        array_push($this->{$group}, $part);
         return $this;
     }
 
-    private function add_part($group, $part)
-    {
-        $this->$group = $this->$group ?? [];
-        array_push($this->$group, $part);
-        return $this;
-    }
-
-    public function join_raw($sql)
-    {
-        return $this->add_part('join', $sql);
-    }
-
-    public function table_alias($setter = null)
-    {
-        if (!is_null($setter)) {
-            $this->table_alias = $setter;
-        }
-
-        return $this->table_alias ?? $this->table_name();
-    }
-
-    public function group_by($clause)
+    public function groupBy($clause)
     {
         if (is_string($clause)) {
-            $this->add_part('group', $this->field_label($clause, $this->table_label()));
+            $this->addPart('group', $this->backTick($clause, $this->tableLabel()));
         } elseif (is_array($clause)) {
             if (isset($clause[1])) { // 0: table, 1: field
-                $this->add_part('group', $this->field_label($clause[1], $clause[0]));
+                $this->addPart('group', $this->backTick($clause[1], $clause[0]));
             } else { // 0: field
-                $this->add_part('group', $this->field_label($clause[0], null));
+                $this->addPart('group', $this->backTick($clause[0], null));
             }
         }
 
@@ -120,18 +85,24 @@ class Select extends BaseQuery implements SelectInterface
 
     public function having($condition)
     {
-        return $this->add_part('having', $condition);
+        return $this->addPart('having', $condition);
     }
 
-    public function order_by($clause)
+    public function orderBy($clause)
     {
         if (is_string($clause)) {
-            $this->add_part('order', $clause);
+            $this->addPart('order', $clause);
         } elseif (is_array($clause) && count($clause) > 1) {
             if (isset($clause[2])) { // 0:table, 1:field, 2:direction
-                $this->add_part('order', sprintf('%s %s', $this->field_label($clause[1], $clause[0]), $clause[2]));
+                $this->addPart(
+                    'order',
+                    sprintf('%s %s', $this->backTick($clause[1], $clause[0]), $clause[2])
+                );
             } elseif (isset($clause[1])) { // 0: field, 1: direction
-                $this->add_part('order', sprintf('%s %s', $this->field_label($clause[0], $this->table_label()), $clause[1]));
+                $this->addPart(
+                    'order',
+                    sprintf('%s %s', $this->backTick($clause[0], $this->tableLabel()), $clause[1])
+                );
             }
         }
 
@@ -157,13 +128,13 @@ class Select extends BaseQuery implements SelectInterface
         $query_fields = empty($this->selection) ? ['*'] : $this->selection;
 
         $ret = PHP_EOL . 'SELECT ' . implode(', ' . PHP_EOL, $query_fields);
-        $ret .= PHP_EOL . sprintf(' FROM `%s` %s ', $this->table_name(), $this->table_alias);
+        $ret .= PHP_EOL . sprintf(' FROM `%s` %s ', $this->tableName(), $this->table_alias);
 
         if (!empty($this->join)) {
             $ret .= PHP_EOL . ' ' . implode(PHP_EOL . ' ', $this->join);
         }
 
-        $ret .= $this->generate_where();
+        $ret .= $this->generateWhere();
 
         foreach (['group' => 'GROUP BY', 'having' => 'HAVING', 'order' => 'ORDER BY'] as $part => $prefix) {
             if (!empty($this->$part)) {
@@ -182,28 +153,31 @@ class Select extends BaseQuery implements SelectInterface
 
     //------------------------------------------------------------ SELECT:FETCHING RESULT
 
-    public function ret_obj($c = null)
+    public function retObj($c = null)
     {
         return is_null($c) ? $this->ret(\PDO::FETCH_OBJ) : $this->ret(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, $c);
     }
 
-    public function ret_num()
+    public function retNum()
     {
         return $this->ret(\PDO::FETCH_NUM);
-    } //ret:
-    public function ret_ass()
+    }
+    //ret:
+    public function retAss()
     {
         return $this->ret(\PDO::FETCH_ASSOC);
-    } //ret: array indexed by column name
-    public function ret_col()
+    }
+    //ret: array indexed by column name
+    public function retCol()
     {
         return $this->ret(\PDO::FETCH_COLUMN);
-    } //ret: all values of a single column from the result set
-    public function ret_par()
+    }
+    //ret: all values of a single column from the result set
+    public function retPar()
     {
         return $this->ret(\PDO::FETCH_KEY_PAIR);
     }
-    public function ret_key()
+    public function retKey()
     {
         return $this->ret(\PDO::FETCH_UNIQUE);
     }

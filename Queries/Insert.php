@@ -2,14 +2,13 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\Crudites\Crudites;
 use HexMakina\Crudites\CruditesException;
-use HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\QueryInterface;
 
 class Insert extends BaseQuery
 {
-    private $query_fields = [];
-    private $inserted_id = null;
+    use ClauseJoin;
 
     public function __construct(TableManipulationInterface $table, $assoc_data = [])
     {
@@ -20,55 +19,35 @@ class Insert extends BaseQuery
         $this->table = $table;
         $this->connection = $table->connection();
 
-        if (empty($assoc_data)) {
-            return $this;
+        if (!empty($assoc_data)) {
+          $this->addBindings($assoc_data);
         }
-
-        $this->values($assoc_data);
     }
 
-    // public function is_create(){       return true;}
-
-    public function values($assoc_data)
+    public function addBindings($assoc_data): array
     {
+        $ret = [];
         foreach ($this->table->columns() as $column_name => $column) {
-            if ($column->is_auto_incremented()) {
+            if ($column->isAutoIncremented()) {
                 continue;
             }
 
             if (isset($assoc_data[$column_name])) {
-                $this->query_fields[$column_name] = $column_name;
-                $this->bindings[':' . $this->table_name() . '_' . $column_name] = $assoc_data[$column_name];
+              $ret[$column_name] = $this->addBinding($column_name, $assoc_data[$column_name]);
             }
         }
+        return $ret;
     }
 
     public function generate(): string
     {
-        if (empty($this->query_fields) || count($this->bindings) !== count($this->query_fields)) {
+        if (empty($this->getBindingNames()) || count($this->getBindings()) !== count($this->getBindingNames())) {
             throw new CruditesException('INSERT_FIELDS_BINDINGS_MISMATCH');
         }
 
-        $fields = '`' . implode('`, `', $this->query_fields) . '`';
-        $values = implode(', ', array_keys($this->bindings));
+        $fields = '`' . implode('`, `', array_keys($this->getBindingNames())) . '`';
+        $bindings = implode(', ', array_keys($this->getBindings()));
 
-        return sprintf('INSERT INTO `%s` (%s) VALUES (%s)', $this->table, $fields, $values);
-    }
-
-    //------------------------------------------------------------ Auto Increment Value
-    public function inserted_id()
-    {
-        return $this->inserted_id;
-    }
-
-    public function run(): BaseQuery
-    {
-        parent::run();
-
-        if ($this->is_success()) {
-            $this->inserted_id = $this->connection()->last_inserted_id();
-        }
-
-        return $this;
+        return sprintf('INSERT INTO `%s` (%s) VALUES (%s)', $this->table, $fields, $bindings);
     }
 }

@@ -2,11 +2,12 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\Crudites\Interfaces\TableDescriptionInterface;
+use HexMakina\BlackBox\Database\TableDescriptionInterface;
 use HexMakina\Crudites\CruditesException;
 
 class Delete extends BaseQuery
 {
+    use ClauseJoin;
     use ClauseWhere;
 
     public function __construct(TableDescriptionInterface $table, $conditions = [])
@@ -14,18 +15,17 @@ class Delete extends BaseQuery
         $this->table = $table;
         $this->connection = $table->connection();
         if (!empty($conditions)) {
-            $this->aw_fields_eq($conditions);
+            $this->whereFieldsEQ($conditions);
         }
     }
-
-    // public function is_delete(){    return true;}
 
     public function generate(): string
     {
         if (empty($this->where)) {
-            throw new CruditesException('DELETE_USED_AS_TRUNCATE');  // prevents haphazardous generation of dangerous DELETE statement
+            // prevents haphazardous generation of dangerous DELETE statement
+            throw new CruditesException('DELETE_USED_AS_TRUNCATE');
         }
 
-        return sprintf('DELETE FROM `%s` %s ', $this->table_name(), $this->generate_where());
+        return sprintf('DELETE FROM `%s` %s ', $this->tableName(), $this->generateWhere());
     }
 }
