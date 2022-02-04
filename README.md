@@ -97,10 +97,14 @@ When instantiated, the object provides the following methods:
 
 
 # Database
-The object represent a SQL database, handles connection and introspection
+The object represent a SQL database, handles connection and introspection.
+
+Introspection is a two step process:
+1. The `INFORMATION_SCHEMA` is queried and FK and UNIQUE constraints are stored in the object properties upon instantiation
+2. The table introspection, called inspection, is executed on demand using `inspect(table_name)` and the results are stored in the table cache property. Inspection uses introspection to create a complete representation of a table: fields, data type, defaults & constraints
 
 ## Instantiation
-It is created using a `Connection` object
+It is created using a `Connection` object. The connection is stored and the database instrospection is executed.
 
 ## Properties 
 + `Connection` object
