@@ -40,7 +40,7 @@ class Source
     }
 
   /*
-   * @return the driver name extracted from the $dsn string
+   * @return string the driver name extracted from the $dsn string
    * @throws CruditesException if no driver name was parsed from the DSN
    */
     private static function extractDriverName($dsn)
@@ -53,7 +53,7 @@ class Source
     }
 
   /*
-   * @return availability of driver name
+   * @return boolean availability of driver name
    * @throws CruditesException if driver name is not in \PDO::getAvailableDrivers()
    */
     private static function isAvailable($driverName)
@@ -65,7 +65,7 @@ class Source
     }
 
   /*
-   * @return the database name extracted from the $dsn string
+   * @return string the database name extracted from the $dsn string
    * @throws CruditesException if no database name was parsed from the DSN
    */
     private static function extractDatabaseName($dsn)
