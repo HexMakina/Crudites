@@ -141,20 +141,13 @@ class ColumnType implements ColumnTypeInterface
 
         if ($this->isDateOrTime() && date_create($field_value) === false) {
             $ret = 'ERR_FIELD_FORMAT';
-        }
-        elseif ($this->isYear() && preg_match('/^[0-9]{4}$/', $field_value) !== 1) {
+        } elseif ($this->isYear() && preg_match('/^[0-9]{4}$/', $field_value) !== 1) {
             $ret = 'ERR_FIELD_FORMAT';
-        }
-
-        elseif ($this->isNumeric() && !is_numeric($field_value)) {
+        } elseif ($this->isNumeric() && !is_numeric($field_value)) {
             $ret = 'ERR_FIELD_FORMAT';
-        }
-
-        elseif ($this->isString() && $this->getLength() < strlen($field_value)) {
+        } elseif ($this->isString() && $this->getLength() < strlen($field_value)) {
             $ret = 'ERR_FIELD_TOO_LONG';
-        }
-
-        elseif ($this->isEnum() && !in_array($field_value, $this->getEnumValues())) {
+        } elseif ($this->isEnum() && !in_array($field_value, $this->getEnumValues())) {
             $ret = 'ERR_FIELD_VALUE_RESTRICTED_BY_ENUM';
         }
 

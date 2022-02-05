@@ -8,7 +8,6 @@ use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\TableDescriptionInterface;
 use HexMakina\BlackBox\Database\TableColumnInterface;
 
-
 class Description implements TableDescriptionInterface
 {
     protected $connection = null;
@@ -45,12 +44,14 @@ class Description implements TableDescriptionInterface
     public function describe(): array
     {
         $query = $this->connection()->query((new Describe($this->name())));
-        if ($query === false)
-          throw new CruditesException('TABLE_DESCRIBE_FAILURE');
+        if ($query === false) {
+            throw new CruditesException('TABLE_DESCRIBE_FAILURE');
+        }
 
         $ret = $query->fetchAll(\PDO::FETCH_UNIQUE);
-        if ($ret === false)
+        if ($ret === false) {
             throw new CruditesException('TABLE_DESCRIBE_FETCH_FAILURE');
+        }
 
         return $ret;
     }

@@ -52,19 +52,21 @@ class Database implements DatabaseInterface
         return $this->table_cache[$table_name];
     }
 
-    private function setForeignFor($table, $column){
-      $reference = $this->getForeignKey($table->name(), $column->name());
+    private function setForeignFor($table, $column)
+    {
+        $reference = $this->getForeignKey($table->name(), $column->name());
 
-      if($reference === false)
-        return null;
+        if ($reference === false) {
+            return null;
+        }
 
-      $column->isForeign(true);
-      $column->setForeignTableName($reference[0]);
-      $column->setForeignColumnName($reference[1]);
+        $column->isForeign(true);
+        $column->setForeignTableName($reference[0]);
+        $column->setForeignColumnName($reference[1]);
 
-      $table->addForeignKey($column);
+        $table->addForeignKey($column);
 
-      return $reference;
+        return $reference;
     }
 
     private function getForeignKey($table_name, $column_name)
@@ -72,17 +74,18 @@ class Database implements DatabaseInterface
         return $this->fk_by_table[$table_name][$column_name] ?? false;
     }
 
-    private function setUniqueFor($table, $column){
-        if(!$this->hasUniqueFor($table, $colun))
-          return null;
+    private function setUniqueFor($table, $column)
+    {
+        if (!$this->hasUniqueFor($table, $colun)) {
+            return null;
+        }
 
         $unique_name = $this->unique_by_table[$table->name()][$column->name()][0];
         if (count($this->unique_by_table[$table->name()][$column->name()]) == 2) {
             // constraint name + column
             $column->uniqueName($unique_name);
             $table->addUniqueKey($unique_name, $column->name());
-        }
-        else{
+        } else {
             $column->uniqueGroupName($unique_name);
             unset($this->unique_by_table[$table->name()][$column->name()][0]);
             $table->addUniqueKey($unique_name, $this->unique_by_table[$table->name()][$column->name()]);
@@ -90,8 +93,9 @@ class Database implements DatabaseInterface
         return $unique_name;
     }
 
-    private function hasUniqueFor($table, $column): bool{
-      return isset($this->unique_by_table[$table->name()][$column->name()]);
+    private function hasUniqueFor($table, $column): bool
+    {
+        return isset($this->unique_by_table[$table->name()][$column->name()]);
     }
 
     // vague memory that it makes later operation easier. written on the spot.. testing will reveal it's true nature
@@ -158,8 +162,9 @@ class Database implements DatabaseInterface
         $this->refactorConstraintNameIndex();
     }
 
-    private function introspectionQuery($database_name){
-      $fields = [
+    private function introspectionQuery($database_name)
+    {
+        $fields = [
         'TABLE_NAME',
         'CONSTRAINT_NAME',
         'ORDINAL_POSITION',
@@ -167,13 +172,13 @@ class Database implements DatabaseInterface
         'POSITION_IN_UNIQUE_CONSTRAINT',
         'REFERENCED_TABLE_NAME',
         'REFERENCED_COLUMN_NAME'
-      ];
+        ];
 
-      $statement = 'SELECT ' . implode(', ', $fields)
-      . ' FROM KEY_COLUMN_USAGE'
-      . ' WHERE TABLE_SCHEMA = "%s"'
-      . ' ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION';
+        $statement = 'SELECT ' . implode(', ', $fields)
+        . ' FROM KEY_COLUMN_USAGE'
+        . ' WHERE TABLE_SCHEMA = "%s"'
+        . ' ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION';
 
-      return sprintf($statement, $database_name);
+        return sprintf($statement, $database_name);
     }
 }
