@@ -39,43 +39,12 @@ class Database implements DatabaseInterface
             return $this->table_cache[$table_name];
         }
 
-        $description = $this->describe($table_name);
-
-      // TODO test this when all is back to normal 2021.03.09
-        if ($description === false) {
-            throw new \PDOException("Unable to describe $table_name");
-        }
-
         $table = new Manipulation($table_name, $this->connection());
 
-        foreach ($description as $column_name => $specs) {
+        foreach ($table->describe() as $column_name => $specs) {
             $column = new Column($table, $column_name, $specs);
-
-            // handling usage constraints
-            if (isset($this->unique_by_table[$table_name][$column_name])) {
-                $unique_name = $this->unique_by_table[$table_name][$column_name][0];
-
-                switch (count($this->unique_by_table[$table_name][$column_name])) {
-                    case 2: // constraint name + column
-                        $column->uniqueName($unique_name);
-                        $table->addUniqueKey($unique_name, $column_name);
-                        break;
-
-                    default:
-                        $column->uniqueGroupName($unique_name);
-                        unset($this->unique_by_table[$table_name][$column_name][0]);
-                        $table->addUniqueKey($unique_name, $this->unique_by_table[$table_name][$column_name]);
-                        break;
-                }
-            }
-            // handling foreign keys
-            if (($reference = $this->getForeignKey($table_name, $column_name)) !== false) {
-                $column->isForeign(true);
-                $column->setForeignTableName($reference[0]);
-                $column->setForeignColumnName($reference[1]);
-
-                $table->addForeignKey($column);
-            }
+            $this->setUniqueFor($table, $column);
+            $this->setForeignFor($table, $column);
             $table->addColumn($column);
         }
 
@@ -84,10 +53,45 @@ class Database implements DatabaseInterface
         return $this->table_cache[$table_name];
     }
 
+    private function setForeignFor($table, $column){
+      $reference = $this->getForeignKey($table->name(), $column->name());
+
+      if($reference === false)
+        return null;
+
+      $column->isForeign(true);
+      $column->setForeignTableName($reference[0]);
+      $column->setForeignColumnName($reference[1]);
+
+      $table->addForeignKey($column);
+
+      return $reference;
+    }
 
     private function getForeignKey($table_name, $column_name)
     {
         return $this->fk_by_table[$table_name][$column_name] ?? false;
+    }
+
+    private function setUniqueFor($table, $column){
+        if(!$this->hasUniqueFor($table, $colun))
+          return null;
+
+        $unique_name = $this->unique_by_table[$table->name()][$column->name()][0];
+        if (count($this->unique_by_table[$table->name()][$column->name()]) == 2) {
+            // constraint name + column
+            $column->uniqueName($unique_name);
+            $table->addUniqueKey($unique_name, $column->name());
+        else{
+            $column->uniqueGroupName($unique_name);
+            unset($this->unique_by_table[$table->name()][$column->name()][0]);
+            $table->addUniqueKey($unique_name, $this->unique_by_table[$table->name()][$column->name()]);
+        }
+        return $unique_name;
+    }
+
+    private function hasUniqueFor($table, $column): bool{
+      return isset($this->unique_by_table[$table->name()][$column->name()]);
     }
 
     // vague memory that it makes later operation easier. written on the spot.. testing will reveal it's true nature
@@ -119,15 +123,15 @@ class Database implements DatabaseInterface
         $this->fk_by_table[$table_name][$key_usage['COLUMN_NAME']] = [$key_usage['REFERENCED_TABLE_NAME'], $key_usage['REFERENCED_COLUMN_NAME']];
     }
 
-    private function describe($table_name): array
-    {
-        $query = $this->connection()->query((new Describe($table_name)));
-        if ($query === false) {
-            throw new CruditesException('TABLE_DESCRIBE_FAILURE');
-        }
-
-        return $query->fetchAll(\PDO::FETCH_UNIQUE);
-    }
+    // private function describe($table_name): array
+    // {
+    //     $query = $this->connection()->query((new Describe($table_name)));
+    //     if ($query === false) {
+    //         throw new CruditesException('TABLE_DESCRIBE_FAILURE');
+    //     }
+    //
+    //     return $query->fetchAll(\PDO::FETCH_UNIQUE);
+    // }
 
     private function introspect()
     {

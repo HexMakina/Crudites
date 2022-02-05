@@ -40,6 +40,19 @@ class Description implements TableDescriptionInterface
         return $this->connection;
     }
 
+    public function describe(): array
+    {
+        $query = $this->connection()->query((new Describe($this->name())));
+        if ($query === false)
+          throw new CruditesException('TABLE_DESCRIBE_FAILURE');
+
+        $ret = $query->fetchAll(\PDO::FETCH_UNIQUE);
+        if ($ret === false)
+            throw new CruditesException('TABLE_DESCRIBE_FETCH_FAILURE');
+
+        return $ret;
+    }
+
     public function addColumn(TableColumnInterface $column)
     {
         $this->columns[$column->name()] = $column;

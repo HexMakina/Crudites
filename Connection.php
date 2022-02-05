@@ -15,10 +15,9 @@ use HexMakina\BlackBox\Database\ConnectionInterface;
 
 class Connection implements ConnectionInterface
 {
+    private $source;
     private $database_name = null;
     private $pdo;
-    private $dsn;
-    private $source;
 
     private static $driver_default_options = [
     \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, // the one option you cannot change
