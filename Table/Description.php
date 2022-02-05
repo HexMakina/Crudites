@@ -3,9 +3,11 @@
 namespace HexMakina\Crudites\Table;
 
 use HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\Queries\Describe;
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\TableDescriptionInterface;
 use HexMakina\BlackBox\Database\TableColumnInterface;
+
 
 class Description implements TableDescriptionInterface
 {

@@ -3,7 +3,6 @@
 namespace HexMakina\Crudites;
 
 use HexMakina\Crudites\Queries\Select;
-use HexMakina\Crudites\Queries\Describe;
 use HexMakina\Crudites\Table\Manipulation;
 use HexMakina\Crudites\Table\Column;
 use HexMakina\BlackBox\Database\ConnectionInterface;
@@ -82,6 +81,7 @@ class Database implements DatabaseInterface
             // constraint name + column
             $column->uniqueName($unique_name);
             $table->addUniqueKey($unique_name, $column->name());
+        }
         else{
             $column->uniqueGroupName($unique_name);
             unset($this->unique_by_table[$table->name()][$column->name()][0]);
