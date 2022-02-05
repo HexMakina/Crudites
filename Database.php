@@ -135,26 +135,12 @@ class Database implements DatabaseInterface
 
     private function introspect()
     {
-        $fields = [
-          'TABLE_NAME',
-          'CONSTRAINT_NAME',
-          'ORDINAL_POSITION',
-          'COLUMN_NAME',
-          'POSITION_IN_UNIQUE_CONSTRAINT',
-          'REFERENCED_TABLE_NAME',
-          'REFERENCED_COLUMN_NAME'
-        ];
-
-        $statement = 'SELECT ' . implode(', ', $fields)
-        . ' FROM KEY_COLUMN_USAGE'
-        . ' WHERE TABLE_SCHEMA = "%s"'
-        . ' ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION';
-
         $previous_database_name = $this->connection()->databaseName();
         $this->connection->useDatabase('INFORMATION_SCHEMA');
-        $res = $this->connection->query(sprintf($statement, $previous_database_name))->fetchAll();
+        $res = $this->connection->query($this->introspectionQuery($previous_database_name));
         $this->connection->useDatabase($previous_database_name);
 
+        $res = $res->fetchAll();
         foreach ($res as $key_usage) {
             $table_name = $key_usage['TABLE_NAME'];
 
@@ -170,5 +156,24 @@ class Database implements DatabaseInterface
         }
 
         $this->refactorConstraintNameIndex();
+    }
+
+    private function introspectionQuery($database_name){
+      $fields = [
+        'TABLE_NAME',
+        'CONSTRAINT_NAME',
+        'ORDINAL_POSITION',
+        'COLUMN_NAME',
+        'POSITION_IN_UNIQUE_CONSTRAINT',
+        'REFERENCED_TABLE_NAME',
+        'REFERENCED_COLUMN_NAME'
+      ];
+
+      $statement = 'SELECT ' . implode(', ', $fields)
+      . ' FROM KEY_COLUMN_USAGE'
+      . ' WHERE TABLE_SCHEMA = "%s"'
+      . ' ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION';
+
+      return sprintf($statement, $database_name);
     }
 }
