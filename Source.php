@@ -29,12 +29,9 @@ class Source
    */
     public function __construct($dsn)
     {
-        $matches = [];
-        $error = null;
-
         $driver = self::extractDriverName($dsn);
         if (!empty($driver) && self::isAvailable($driver)) {
-            $this->name = self::extractDatabaseName();
+            $this->name = self::extractDatabaseName($dsn);
             $this->dsn = $dsn;
         }
     }
