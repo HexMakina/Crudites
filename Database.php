@@ -22,15 +22,17 @@ class Database implements DatabaseInterface
         $this->introspect();
     }
 
-    public function name()
-    {
-        return $this->connection()->databaseName();
-    }
 
     public function connection(): ConnectionInterface
     {
         return $this->connection;
     }
+
+    public function name()
+    {
+        return $this->connection()->databaseName();
+    }
+
 
     public function inspect($table_name): TableManipulationInterface
     {
@@ -51,6 +53,55 @@ class Database implements DatabaseInterface
 
         return $this->table_cache[$table_name];
     }
+
+
+    public function introspect()
+    {
+        // $previous_database_name = $this->connection()->databaseName();
+        $query = $this->introspectionQuery($this->connection()->databaseName());
+
+        $this->connection->useDatabase('INFORMATION_SCHEMA');
+        $res = $this->connection->query($query);
+        $this->connection->restoreDatabase();
+
+        $res = $res->fetchAll();
+        foreach ($res as $key_usage) {
+            $table_name = $key_usage['TABLE_NAME'];
+
+            // FOREIGN KEYS
+            if (isset($key_usage['REFERENCED_TABLE_NAME'])) {
+                $this->addForeignKeyByTable($table_name, $key_usage);
+            }
+
+            // PRIMARY & UNIQUES
+            if (!isset($key_usage['POSITION_IN_UNIQUE_CONSTRAINT'])) {
+                $this->addUniqueKeyByTable($table_name, $key_usage);
+            }
+        }
+
+        $this->refactorConstraintNameIndex();
+    }
+
+    private function introspectionQuery($database_name)
+    {
+        $fields = [
+        'TABLE_NAME',
+        'CONSTRAINT_NAME',
+        'ORDINAL_POSITION',
+        'COLUMN_NAME',
+        'POSITION_IN_UNIQUE_CONSTRAINT',
+        'REFERENCED_TABLE_NAME',
+        'REFERENCED_COLUMN_NAME'
+        ];
+
+        $statement = 'SELECT ' . implode(', ', $fields)
+        . ' FROM KEY_COLUMN_USAGE'
+        . ' WHERE TABLE_SCHEMA = "%s"'
+        . ' ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION';
+
+        return sprintf($statement, $database_name);
+    }
+
 
     private function setForeignFor($table, $column)
     {
@@ -127,58 +178,6 @@ class Database implements DatabaseInterface
         $this->fk_by_table[$table_name][$key_usage['COLUMN_NAME']] = [$key_usage['REFERENCED_TABLE_NAME'], $key_usage['REFERENCED_COLUMN_NAME']];
     }
 
-    // private function describe($table_name): array
-    // {
-    //     $query = $this->connection()->query((new Describe($table_name)));
-    //     if ($query === false) {
-    //         throw new CruditesException('TABLE_DESCRIBE_FAILURE');
-    //     }
-    //
-    //     return $query->fetchAll(\PDO::FETCH_UNIQUE);
-    // }
 
-    private function introspect()
-    {
-        $previous_database_name = $this->connection()->databaseName();
-        $this->connection->useDatabase('INFORMATION_SCHEMA');
-        $res = $this->connection->query($this->introspectionQuery($previous_database_name));
-        $this->connection->useDatabase($previous_database_name);
 
-        $res = $res->fetchAll();
-        foreach ($res as $key_usage) {
-            $table_name = $key_usage['TABLE_NAME'];
-
-            // FOREIGN KEYS
-            if (isset($key_usage['REFERENCED_TABLE_NAME'])) {
-                $this->addForeignKeyByTable($table_name, $key_usage);
-            }
-
-            // PRIMARY & UNIQUES
-            if (!isset($key_usage['POSITION_IN_UNIQUE_CONSTRAINT'])) {
-                $this->addUniqueKeyByTable($table_name, $key_usage);
-            }
-        }
-
-        $this->refactorConstraintNameIndex();
-    }
-
-    private function introspectionQuery($database_name)
-    {
-        $fields = [
-        'TABLE_NAME',
-        'CONSTRAINT_NAME',
-        'ORDINAL_POSITION',
-        'COLUMN_NAME',
-        'POSITION_IN_UNIQUE_CONSTRAINT',
-        'REFERENCED_TABLE_NAME',
-        'REFERENCED_COLUMN_NAME'
-        ];
-
-        $statement = 'SELECT ' . implode(', ', $fields)
-        . ' FROM KEY_COLUMN_USAGE'
-        . ' WHERE TABLE_SCHEMA = "%s"'
-        . ' ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION';
-
-        return sprintf($statement, $database_name);
-    }
 }

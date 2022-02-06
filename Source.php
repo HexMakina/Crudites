@@ -4,7 +4,7 @@
  * DSN model for validation
  *
  *
- * Throws \PDOException when DSN is wrong
+ * Throws CruditesException when DSN is wrong
  */
 
 namespace HexMakina\Crudites;

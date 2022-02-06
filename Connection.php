@@ -16,7 +16,10 @@ use HexMakina\BlackBox\Database\ConnectionInterface;
 class Connection implements ConnectionInterface
 {
     private $source;
-    private $database_name = null;
+
+    // in case we change the database (f.i. INFORMATION_SCHEMA)
+    private $using_database = null;
+
     private $pdo;
 
     private static $driver_default_options = [
@@ -35,16 +38,22 @@ class Connection implements ConnectionInterface
         if (isset($driver_options[\PDO::ATTR_ERRMODE])) {
             unset($driver_options[\PDO::ATTR_ERRMODE]);
         }
-
         $driver_options = array_merge(self::$driver_default_options, $driver_options);
+
         $this->pdo = new \PDO($this->source->DSN(), $username, $password, $driver_options);
+
+        $this->useDatabase($this->source->name());
     }
 
     // database level
     public function useDatabase($name)
     {
-        $this->database_name = $name;
+        $this->using_database = $name;
         $this->pdo->query(sprintf('USE `%s`;', $name));
+    }
+
+    public function restoreDatabase(){
+      $this->useDatabase($this->source->name());
     }
 
     public function driverName()
@@ -54,7 +63,7 @@ class Connection implements ConnectionInterface
 
     public function databaseName(): string
     {
-        return $this->source->name();
+        return $this->using_database;
     }
 
     // statements
@@ -82,6 +91,7 @@ class Connection implements ConnectionInterface
     {
         return $this->pdo->beginTransaction();
     }
+
     public function commit(): bool
     {
         return $this->pdo->commit();
