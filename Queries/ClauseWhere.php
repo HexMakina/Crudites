@@ -131,7 +131,7 @@ trait ClauseWhere
             $count_values = count($values);
             $in = '';
             foreach ($values as $i => $v) {
-                // TODO dirty patching. mathematical certainty needed
+                // TODO dirty patching. mathematical certainty of uniqueness needed
                 $placeholder_name = ':' . $table_name . '_' . $field . '_awS_in_' . $count_values . '_' . $i;
                 $this->addBinding($field, $v, null, $placeholder_name);
                 $in .= "$placeholder_name,";

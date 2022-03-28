@@ -9,7 +9,6 @@
 
 namespace HexMakina\Crudites;
 
-use HexMakina\Crudites\Queries\BaseQuery;
 use HexMakina\BlackBox\Database\SelectInterface;
 use HexMakina\BlackBox\Database\DatabaseInterface;
 use HexMakina\Crudites\CruditesException;
