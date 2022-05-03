@@ -8,7 +8,7 @@ use HexMakina\BlackBox\Database\ColumnTypeInterface;
 class ColumnType implements ColumnTypeInterface
 {
     private static $types_rx = [
-    self::TYPE_BOOLEAN => 'tinyint\(1\)|boolean', // is_boolean MUST be tested before is_integer
+    self::TYPE_BOOLEAN => 'tinyint\(1\)|boolean|bit', // is_boolean MUST be tested before is_integer
 
     self::TYPE_INTEGER => 'int\([\d]+\)|int unsigned|int',
     self::TYPE_FLOAT => 'float|double',
