@@ -23,9 +23,9 @@ class Connection implements ConnectionInterface
     private $pdo;
 
     private static $driver_default_options = [
-    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, // the one option you cannot change
-    \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
-    \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
+      \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, // the one option you cannot change
+      \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
+      \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
     ];
 
     /*
@@ -42,7 +42,7 @@ class Connection implements ConnectionInterface
 
         $this->pdo = new \PDO($this->source->DSN(), $username, $password, $driver_options);
 
-        $this->useDatabase($this->source->name());
+        $this->useDatabase($this->source->database());
     }
 
     // database level
@@ -53,7 +53,7 @@ class Connection implements ConnectionInterface
     }
 
     public function restoreDatabase(){
-      $this->useDatabase($this->source->name());
+      $this->useDatabase($this->source->database());
     }
 
     public function driverName()

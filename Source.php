@@ -12,65 +12,72 @@ namespace HexMakina\Crudites;
 class Source
 {
     private $dsn = null;
-    private $name = null;
+    private $driver = null;
+    private $database = null;
 
-    public function DSN()
+    public function __construct($dsn)
+    {
+        $this->dsn = $dsn;
+    }
+
+    public function DSN(): string
     {
         return $this->dsn;
     }
 
-    public function name()
+    /*
+     * @return string the driver name extracted from the $dsn string
+     * @throws CruditesException if no driver name was parsed from the DSN
+     */
+    public function driver(): string
     {
-        return $this->name;
+        return $this->driver ?? $this->driver = self::extractDriverFromDSN();
     }
 
-  /*
-   * @throws CruditesException if $dsn string is invalid or incomplete
-   */
-    public function __construct($dsn)
+    /*
+     * @throws CruditesException if $dsn string is invalid or incomplete
+     */
+    public function database(): string
     {
-        $driver = self::extractDriverName($dsn);
-        if (!empty($driver) && self::isAvailable($driver)) {
-            $this->name = self::extractDatabaseName($dsn);
-            $this->dsn = $dsn;
-        }
+        return $this->database ?? $this->database = self::extractDatabaseFromDSN($this->dsn);
     }
 
-  /*
-   * @return string the driver name extracted from the $dsn string
-   * @throws CruditesException if no driver name was parsed from the DSN
-   */
-    private static function extractDriverName($dsn)
+    public static function extractDriverFromDSN($dsn): string
     {
-        $matches = [];
-        if (preg_match('/^([a-z]+)\:/', $dsn, $matches) !== 1) {
-            return $matches[1];
-        }
-        throw new CruditesException('DSN_NO_DRIVER');
+      $matches = [];
+
+      if (empty(preg_match('/^([a-z]+)\:/', $dsn, $matches))) {
+          throw new CruditesException('DSN_NO_DRIVER');
+      }
+
+      if (!self::driverIsAvailable($matches[1])) {
+          throw new CruditesException('DSN_UNAVAILABLE_DRIVER');
+      }
+
+      return $matches[1];
     }
 
   /*
    * @return boolean availability of driver name
    * @throws CruditesException if driver name is not in \PDO::getAvailableDrivers()
    */
-    private static function isAvailable($driverName)
+    public static function driverIsAvailable($driver): bool
     {
-        if (in_array($driverName, \PDO::getAvailableDrivers(), true)) {
-            return true;
-        }
-        throw new CruditesException('DSN_UNAVAILABLE_DRIVER');
+        return in_array($driver, \PDO::getAvailableDrivers(), true);
     }
 
   /*
    * @return string the database name extracted from the $dsn string
    * @throws CruditesException if no database name was parsed from the DSN
    */
-    private static function extractDatabaseName($dsn)
+    public static function extractDatabaseFromDSN($dsn): string
     {
         $matches = [];
-        if (preg_match('/dbname=(.+);/', $dsn, $matches) !== 1) {
-            return $matches[1];
+
+        if (empty(preg_match('/dbname=(.+);/', $dsn, $matches))) {
+            throw new CruditesException('DSN_NO_DBNAME');
         }
-        throw new CruditesException('DSN_NO_DBNAME');
+
+        return $matches[1];
     }
 }
