@@ -127,7 +127,7 @@ class Database implements DatabaseInterface
 
     private function setUniqueFor($table, $column)
     {
-        if (!$this->hasUniqueFor($table, $colun)) {
+        if (!$this->hasUniqueFor($table, $column)) {
             return null;
         }
 
