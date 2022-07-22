@@ -177,7 +177,4 @@ class Database implements DatabaseInterface
         $this->fk_by_table[$table_name] = $this->fk_by_table[$table_name] ?? [];
         $this->fk_by_table[$table_name][$key_usage['COLUMN_NAME']] = [$key_usage['REFERENCED_TABLE_NAME'], $key_usage['REFERENCED_COLUMN_NAME']];
     }
-
-
-
 }

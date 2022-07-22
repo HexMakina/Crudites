@@ -44,17 +44,17 @@ class Source
 
     public static function extractDriverFromDSN($dsn): string
     {
-      $matches = [];
+        $matches = [];
 
-      if (empty(preg_match('/^([a-z]+)\:/', $dsn, $matches))) {
-          throw new CruditesException('DSN_NO_DRIVER');
-      }
+        if (empty(preg_match('/^([a-z]+)\:/', $dsn, $matches))) {
+            throw new CruditesException('DSN_NO_DRIVER');
+        }
 
-      if (!self::driverIsAvailable($matches[1])) {
-          throw new CruditesException('DSN_UNAVAILABLE_DRIVER');
-      }
+        if (!self::driverIsAvailable($matches[1])) {
+            throw new CruditesException('DSN_UNAVAILABLE_DRIVER');
+        }
 
-      return $matches[1];
+        return $matches[1];
     }
 
   /*

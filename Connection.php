@@ -52,8 +52,9 @@ class Connection implements ConnectionInterface
         $this->pdo->query(sprintf('USE `%s`;', $name));
     }
 
-    public function restoreDatabase(){
-      $this->useDatabase($this->source->database());
+    public function restoreDatabase()
+    {
+        $this->useDatabase($this->source->database());
     }
 
     public function driverName()
