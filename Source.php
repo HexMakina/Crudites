@@ -31,7 +31,7 @@ class Source
      */
     public function driver(): string
     {
-        return $this->driver ?? $this->driver = self::extractDriverFromDSN();
+        return $this->driver ?? $this->driver = self::extractDriverFromDSN($this->DSN());
     }
 
     /*
