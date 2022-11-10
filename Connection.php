@@ -22,6 +22,8 @@ class Connection implements ConnectionInterface
 
     private $pdo;
 
+    private $tracks = false;
+
     private static $driver_default_options = [
       \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, // the one option you cannot change
       \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
@@ -44,6 +46,8 @@ class Connection implements ConnectionInterface
 
         $this->useDatabase($this->source->database());
     }
+
+
 
     // database level
     public function useDatabase($name)
@@ -70,22 +74,35 @@ class Connection implements ConnectionInterface
     // statements
     public function prepare($sql_statement, $options = [])
     {
+        if ($this->tracks !== false) {
+            $this->track($sql_statement, __FUNCTION__, $options);
+        }
+
         return $this->pdo->prepare($sql_statement, $options);
     }
 
     public function query($sql_statement, $fetch_mode = null, $fetch_col_num = null)
     {
+        if ($this->tracks !== false) {
+            $options = ['fetch_mode' => $fetch_mode, 'fetch_col_num' => $fetch_col_num];
+            $this->track($sql_statement, __FUNCTION__, $options);
+        }
+
         if (is_null($fetch_mode)) {
             return $this->pdo->query($sql_statement);
         }
-
         return $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);
     }
 
     public function alter($sql_statement)
     {
+        if ($this->tracks !== false) {
+            $this->track($sql_statement, __FUNCTION__);
+        }
+
         return $this->pdo->exec($sql_statement);
     }
+
 
     // transactions
     public function transact(): bool
@@ -117,5 +134,33 @@ class Connection implements ConnectionInterface
     public function errorCode(): ?string
     {
         return $this->pdo->errorCode();
+    }
+
+
+    // activates tracking
+    public function setTracker()
+    {
+        $this->tracks = [];
+    }
+
+    public function track($sql_statement, $class_function = null, $options = [])
+    {
+        $meta = ["$sql_statement"];
+
+        if (is_object($sql_statement)) {
+            $meta[] = get_class($sql_statement);
+        }
+
+        if (!is_null($class_function)) {
+            $meta[] = "$class_function(" . json_encode($options) . ")";
+        }
+
+
+        $this->tracks[hrtime(true)] = $meta;
+    }
+
+    public function tracks()
+    {
+        return $this->tracks;
     }
 }
