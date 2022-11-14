@@ -61,13 +61,6 @@ class Select extends BaseQuery implements SelectInterface
         return $this;
     }
 
-    private function addPart($group, $part)
-    {
-        $this->{$group} = $this->{$group} ?? [];
-        array_push($this->{$group}, $part);
-        return $this;
-    }
-
     public function groupBy($clause)
     {
         if (is_string($clause)) {

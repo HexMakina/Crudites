@@ -96,6 +96,12 @@ abstract class BaseQuery implements QueryInterface
         return $this->table()->name();
     }
 
+    public function addPart($group, $part)
+    {
+        $this->{$group} = $this->{$group} ?? [];
+        array_push($this->{$group}, $part);
+        return $this;
+    }
     //------------------------------------------------------------  PREP::FIELDS
     public function tableLabel($table_name = null)
     {
