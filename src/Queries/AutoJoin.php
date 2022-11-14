@@ -4,11 +4,11 @@ namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\Crudites;
 use HexMakina\Crudites\CruditesException;
-use HexMakina\BlackBox\Database\QueryInterface;
+use HexMakina\BlackBox\Database\SelectInterface;
 
 class AutoJoin
 {
-    public static function join(QueryInterface $query, $other_table, $select_also = [], $relation_type = null): string
+    public static function join(SelectInterface $query, $other_table, $select_also = [], $relation_type = null): string
     {
         $other_table_alias = null;
 
@@ -99,7 +99,7 @@ class AutoJoin
         return $other_table_alias;
     }
 
-    private static function joinableTables(QueryInterface $query): array
+    private static function joinableTables(SelectInterface $query): array
     {
         $joinable_tables = $query->table()->foreignKeysByTable();
         foreach ($query->joinedTables() as $join_table) {
@@ -108,7 +108,7 @@ class AutoJoin
 
         return $joinable_tables;
     }
-    public static function eager(QueryInterface $query, $table_aliases = [])
+    public static function eager(SelectInterface $query, $table_aliases = [])
     {
         if (isset($table_aliases[$query->tableName()])) {
             $query->tableAlias($table_aliases[$query->tableName()]);
@@ -136,12 +136,10 @@ class AutoJoin
                     // auto select non nullable columns
                 }
 
-                if (empty($select_also)) {
-                    foreach ($foreign_table->columns() as $col) {
-                        // if (!$col->isHidden()) {
-                          $select_also [] = "$col";
-                        // }
-                    }
+                foreach ($foreign_table->columns() as $col) {
+                    // if (!$col->isHidden()) {
+                      $select_also [] = "$col";
+                    // }
                 }
 
                 self::join($query, [$foreign_table, $foreign_table_alias], $select_also);
