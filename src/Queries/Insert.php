@@ -10,18 +10,16 @@ class Insert extends BaseQuery
 {
     use ClauseJoin;
 
-    public function __construct(TableManipulationInterface $table, $assoc_data = [])
+    public function __construct(TableManipulationInterface $table, array $assoc_data)
     {
         if (!is_array($assoc_data) || empty($assoc_data)) {
-            throw new \Exception('INSERT_DATA_INVALID_OR_MISSING');
+            throw new CruditesException('INSERT_DATA_INVALID_OR_MISSING');
         }
 
         $this->table = $table;
         $this->connection = $table->connection();
 
-        if (!empty($assoc_data)) {
-            $this->addBindings($assoc_data);
-        }
+        $this->addBindings($assoc_data);
     }
 
     public function addBindings($assoc_data): array
