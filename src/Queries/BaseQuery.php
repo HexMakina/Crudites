@@ -83,6 +83,10 @@ abstract class BaseQuery implements QueryInterface
             $this->connection = $setter;
         }
 
+        if (is_null($this->connection)) {
+            throw new CruditesException('NO_CONNECTION');
+        }
+
         return $this->connection;
     }
 
@@ -173,9 +177,6 @@ abstract class BaseQuery implements QueryInterface
 
     public function run(): QueryInterface
     {
-        if (is_null($this->connection())) {
-            throw new CruditesException('NO_CONNECTION');
-        }
         try {
             if (!$this->isPrepared()) {
                 $this->prepared_statement = $this->connection()->prepare($this->statement());
