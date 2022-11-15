@@ -97,7 +97,7 @@ class Row implements RowInterface
      *
      * @param  array<int|string,mixed> $dat_ass an associative array containing primary key data matches
      */
-    public function load(array $dat_ass) : self
+    public function load(array $dat_ass): self
     {
         $pks = $this->table()->primaryKeysMatch($dat_ass);
 
@@ -120,7 +120,7 @@ class Row implements RowInterface
      *
      * @param  array<int|string,mixed> $dat_ass an associative array containing the new data
      */
-    public function alter(array $dat_ass) : self
+    public function alter(array $dat_ass): self
     {
         foreach (array_keys($dat_ass) as $field_name) {
             $column = $this->table->column($field_name);
@@ -133,7 +133,7 @@ class Row implements RowInterface
             }
 
             // replaces empty strings with null or default value
-            if (trim(''.$dat_ass[$field_name]) === '') {
+            if (trim('' . $dat_ass[$field_name]) === '') {
                 $dat_ass[$field_name] = $column->isNullable() ? null : $column->default();
             }
 
@@ -178,8 +178,8 @@ class Row implements RowInterface
 
     private function create(): void
     {
-      $this->last_alter_query = $this->table()->insert($this->export());
-      $this->last_alter_query->run();
+        $this->last_alter_query = $this->table()->insert($this->export());
+        $this->last_alter_query->run();
 
       // creation might lead to auto_incremented changes
       // recovering auto_incremented value and pushing it in alterations tracker

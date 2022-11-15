@@ -12,7 +12,7 @@ class Delete extends BaseQuery
 
     public function __construct(TableDescriptionInterface $table, array $conditions)
     {
-        if(empty($conditions)){
+        if (empty($conditions)) {
             throw new CruditesException('DELETE_USED_AS_TRUNCATE');
         }
 

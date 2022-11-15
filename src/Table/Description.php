@@ -71,14 +71,14 @@ class Description implements TableDescriptionInterface
         }
 
         foreach ($res as $column_name => $specs) {
-            $ret []= new Column($this, $column_name, $specs);
+            $ret [] = new Column($this, $column_name, $specs);
         }
 
 
         return $ret;
     }
 
-    public function addColumn(TableColumnInterface $tableColumn) : void
+    public function addColumn(TableColumnInterface $tableColumn): void
     {
         $this->columns[$tableColumn->name()] = $tableColumn;
 
@@ -90,20 +90,20 @@ class Description implements TableDescriptionInterface
         }
     }
 
-    public function addPrimaryKey(TableColumnInterface $tableColumn) : void
+    public function addPrimaryKey(TableColumnInterface $tableColumn): void
     {
         $this->primary_keys[$tableColumn->name()] = $tableColumn;
     }
 
     /** @param array<string,TableColumnInterface> $columns     */
-    public function addUniqueKey(string $constraint_name, array $columns) : void
+    public function addUniqueKey(string $constraint_name, array $columns): void
     {
         if (!isset($this->unique_keys[$constraint_name])) {
             $this->unique_keys[$constraint_name] = $columns;
         }
     }
 
-    public function addForeignKey(TableColumnInterface $tableColumn) : void
+    public function addForeignKey(TableColumnInterface $tableColumn): void
     {
         // adds to the foreign key dictionary string column_name => TableColumnInterface
         $this->foreign_keys_by_name[$tableColumn->name()] = $tableColumn;
@@ -115,11 +115,11 @@ class Description implements TableDescriptionInterface
         }
 
         // adds to the index tring table_name => TableColumnInterface
-        $this->foreign_keys_by_table[$name] []= $tableColumn;
+        $this->foreign_keys_by_table[$name] [] = $tableColumn;
     }
 
     //getsetter of AIPK, default get is null, cant set to null
-    public function autoIncrementedPrimaryKey(TableColumnInterface $tableColumn = null) : ?\HexMakina\BlackBox\Database\TableColumnInterface
+    public function autoIncrementedPrimaryKey(TableColumnInterface $tableColumn = null): ?\HexMakina\BlackBox\Database\TableColumnInterface
     {
         return is_null($tableColumn) ? $this->aipk : ($this->aipk = $tableColumn);
     }
@@ -141,7 +141,7 @@ class Description implements TableDescriptionInterface
     }
 
     // TableDescriptionInterface implementation
-    public function column(string $name) : ?TableColumnInterface
+    public function column(string $name): ?TableColumnInterface
     {
         return $this->columns[$name] ?? null;
     }
@@ -269,7 +269,7 @@ class Description implements TableDescriptionInterface
     }
 
     /** @return ?array<TableColumnInterface> */
-    public function singleForeignKeyTo(TableDescriptionInterface $tableDescription) : ?array
+    public function singleForeignKeyTo(TableDescriptionInterface $tableDescription): ?array
     {
         $bonding_column_candidates = $this->foreignKeysByTable()[$tableDescription->name()] ?? [];
 

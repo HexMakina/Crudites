@@ -6,7 +6,6 @@ use HexMakina\BlackBox\Database\TableManipulationInterface;
 use HexMakina\BlackBox\Database\SelectInterface;
 use HexMakina\BlackBox\Database\QueryInterface;
 use HexMakina\BlackBox\Database\RowInterface;
-
 use HexMakina\Crudites\Queries\{Select,Insert,Update,Delete};
 
 class Manipulation extends Description implements TableManipulationInterface

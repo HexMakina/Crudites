@@ -33,7 +33,7 @@ class Database implements DatabaseInterface
         return $this->connection;
     }
 
-    public function name() : string
+    public function name(): string
     {
         return $this->connection()->databaseName();
     }
@@ -59,7 +59,7 @@ class Database implements DatabaseInterface
     }
 
 
-    public function introspect() : void
+    public function introspect(): void
     {
         // $previous_database_name = $this->connection()->databaseName();
         $query = $this->introspectionQuery($this->connection()->databaseName());
@@ -86,7 +86,7 @@ class Database implements DatabaseInterface
         $this->refactorConstraintNameIndex();
     }
 
-    private function introspectionQuery(string $database_name) : string
+    private function introspectionQuery(string $database_name): string
     {
         $fields = [
         'TABLE_NAME',
@@ -122,7 +122,7 @@ class Database implements DatabaseInterface
         return $reference;
     }
 
-    private function getForeignKey(string $table_name, string $column_name) : ?string
+    private function getForeignKey(string $table_name, string $column_name): ?string
     {
         return $this->fk_by_table[$table_name][$column_name] ?? null;
     }
@@ -153,7 +153,7 @@ class Database implements DatabaseInterface
     }
 
     // vague memory that it makes later operation easier. written on the spot.. testing will reveal it's true nature
-    private function refactorConstraintNameIndex() : void
+    private function refactorConstraintNameIndex(): void
     {
         foreach ($this->unique_by_table as $table_name => $uniques) {
             foreach ($uniques as $constraint_name => $columns) {
@@ -165,7 +165,7 @@ class Database implements DatabaseInterface
         }
     }
 
-    private function addUniqueKeyByTable($table_name, $key_usage) : void
+    private function addUniqueKeyByTable($table_name, $key_usage): void
     {
         $constraint_name = $key_usage['CONSTRAINT_NAME'];
         $column_name = $key_usage['COLUMN_NAME'];
@@ -175,7 +175,7 @@ class Database implements DatabaseInterface
         $this->unique_by_table[$table_name][$constraint_name][$key_usage['ORDINAL_POSITION']] = $column_name;
     }
 
-    private function addForeignKeyByTable($table_name, $key_usage) : void
+    private function addForeignKeyByTable($table_name, $key_usage): void
     {
         $this->fk_by_table[$table_name] = $this->fk_by_table[$table_name] ?? [];
         $this->fk_by_table[$table_name][$key_usage['COLUMN_NAME']] = [$key_usage['REFERENCED_TABLE_NAME'], $key_usage['REFERENCED_COLUMN_NAME']];
