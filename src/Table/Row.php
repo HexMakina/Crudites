@@ -97,7 +97,7 @@ class Row implements RowInterface
      *
      * @param  array<int|string,mixed> $dat_ass an associative array containing primary key data matches
      */
-    public function load(array $dat_ass): self
+    public function load(array $dat_ass): Rowinterface
     {
         $pks = $this->table()->primaryKeysMatch($dat_ass);
 
@@ -128,6 +128,7 @@ class Row implements RowInterface
             if (is_null($column)) {
                 continue;
             }
+
             if ($column->isAutoIncremented()) {
                 continue;
             }

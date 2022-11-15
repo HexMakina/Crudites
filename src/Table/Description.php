@@ -236,9 +236,11 @@ class Description implements TableDescriptionInterface
         if ($this->uniqueKeysByName() === []) {
             return [];
         }
+
         if (!is_array($dat_ass)) {
             return [];
         }
+
         $keys = array_keys($dat_ass);
 
         foreach ($this->uniqueKeysByName() as $tableColumn) {

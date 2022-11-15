@@ -7,7 +7,9 @@ use HexMakina\Crudites\Table\Manipulation;
 use HexMakina\Crudites\Table\Column;
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\DatabaseInterface;
+use HexMakina\BlackBox\Database\TableDescriptionInterface;
 use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\TableColumnInterface;
 
 class Database implements DatabaseInterface
 {
@@ -107,7 +109,7 @@ class Database implements DatabaseInterface
     }
 
 
-    private function setForeignFor(TableDescriptionInterface $table, ColumnInterface $column): ?string
+    private function setForeignFor(TableDescriptionInterface $table, TableColumnInterface $column): ?string
     {
         $reference = $this->getForeignKey($table->name(), $column->name());
 
@@ -127,7 +129,7 @@ class Database implements DatabaseInterface
         return $this->fk_by_table[$table_name][$column_name] ?? null;
     }
 
-    private function setUniqueFor(TableDescriptionInterface $table, ColumnInterface $column): ?string
+    private function setUniqueFor(TableDescriptionInterface $table, TableColumnInterface $column): ?string
     {
         if (!$this->hasUniqueFor($table, $column)) {
             return null;
