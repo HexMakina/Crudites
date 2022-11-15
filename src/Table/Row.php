@@ -9,20 +9,27 @@ use HexMakina\Crudites\CruditesException;
 
 class Row implements RowInterface
 {
-    private $table;
+    private TableManipulationInterface $table;
 
-    private $load = null;
 
-    private $alterations = [];
+    /** @var array<int|string, mixed>|null $load */
+    private ?array $load = null;
 
-    private $fresh = [];
+    /** @var array<int|string,mixed> $alterations */
+    private array $alterations = [];
 
-    private $last_query = null;
-    private $last_alter_query = null;
+    /** @var array<int|string,mixed> $fresh */
+    private array $fresh = [];
 
-    public function __construct(TableManipulationInterface $table, $dat_ass = [])
+    private ?QueryInterface $last_query = null;
+
+    private ?QueryInterface $last_alter_query = null;
+
+
+    /** @param array<string,mixed> $dat_ass */
+    public function __construct(TableManipulationInterface $tableManipulation, array $dat_ass = [])
     {
-        $this->table = $table;
+        $this->table = $tableManipulation;
         $this->fresh = $dat_ass;
     }
 
@@ -34,11 +41,14 @@ class Row implements RowInterface
         . json_encode(array_keys($this->alterations));
     }
 
+    /**
+      * @return array<string,mixed>
+      */
     public function __debugInfo(): array
     {
         $dbg = get_object_vars($this);
         unset($dbg['table']);
-        $dbg['(string)table_name'] = (string)$this->table;
+        $dbg['(string)table_name'] = $this->table()->name();
 
         return $dbg;
     }
@@ -48,12 +58,12 @@ class Row implements RowInterface
         return $this->table;
     }
 
-    public function lastQuery(): QueryInterface
+    public function lastQuery(): ?QueryInterface
     {
         return $this->last_query;
     }
 
-    public function lastAlterQuery(): QueryInterface
+    public function lastAlterQuery(): ?QueryInterface
     {
         return $this->last_alter_query;
     }
@@ -68,6 +78,9 @@ class Row implements RowInterface
         return !empty($this->alterations);
     }
 
+    /**
+     * @return array<int|string,mixed>
+     */
     public function export(): array
     {
         return array_merge((array)$this->load, $this->fresh, $this->alterations);
@@ -82,10 +95,9 @@ class Row implements RowInterface
      * 2. multiple records are returned
      * 3. no record is found
      *
-     * @param  Array $dat_ass an associative array containing primary key data matches
-     * @return $this
+     * @param  array<int|string,mixed> $dat_ass an associative array containing primary key data matches
      */
-    public function load($dat_ass)
+    public function load(array $dat_ass) : self
     {
         $pks = $this->table()->primaryKeysMatch($dat_ass);
 
@@ -106,21 +118,22 @@ class Row implements RowInterface
      *
      * loops through the $dat_ass params
      *
-     * @param  Array $dat_ass an associative array containing the new data
-     * @return $this
+     * @param  array<int|string,mixed> $dat_ass an associative array containing the new data
      */
-    public function alter($dat_ass)
+    public function alter(array $dat_ass) : self
     {
-        foreach ($dat_ass as $field_name => $value) {
+        foreach (array_keys($dat_ass) as $field_name) {
             $column = $this->table->column($field_name);
-
             // skips non exisint field name and A_I column
-            if (is_null($column) || $column->isAutoIncremented()) {
+            if (is_null($column)) {
+                continue;
+            }
+            if ($column->isAutoIncremented()) {
                 continue;
             }
 
             // replaces empty strings with null or default value
-            if (trim($dat_ass[$field_name]) === '') {
+            if (trim(''.$dat_ass[$field_name]) === '') {
                 $dat_ass[$field_name] = $column->isNullable() ? null : $column->default();
             }
 
@@ -133,6 +146,9 @@ class Row implements RowInterface
         return $this;
     }
 
+    /**
+      * @return array<mixed,string> an array of errors
+      */
     public function persist(): array
     {
         if (!$this->isNew() && !$this->isAltered()) { // existing record with no alterations
@@ -149,30 +165,33 @@ class Row implements RowInterface
             } else {
                 $this->update();
             }
+
             $this->last_query = $this->lastAlterQuery();
-        } catch (CruditesException $e) {
-            return [$e->getMessage()];
+        } catch (CruditesException $cruditesException) {
+            return [$cruditesException->getMessage()];
         }
 
-        return $this->lastQuery()->isSuccess() ? [] : ['CRUDITES_ERR_ROW_PERSISTENCE'];
+        return !is_null($this->lastQuery()) && $this->lastQuery()->isSuccess()
+               ? []
+               : ['CRUDITES_ERR_ROW_PERSISTENCE'];
     }
 
-    private function create()
+    private function create(): void
     {
-        $this->last_alter_query = $this->table()->insert($this->export());
-        $this->lastAlterQuery()->run();
+      $this->last_alter_query = $this->table()->insert($this->export());
+      $this->last_alter_query->run();
 
       // creation might lead to auto_incremented changes
       // recovering auto_incremented value and pushing it in alterations tracker
-        if ($this->lastAlterQuery()->isSuccess()) {
-            $aipk = $this->lastAlterQuery()->table()->autoIncrementedPrimaryKey();
+        if ($this->last_alter_query->isSuccess()) {
+            $aipk = $this->last_alter_query->table()->autoIncrementedPrimaryKey();
             if (!is_null($aipk)) {
-                $this->alterations[$aipk->name()] = $this->lastAlterQuery()->connection()->lastInsertId();
+                $this->alterations[$aipk->name()] = $this->last_alter_query->connection()->lastInsertId();
             }
         }
     }
 
-    private function update()
+    private function update(): void
     {
         $pk_match = $this->table()->primaryKeysMatch($this->load);
         $this->last_alter_query = $this->table()->update($this->alterations, $pk_match);
@@ -188,7 +207,7 @@ class Row implements RowInterface
             $this->last_alter_query = $this->table->delete($pk_match);
             try {
                 $this->last_alter_query->run();
-            } catch (CruditesException $e) {
+            } catch (CruditesException $cruditesException) {
                 return false;
             }
 
@@ -201,7 +220,7 @@ class Row implements RowInterface
 
     //------------------------------------------------------------  type:data validation
     /**
-     * @return array containing all invalid data, indexed by field name, or empty if all valid
+     * @return array<mixed,string> containing all invalid data, indexed by field name, or empty if all valid
      */
     public function validate(): array
     {

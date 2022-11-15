@@ -10,28 +10,42 @@ use HexMakina\BlackBox\Database\TableColumnInterface;
 
 class Description implements TableDescriptionInterface
 {
-    protected $connection = null;
+    protected ConnectionInterface $connection;
 
-    protected $name = null;
+    protected string $name;
+
     // protected $ORM_class_name = null;
 
-    protected $columns = [];
+    /** @var array<string,TableColumnInterface> */
+    protected array $columns = [];
 
     // auto_incremented_primary_key
-    protected $aipk = null;
+    protected ?TableColumnInterface $aipk = null;
 
-    protected $primary_keys = [];
-    protected $foreign_keys_by_name = [];
-    protected $foreign_keys_by_table = [];
-    protected $unique_keys = [];
 
-    public function __construct($table_name, ConnectionInterface $c)
+    /** @var array<string,TableColumnInterface> */
+    protected array $primary_keys = [];
+
+    /** @var array<string,TableColumnInterface> */
+    protected array $unique_keys = [];
+
+
+    /** @var array<string,TableColumnInterface> */
+    protected array $foreign_keys_by_name = [];
+
+    /** @var array<string,TableColumnInterface> */
+    protected array $foreign_keys_by_table = [];
+
+
+
+
+    public function __construct(string $table_name, ConnectionInterface $connection)
     {
         $this->name = $table_name;
-        $this->connection = $c;
+        $this->connection = $connection;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->name;
     }
@@ -41,6 +55,7 @@ class Description implements TableDescriptionInterface
         return $this->connection;
     }
 
+    /** @return array<string,array> */
     public function describe(): array
     {
         $query = $this->connection()->query((new Describe($this->name())));
@@ -48,52 +63,65 @@ class Description implements TableDescriptionInterface
             throw new CruditesException('TABLE_DESCRIBE_FAILURE');
         }
 
-        $ret = $query->fetchAll(\PDO::FETCH_UNIQUE);
-        if ($ret === false) {
+        $ret = [];
+        $res = $query->fetchAll(\PDO::FETCH_UNIQUE);
+
+        if ($res === false) {
             throw new CruditesException('TABLE_DESCRIBE_FETCH_FAILURE');
         }
+
+        foreach ($res as $column_name => $specs) {
+            $ret []= new Column($this, $column_name, $specs);
+        }
+
 
         return $ret;
     }
 
-    public function addColumn(TableColumnInterface $column)
+    public function addColumn(TableColumnInterface $tableColumn) : void
     {
-        $this->columns[$column->name()] = $column;
+        $this->columns[$tableColumn->name()] = $tableColumn;
 
-        if ($column->isPrimary()) {
-            $this->addPrimaryKey($column);
-            if ($column->isAutoIncremented()) {
-                $this->autoIncrementedPrimaryKey($column);
+        if ($tableColumn->isPrimary()) {
+            $this->addPrimaryKey($tableColumn);
+            if ($tableColumn->isAutoIncremented()) {
+                $this->autoIncrementedPrimaryKey($tableColumn);
             }
         }
     }
 
-    public function addPrimaryKey(TableColumnInterface $column)
+    public function addPrimaryKey(TableColumnInterface $tableColumn) : void
     {
-        $this->primary_keys[$column->name()] = $column;
+        $this->primary_keys[$tableColumn->name()] = $tableColumn;
     }
 
-    public function addUniqueKey($constraint_name, $columns)
+    /** @param array<string,TableColumnInterface> $columns     */
+    public function addUniqueKey(string $constraint_name, array $columns) : void
     {
         if (!isset($this->unique_keys[$constraint_name])) {
             $this->unique_keys[$constraint_name] = $columns;
         }
     }
 
-    public function addForeignKey(TableColumnInterface $column)
+    public function addForeignKey(TableColumnInterface $tableColumn) : void
     {
-        if (!isset($this->foreign_keys_by_table[$column->foreignTableName()])) {
-            $this->foreign_keys_by_table[$column->foreignTableName()] = [];
+        // adds to the foreign key dictionary string column_name => TableColumnInterface
+        $this->foreign_keys_by_name[$tableColumn->name()] = $tableColumn;
+
+        // prepares the table name based index
+        $name = $tableColumn->foreignTableName();
+        if (!isset($this->foreign_keys_by_table[$name])) {
+            $this->foreign_keys_by_table[$name] = [];
         }
 
-        $this->foreign_keys_by_table[$column->foreignTableName()] [] = $column;
-        $this->foreign_keys_by_name[$column->name()] = $column;
+        // adds to the index tring table_name => TableColumnInterface
+        $this->foreign_keys_by_table[$name] []= $tableColumn;
     }
 
     //getsetter of AIPK, default get is null, cant set to null
-    public function autoIncrementedPrimaryKey(TableColumnInterface $setter = null)
+    public function autoIncrementedPrimaryKey(TableColumnInterface $tableColumn = null) : ?\HexMakina\BlackBox\Database\TableColumnInterface
     {
-        return is_null($setter) ? $this->aipk : ($this->aipk = $setter);
+        return is_null($tableColumn) ? $this->aipk : ($this->aipk = $tableColumn);
     }
 
     //------------------------------------------------------------  getters
@@ -104,24 +132,33 @@ class Description implements TableDescriptionInterface
     }
 
     // TableDescriptionInterface implementation
+    /**
+     * @return array<string, \HexMakina\BlackBox\Database\TableColumnInterface>
+     */
     public function columns(): array
     {
         return $this->columns;
     }
 
     // TableDescriptionInterface implementation
-    public function column($name)
+    public function column(string $name) : ?TableColumnInterface
     {
         return $this->columns[$name] ?? null;
     }
 
     // TableDescriptionInterface implementation
+    /**
+     * @return array<string, \HexMakina\BlackBox\Database\TableColumnInterface>
+     */
     public function uniqueKeysByName(): array
     {
         return $this->unique_keys;
     }
 
     // TableDescriptionInterface implementation
+    /**
+     * @return array<string, \HexMakina\BlackBox\Database\TableColumnInterface>|array<string, mixed>
+     */
     public function primaryKeys($with_values = null): array
     {
         if (is_null($with_values)) {
@@ -140,30 +177,36 @@ class Description implements TableDescriptionInterface
 
             $valid_dat_ass[$pk_name] = $with_values[$pk_name];
         }
+
         return $valid_dat_ass;
     }
 
+    /**
+     * @return mixed[]
+     */
     public function matchUniqueness($dat_ass): array
     {
         $ret = $this->primaryKeysMatch($dat_ass);
 
         if (empty($ret)) {
-            $ret = $this->uniqueKeysMatch($dat_ass);
+            return $this->uniqueKeysMatch($dat_ass);
         }
 
         return $ret;
     }
 
     /*
-    * @return array, empty on mismatch
-    * @return array, assoc of column_name => $value on match
-    * @throws CruditesException if no pk defined
-    */
-
+     * @return array, empty on mismatch
+     * @return array, assoc of column_name => $value on match
+     * @throws CruditesException if no pk defined
+     */
+    /**
+     * @return mixed[]
+     */
     public function primaryKeysMatch($dat_ass): array
     {
 
-        if (count($this->primaryKeys()) === 0) {
+        if ($this->primaryKeys() === []) {
             throw new CruditesException('NO_PRIMARY_KEYS_DEFINED');
         }
 
@@ -184,42 +227,51 @@ class Description implements TableDescriptionInterface
         return $valid_dat_ass;
     }
 
+    /**
+     * @return mixed[]
+     */
     public function uniqueKeysMatch($dat_ass): array
     {
 
-        if (count($this->uniqueKeysByName()) === 0 || !is_array($dat_ass)) {
+        if ($this->uniqueKeysByName() === []) {
             return [];
         }
-
+        if (!is_array($dat_ass)) {
+            return [];
+        }
         $keys = array_keys($dat_ass);
 
-        foreach ($this->uniqueKeysByName() as $constraint_name => $column_names) {
-            if (!is_array($column_names)) {
-                $column_names = [$column_names];
-            }
+        foreach ($this->uniqueKeysByName() as $tableColumn) {
+            $tableColumn = [$tableColumn];
 
-            if (empty(array_diff($keys, $column_names))) {
+            if (empty(array_diff($keys, $tableColumn))) {
                 return $dat_ass;
             }
         }
+
         return [];
     }
 
     // TableDescriptionInterface implementation
+
+    /** @return array<string,array> */
     public function foreignKeysByName(): array
     {
         return $this->foreign_keys_by_name;
     }
 
     // TableDescriptionInterface implementation
+
+    /** @return array<string,array> */
     public function foreignKeysByTable(): array
     {
         return $this->foreign_keys_by_table;
     }
 
-    public function singleForeignKeyTo($other_table)
+    /** @return ?array<TableColumnInterface> */
+    public function singleForeignKeyTo(TableDescriptionInterface $tableDescription) : ?array
     {
-        $bonding_column_candidates = $this->foreignKeysByTable()[$other_table->name()] ?? [];
+        $bonding_column_candidates = $this->foreignKeysByTable()[$tableDescription->name()] ?? [];
 
         if (count($bonding_column_candidates) === 1) {
             return current($bonding_column_candidates);

@@ -7,30 +7,33 @@ use HexMakina\BlackBox\Database\ColumnTypeInterface;
 class Column implements \HexMakina\BlackBox\Database\TableColumnInterface
 {
 
-    private $name = null;
+    private string $name;
 
-    private $table_name = null;
+    private string $table_name;
 
-    private $ColumnType = null;
+    private ?ColumnTypeInterface $ColumnType = null;
 
-    private $index = false;
-    private $primary = false;
-    private $auto_incremented = false;
+    private bool $index = false;
 
-    private $foreign = false;
-    private $foreign_table_name = null;
-    private $foreign_column_name = null;
+    private bool $primary = false;
 
-    private $unique_name = null;
-    private $unique_group_name = null;
+    private bool $auto_incremented = false;
 
-    private $default_value = null;
+    private bool $foreign = false;
 
-    private $nullable = false;
+    private ?string $foreign_table_name = null;
 
-    private $extra = null;
+    private ?string $foreign_column_name = null;
 
-    public function __construct($table, $name, $specs)
+    private ?string $unique_name = null;
+
+    private ?string $unique_group_name = null;
+
+    private ?string $default_value = null;
+
+    private bool $nullable = false;
+
+    public function __construct(mixed $table, string $name, array $specs)
     {
         $this->table_name = is_string($table) ? $table : $table->name();
         $this->name = $name;
@@ -50,12 +53,11 @@ class Column implements \HexMakina\BlackBox\Database\TableColumnInterface
 
         if (isset($specs['Extra'])) {
             $this->isAutoIncremented($specs['Extra'] === 'auto_increment');
-            $this->extra = $specs['Extra'];
         }
     }
 
     //------------------------------------------------------------  getters:field:info
-    public function __toString()
+    public function __toString(): string
     {
         return $this->name;
     }
@@ -64,7 +66,7 @@ class Column implements \HexMakina\BlackBox\Database\TableColumnInterface
     {
         $dbg = get_object_vars($this);
 
-        foreach ($dbg as $k => $v) {
+        foreach (array_keys($dbg) as $k) {
             if (!isset($dbg[$k])) {
                 unset($dbg[$k]);
             }
@@ -78,10 +80,11 @@ class Column implements \HexMakina\BlackBox\Database\TableColumnInterface
         return $this->name;
     }
 
-    public function type(): ColumnTypeInterface
+    public function type(): ?ColumnTypeInterface
     {
         return $this->ColumnType;
     }
+
     public function tableName(): string
     {
         return $this->table_name;
@@ -97,7 +100,7 @@ class Column implements \HexMakina\BlackBox\Database\TableColumnInterface
         $ret = $this->default_value;
 
         if (!is_null($this->default_value) && ($this->type()->isInteger() || $this->type()->isBoolean())) {
-            $ret = (int)$ret;
+            return (int)$ret;
         }
 
         return $ret;
@@ -138,40 +141,38 @@ class Column implements \HexMakina\BlackBox\Database\TableColumnInterface
         return ($this->unique_group_name = ($setter ?? $this->unique_group_name));
     }
 
-    public function setForeignTableName($setter)
+    public function setForeignTableName(?string $setter): void
     {
         $this->foreign_table_name = $setter;
     }
 
-    public function foreignTableName(): string
+    public function foreignTableName(): ?string
     {
         return $this->foreign_table_name;
     }
 
-    public function foreignTableAlias(): string
+    public function foreignTableAlias(): ?string
     {
         $ret = $this->foreignTableName();
         if (preg_match('/(.+)_(' . $this->foreignColumnName() . ')$/', $this->name(), $m)) {
-            $ret = $m[1];
+            return $m[1];
         }
 
         return $ret;
     }
 
-    public function setForeignColumnName($setter)
+    public function setForeignColumnName(?string $setter): void
     {
         $this->foreign_column_name = $setter;
     }
 
-    public function foreignColumnName(): string
+    public function foreignColumnName(): ?string
     {
         return $this->foreign_column_name;
     }
 
     public function validateValue($field_value = null)
     {
-        $ret = false;
-
         if ($this->isAutoIncremented() || $this->type()->isBoolean()) {
             $ret = true;
         } elseif (is_null($field_value)) {

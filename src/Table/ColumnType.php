@@ -7,6 +7,7 @@ use HexMakina\BlackBox\Database\ColumnTypeInterface;
 
 class ColumnType implements ColumnTypeInterface
 {
+    /** @var array<string,string> */
     private static $types_rx = [
     self::TYPE_BOOLEAN => 'tinyint\(1\)|boolean|bit', // is_boolean MUST be tested before is_integer
 
@@ -26,23 +27,25 @@ class ColumnType implements ColumnTypeInterface
     self::TYPE_STRING => 'char\((\d+)\)$'
     ];
 
-    private $name = null;
+    private string $name;
 
-    private $enum_values = null;
-    private $length = null;
+    private ?array $enum_values = null;
+
+    private ?int $length = null;
 
 
     public function __construct($specs_type)
     {
         foreach (self::$types_rx as $type => $rx) {
-            if (preg_match("/$rx/i", $specs_type, $m) === 1) {
+            if (preg_match(sprintf('/%s/i', $rx), $specs_type, $m) === 1) {
                 $this->name = $type;
 
                 if ($this->isEnum()) {
-                    $this->enum_values = explode('\',\'', $m[1]);
-                } elseif (preg_match('/([\d]+)/', $specs_type, $m) === 1) {
+                    $this->enum_values = explode("','", $m[1]);
+                } elseif (preg_match('#([\d]+)#', $specs_type, $m) === 1) {
                     $this->length = (int)$m[0];
                 }
+
                 break;
             }
         }
@@ -124,6 +127,9 @@ class ColumnType implements ColumnTypeInterface
 
 
 
+    /**
+     * @return mixed[]
+     */
     public function getEnumValues(): array
     {
         return $this->enum_values ?? [];
@@ -135,13 +141,13 @@ class ColumnType implements ColumnTypeInterface
     }
 
 
-    public function validateValue($field_value)
+    public function validateValue(mixed $field_value)
     {
         $ret = true;
 
         if ($this->isDateOrTime() && date_create($field_value) === false) {
             $ret = 'ERR_FIELD_FORMAT';
-        } elseif ($this->isYear() && preg_match('/^[0-9]{4}$/', $field_value) !== 1) {
+        } elseif ($this->isYear() && preg_match('#^\d{4}$#', $field_value) !== 1) {
             $ret = 'ERR_FIELD_FORMAT';
         } elseif ($this->isNumeric() && !is_numeric($field_value)) {
             $ret = 'ERR_FIELD_FORMAT';

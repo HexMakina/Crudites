@@ -11,9 +11,15 @@ use HexMakina\BlackBox\Database\TableManipulationInterface;
 
 class Database implements DatabaseInterface
 {
-    private $connection = null;
+    private ConnectionInterface $connection = null;
+
+    /** @var array<string,TableManipulationInterface> */
     private $table_cache = [];
+
+    /** @var array<string,array> */
     private $fk_by_table = [];
+
+    /** @var array<string,array> */
     private $unique_by_table = [];
 
     public function __construct(ConnectionInterface $connection)
@@ -22,17 +28,15 @@ class Database implements DatabaseInterface
         $this->introspect();
     }
 
-
     public function connection(): ConnectionInterface
     {
         return $this->connection;
     }
 
-    public function name()
+    public function name() : string
     {
         return $this->connection()->databaseName();
     }
-
 
     public function inspect($table_name): TableManipulationInterface
     {
@@ -55,7 +59,7 @@ class Database implements DatabaseInterface
     }
 
 
-    public function introspect()
+    public function introspect() : void
     {
         // $previous_database_name = $this->connection()->databaseName();
         $query = $this->introspectionQuery($this->connection()->databaseName());
@@ -82,7 +86,7 @@ class Database implements DatabaseInterface
         $this->refactorConstraintNameIndex();
     }
 
-    private function introspectionQuery($database_name)
+    private function introspectionQuery(string $database_name) : string
     {
         $fields = [
         'TABLE_NAME',
@@ -103,29 +107,27 @@ class Database implements DatabaseInterface
     }
 
 
-    private function setForeignFor($table, $column)
+    private function setForeignFor(TableDescriptionInterface $table, ColumnInterface $column): ?string
     {
         $reference = $this->getForeignKey($table->name(), $column->name());
 
-        if ($reference === false) {
-            return null;
+        if (!is_null($reference)) {
+            $column->isForeign(true);
+            $column->setForeignTableName($reference[0]);
+            $column->setForeignColumnName($reference[1]);
+
+            $table->addForeignKey($column);
         }
-
-        $column->isForeign(true);
-        $column->setForeignTableName($reference[0]);
-        $column->setForeignColumnName($reference[1]);
-
-        $table->addForeignKey($column);
 
         return $reference;
     }
 
-    private function getForeignKey($table_name, $column_name)
+    private function getForeignKey(string $table_name, string $column_name) : ?string
     {
-        return $this->fk_by_table[$table_name][$column_name] ?? false;
+        return $this->fk_by_table[$table_name][$column_name] ?? null;
     }
 
-    private function setUniqueFor($table, $column)
+    private function setUniqueFor(TableDescriptionInterface $table, ColumnInterface $column): ?string
     {
         if (!$this->hasUniqueFor($table, $column)) {
             return null;
@@ -141,6 +143,7 @@ class Database implements DatabaseInterface
             unset($this->unique_by_table[$table->name()][$column->name()][0]);
             $table->addUniqueKey($unique_name, $this->unique_by_table[$table->name()][$column->name()]);
         }
+
         return $unique_name;
     }
 
@@ -150,7 +153,7 @@ class Database implements DatabaseInterface
     }
 
     // vague memory that it makes later operation easier. written on the spot.. testing will reveal it's true nature
-    private function refactorConstraintNameIndex()
+    private function refactorConstraintNameIndex() : void
     {
         foreach ($this->unique_by_table as $table_name => $uniques) {
             foreach ($uniques as $constraint_name => $columns) {
@@ -162,7 +165,7 @@ class Database implements DatabaseInterface
         }
     }
 
-    private function addUniqueKeyByTable($table_name, $key_usage)
+    private function addUniqueKeyByTable($table_name, $key_usage) : void
     {
         $constraint_name = $key_usage['CONSTRAINT_NAME'];
         $column_name = $key_usage['COLUMN_NAME'];
@@ -172,7 +175,7 @@ class Database implements DatabaseInterface
         $this->unique_by_table[$table_name][$constraint_name][$key_usage['ORDINAL_POSITION']] = $column_name;
     }
 
-    private function addForeignKeyByTable($table_name, $key_usage)
+    private function addForeignKeyByTable($table_name, $key_usage) : void
     {
         $this->fk_by_table[$table_name] = $this->fk_by_table[$table_name] ?? [];
         $this->fk_by_table[$table_name][$key_usage['COLUMN_NAME']] = [$key_usage['REFERENCED_TABLE_NAME'], $key_usage['REFERENCED_COLUMN_NAME']];

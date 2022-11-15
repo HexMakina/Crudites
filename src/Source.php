@@ -11,11 +11,11 @@ namespace HexMakina\Crudites;
 
 class Source
 {
-    private $dsn = null;
-    private $driver = null;
-    private $database = null;
+    private string $dsn;
+    private ?string $driver = null;
+    private ?string $database = null;
 
-    public function __construct($dsn)
+    public function __construct(string $dsn)
     {
         $this->dsn = $dsn;
     }
@@ -42,7 +42,7 @@ class Source
         return $this->database ?? $this->database = self::extractDatabaseFromDSN($this->dsn);
     }
 
-    public static function extractDriverFromDSN($dsn): string
+    public static function extractDriverFromDSN(string $dsn): string
     {
         $matches = [];
 
@@ -61,7 +61,7 @@ class Source
    * @return boolean availability of driver name
    * @throws CruditesException if driver name is not in \PDO::getAvailableDrivers()
    */
-    public static function driverIsAvailable($driver): bool
+    public static function driverIsAvailable(string $driver): bool
     {
         return in_array($driver, \PDO::getAvailableDrivers(), true);
     }
@@ -70,7 +70,7 @@ class Source
    * @return string the database name extracted from the $dsn string
    * @throws CruditesException if no database name was parsed from the DSN
    */
-    public static function extractDatabaseFromDSN($dsn): string
+    public static function extractDatabaseFromDSN(string $dsn): string
     {
         $matches = [];
 
