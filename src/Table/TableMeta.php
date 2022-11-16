@@ -301,7 +301,7 @@ abstract class TableMeta implements TableMetaInterface
     }
 
     /** @return ?array<ColumnInterface> */
-    public function singleForeignKeyTo(TableMetaInterface $tableMeta): ?array
+    public function singleForeignKeyTo(TableMetaInterface $tableMeta): ?ColumnInterface
     {
         $bonding_column_candidates = $this->foreignKeysByTable()[$tableMeta->name()] ?? [];
 
