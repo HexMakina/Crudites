@@ -106,37 +106,37 @@ class Column implements \HexMakina\BlackBox\Database\TableColumnInterface
         return $ret;
     }
 
-    public function isPrimary($setter = null): bool
+    public function isPrimary(bool $setter = null): bool
     {
         return is_bool($setter) ? ($this->primary = $setter) : $this->primary;
     }
 
-    public function isForeign($setter = null): bool
+    public function isForeign(bool $setter = null): bool
     {
         return is_bool($setter) ? ($this->foreign = $setter) : $this->foreign;
     }
 
-    public function isIndex($setter = null): bool
+    public function isIndex(bool $setter = null): bool
     {
         return is_bool($setter) ? ($this->index = $setter) : $this->index;
     }
 
-    public function isAutoIncremented($setter = null): bool
+    public function isAutoIncremented(bool $setter = null): bool
     {
         return is_bool($setter) ? ($this->auto_incremented = $setter) : $this->auto_incremented;
     }
 
-    public function isNullable($setter = null): bool
+    public function isNullable(bool $setter = null): bool
     {
         return is_bool($setter) ? ($this->nullable = $setter) : $this->nullable;
     }
 
-    public function uniqueName($setter = null)
+    public function uniqueName(string $setter = null)
     {
         return ($this->unique_name = ($setter ?? $this->unique_name));
     }
 
-    public function uniqueGroupName($setter = null)
+    public function uniqueGroupName(string $setter = null)
     {
         return ($this->unique_group_name = ($setter ?? $this->unique_group_name));
     }
