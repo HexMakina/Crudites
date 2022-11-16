@@ -9,40 +9,49 @@ use HexMakina\BlackBox\Database\QueryInterface;
 
 abstract class BaseQuery implements QueryInterface
 {
-    private static $executions = 0;
+    private static int $executions = 0;
 
+    /**
+     * @var string
+     */
     private const STATE_SUCCESS = '00000'; //PDO "error" code for "all is fine"
 
-    protected $table = null;
-    protected $table_alias = null;
+    protected $table;
 
-    protected $statement = null;
-    protected $bindings = [];
-    protected $binding_names = [];
+    protected $table_alias;
 
-    protected $connection = null;
+    protected $statement;
+
+    protected array $bindings = [];
+
+    protected array $binding_names = [];
+
+    protected $connection;
+
     protected $executed = false;
-    protected $state = null;
 
-    protected $prepared_statement = null;
+    protected $state;
 
-    protected $row_count = null;
+    protected $prepared_statement;
 
-    protected $error_code = null;
-    protected $error_text = null;
+    protected $row_count;
+
+    protected $error_code;
+
+    protected $error_text;
 
     //------------------------------------------------------------  DEBUG
     public function __debugInfo(): array
     {
         $dbg = [];
-        if (isset($this->table)) {
+        if ($this->table !== null) {
             $dbg['table_name()'] = $this->tableName();
         }
 
         $dbg = array_merge($dbg, get_object_vars($this));
         unset($dbg['table']);
 
-        foreach ($dbg as $k => $v) {
+        foreach (array_keys($dbg) as $k) {
             if (!isset($dbg[$k])) {
                 unset($dbg[$k]);
             }
@@ -77,10 +86,10 @@ abstract class BaseQuery implements QueryInterface
     }
 
 
-    public function connection(ConnectionInterface $setter = null): ConnectionInterface
+    public function connection(ConnectionInterface $connection = null): ConnectionInterface
     {
-        if (!is_null($setter)) {
-            $this->connection = $setter;
+        if (!is_null($connection)) {
+            $this->connection = $connection;
         }
 
         if (is_null($this->connection)) {
@@ -90,9 +99,9 @@ abstract class BaseQuery implements QueryInterface
         return $this->connection;
     }
 
-    public function table(TableInterface $setter = null): TableInterface
+    public function table(TableInterface $table = null): TableInterface
     {
-        return is_null($setter) ? $this->table : ($this->table = $setter);
+        return is_null($table) ? $this->table : ($this->table = $table);
     }
 
     public function tableName(): string
@@ -100,12 +109,13 @@ abstract class BaseQuery implements QueryInterface
         return $this->table()->name();
     }
 
-    public function addPart($group, $part)
+    public function addPart($group, $part): self
     {
-        $this->{$group} = $this->{$group} ?? [];
-        array_push($this->{$group}, $part);
+        $this->{$group} ??= [];
+        $this->{$group}[] = $part;
         return $this;
     }
+
     //------------------------------------------------------------  PREP::FIELDS
     public function tableLabel($table_name = null)
     {
@@ -126,26 +136,36 @@ abstract class BaseQuery implements QueryInterface
         if (empty($table_name)) {
             return sprintf('`%s`', $field_name);
         }
+
         return sprintf('`%s`.`%s`', $this->tableLabel($table_name), $field_name);
     }
 
     //------------------------------------------------------------  PREP::BINDINGS
 
-    public function setBindings($dat_ass)
+    public function setBindings($dat_ass): void
     {
         $this->bindings = $dat_ass;
     }
 
+    /**
+     * @return mixed[]
+     */
     public function getBindings(): array
     {
         return $this->bindings;
     }
 
+    /**
+     * @return mixed[]
+     */
     public function getBindingNames(): array
     {
         return $this->binding_names;
     }
 
+    /**
+     * @return array<int|string, string>
+     */
     public function addBindings($assoc_data): array
     {
         $binding_names = [];
@@ -158,7 +178,7 @@ abstract class BaseQuery implements QueryInterface
 
     public function addBinding($field, $value, $table_name = null, $bind_label = null): string
     {
-        $bind_label = $bind_label ?? $this->bindLabel($field, $table_name);
+        $bind_label ??= $this->bindLabel($field, $table_name);
         $this->bindings[$bind_label] = $value;
         $this->binding_names[$field] = $bind_label;
 
@@ -175,7 +195,7 @@ abstract class BaseQuery implements QueryInterface
     // returns itself
     // DEBUG dies on \Exception
 
-    public function run(): QueryInterface
+    public function run(): self
     {
         try {
             if (!$this->isPrepared()) {
@@ -194,8 +214,8 @@ abstract class BaseQuery implements QueryInterface
                     $this->row_count = $this->prepared_statement->rowCount();
                 }
             }
-        } catch (\PDOException $e) {
-            throw (new CruditesException($e->getMessage()))->fromQuery($this);
+        } catch (\PDOException $pdoException) {
+            throw (new CruditesException($pdoException->getMessage()))->fromQuery($this);
         }
 
         return $this;
@@ -245,6 +265,9 @@ abstract class BaseQuery implements QueryInterface
         return $this->state === self::STATE_SUCCESS;
     }
 
+    /**
+     * @return mixed[]
+     */
     public function errorInfo(): array
     {
         if ($this->isPrepared()) {
@@ -254,16 +277,15 @@ abstract class BaseQuery implements QueryInterface
         return $this->connection()->errorInfo();
     }
 
-    public function compare(QueryInterface $other)
+    public function compare(QueryInterface $query)
     {
-        if ($this->statement() !== $other->statement()) {
+        if ($this->statement() !== $query->statement()) {
             return 'statement';
         }
-
-        if (
-            !empty(array_diff($this->getBindings(), $other->getBindings()))
-            || !empty(array_diff($other->getBindings(), $this->getBindings()))
-        ) {
+        if (!empty(array_diff($this->getBindings(), $query->getBindings()))) {
+            return 'bindings';
+        }
+        if (!empty(array_diff($query->getBindings(), $this->getBindings()))) {
             return 'bindings';
         }
 

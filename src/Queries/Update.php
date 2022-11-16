@@ -10,7 +10,7 @@ class Update extends BaseQuery
     use ClauseJoin;
     use ClauseWhere;
 
-    private $alterations = [];
+    private array $alterations = [];
 
     public function __construct(TableInterface $table, $update_data = [], $conditions = [])
     {
@@ -30,6 +30,9 @@ class Update extends BaseQuery
         }
     }
 
+    /**
+     * @return array<int|string, string>
+     */
     public function addBindings($update_data): array
     {
         $binding_names = [];
@@ -44,9 +47,11 @@ class Update extends BaseQuery
             } elseif (empty($value) && $column->type()->isBoolean()) { //empty '', 0, false
                 $value = 0;
             }
+
             $binding_names[$field_name] = $this->addBinding($field_name, $value);
             $this->alterations [] = $this->backTick($field_name) . ' = ' . $binding_names[$field_name];
         }
+
         return $binding_names;
     }
 
@@ -60,9 +65,9 @@ class Update extends BaseQuery
         if (empty($this->where)) {
             throw new CruditesException('UPDATE_NO_CONDITIONS');
         }
+
         $set = implode(', ', $this->alterations);
         $where = $this->generateWhere();
-        $ret = sprintf('UPDATE `%s` SET %s %s;', $this->table->name(), $set, $where);
-        return $ret;
+        return sprintf('UPDATE `%s` SET %s %s;', $this->table->name(), $set, $where);
     }
 }

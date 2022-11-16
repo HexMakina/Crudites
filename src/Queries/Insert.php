@@ -22,6 +22,9 @@ class Insert extends BaseQuery
         $this->addBindings($assoc_data);
     }
 
+    /**
+     * @return array<int|string, string>
+     */
     public function addBindings($assoc_data): array
     {
         $ret = [];
@@ -34,6 +37,7 @@ class Insert extends BaseQuery
                 $ret[$column_name] = $this->addBinding($column_name, $assoc_data[$column_name]);
             }
         }
+
         return $ret;
     }
 

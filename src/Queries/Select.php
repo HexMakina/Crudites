@@ -11,15 +11,20 @@ class Select extends BaseQuery implements SelectInterface
     use ClauseJoin;
     use ClauseWhere;
 
-    protected $selection = [];
-    protected $join = [];
+    protected array $selection = [];
 
-    protected $group = [];
-    protected $having = [];
-    protected $order = [];
+    protected array $join = [];
 
-    protected $limit = null;
-    protected $limit_number = null;
+    protected array $group = [];
+
+    protected array $having = [];
+
+    protected array $order = [];
+
+    protected $limit;
+
+    protected $limit_number;
+
     protected $limit_offset = 0;
 
 
@@ -55,13 +60,13 @@ class Select extends BaseQuery implements SelectInterface
         return $this;
     }
 
-    public function selectAlso($setter)
+    public function selectAlso($setter): self
     {
         $this->selection = array_merge($this->selection, is_array($setter) ? $setter : [$setter]);
         return $this;
     }
 
-    public function groupBy($clause)
+    public function groupBy($clause): self
     {
         if (is_string($clause)) {
             $this->addPart('group', $this->backTick($clause, $this->tableLabel()));
@@ -81,7 +86,7 @@ class Select extends BaseQuery implements SelectInterface
         return $this->addPart('having', $condition);
     }
 
-    public function orderBy($clause)
+    public function orderBy($clause): self
     {
         if (is_string($clause)) {
             $this->addPart('order', $clause);
@@ -102,7 +107,7 @@ class Select extends BaseQuery implements SelectInterface
         return $this;
     }
 
-    public function limit($number, $offset = null)
+    public function limit($number, $offset = null): self
     {
         $this->limit_number = $number;
         $this->limit_offset = $offset;
@@ -116,7 +121,7 @@ class Select extends BaseQuery implements SelectInterface
             throw new CruditesException('NO_TABLE');
         }
 
-        $this->table_alias = $this->table_alias ?? '';
+        $this->table_alias ??= '';
 
         $query_fields = empty($this->selection) ? ['*'] : $this->selection;
 
@@ -131,14 +136,14 @@ class Select extends BaseQuery implements SelectInterface
 
         foreach (['group' => 'GROUP BY', 'having' => 'HAVING', 'order' => 'ORDER BY'] as $part => $prefix) {
             if (!empty($this->$part)) {
-                $ret .= PHP_EOL . " $prefix " . implode(', ', $this->$part);
+                $ret .= PHP_EOL . sprintf(' %s ', $prefix) . implode(', ', $this->$part);
             }
         }
 
         if (!empty($this->limit_number)) {
             $offset = $this->limit_offset ?? 0;
             $number = $this->limit_number;
-            $ret .= PHP_EOL . " LIMIT $offset, $number";
+            $ret .= PHP_EOL . sprintf(' LIMIT %s, %s', $offset, $number);
         }
 
         return $ret;
@@ -155,21 +160,25 @@ class Select extends BaseQuery implements SelectInterface
     {
         return $this->ret(\PDO::FETCH_NUM);
     }
+
     //ret:
     public function retAss()
     {
         return $this->ret(\PDO::FETCH_ASSOC);
     }
+
     //ret: array indexed by column name
     public function retCol()
     {
         return $this->ret(\PDO::FETCH_COLUMN);
     }
+
     //ret: all values of a single column from the result set
     public function retPar()
     {
         return $this->ret(\PDO::FETCH_KEY_PAIR);
     }
+
     public function retKey()
     {
         return $this->ret(\PDO::FETCH_UNIQUE);

@@ -7,34 +7,47 @@ use HexMakina\BlackBox\Database\TableInterface;
 trait ClauseWhere
 {
     public static $OP_AND = 'AND';
+
     public static $OP_OR = 'OR';
 
     public static $OP_GT = '>';
+
     public static $OP_LT = '<';
+
     public static $OP_EQ = '=';
+
     public static $OP_GTE = '>=';
+
     public static $OP_LTE = '<=';
+
     public static $OP_NEQ = '<>';
+
     public static $OP_LIKE = 'LIKE';
+
     public static $OP_NLIKE = 'NOT LIKE';
 
 
     public static $WHERE_LIKE_PRE = '%TERM';
+
     public static $WHERE_LIKE_POST = 'TERM%';
+
     public static $WHERE_LIKE_BOTH = '%TERM%';
 
-    protected $where = null;
+    protected $where;
 
-    abstract public function table(TableInterface $setter = null): TableInterface;
+    abstract public function table(TableInterface $table = null): TableInterface;
+
     abstract public function tableLabel($table_name = null);
+
     abstract public function backTick($field, $table_name = null);
+
     abstract public function addBinding($field, $value, $table_name = null, $bind_label = null): string;
 
     public function where($where_condition)
     {
-        $this->where = $this->where ?? [];
+        $this->where ??= [];
 
-        $this->where[] = "($where_condition)";
+        $this->where[] = sprintf('(%s)', $where_condition);
 
         return $this;
     }
@@ -44,7 +57,7 @@ trait ClauseWhere
         $bind_name = $this->addBinding($field, $value, $table_name, $bindname);
         $field_name = $this->backTick($field, $table_name);
 
-        return $this->where("($field_name = $bind_name OR $field_name IS NULL)");
+        return $this->where(sprintf('(%s = %s OR %s IS NULL)', $field_name, $bind_name, $field_name));
     }
 
     public function whereEQ($field, $value, $table_name = null, $bindname = null)
@@ -94,6 +107,7 @@ trait ClauseWhere
     {
         return $this->whereBindField($table_name, $field, self::$OP_LIKE, $prep_value, $bindname);
     }
+
     public function whereNotLike($field, $prep_value, $table_name = null, $bindname = null)
     {
         return $this->whereBindField($table_name, $field, self::$OP_NLIKE, $prep_value, $bindname);
@@ -113,7 +127,7 @@ trait ClauseWhere
     private function whereBindField($table_name, $field, $operator, $value, $bind_name = null)
     {
         $bind_name = $this->addBinding($field, $value, $table_name, $bind_name);
-        return $this->whereField($field, "$operator $bind_name", $table_name);
+        return $this->whereField($field, sprintf('%s %s', $operator, $bind_name), $table_name);
     }
 
     public function whereNumericIn($field, $values, $table_name = null)
@@ -134,11 +148,13 @@ trait ClauseWhere
                 // TODO dirty patching. mathematical certainty of uniqueness needed
                 $placeholder_name = ':' . $table_name . '_' . $field . '_awS_in_' . $count_values . '_' . $i;
                 $this->addBinding($field, $v, null, $placeholder_name);
-                $in .= "$placeholder_name,";
+                $in .= sprintf('%s,', $placeholder_name);
             }
+
             // $this->whereField($field, sprintf(" IN ('%s')", implode("','", $values)), $table_name);
             $this->whereField($field, sprintf(" IN (%s)", rtrim($in, ',')), $table_name);
         }
+
         return $this;
     }
 
@@ -150,19 +166,19 @@ trait ClauseWhere
     public function whereField($field, $condition, $table_name = null)
     {
         $table_field = $this->backTick($field, $table_name);
-        return $this->where("$table_field $condition");
+        return $this->where(sprintf('%s %s', $table_field, $condition));
     }
 
     public function whereNotEmpty($field, $table_name = null)
     {
         $table_field = $this->backTick($field, $table_name);
-        return $this->where("($table_field IS NOT NULL AND $table_field <> '') ");
+        return $this->where(sprintf('(%s IS NOT NULL AND %s <> \'\') ', $table_field, $table_field));
     }
 
     public function whereEmpty($field, $table_name = null)
     {
         $table_field = $this->backTick($field, $table_name);
-        return $this->where("($table_field IS NULL OR $table_field = '')");
+        return $this->where(sprintf('(%s IS NULL OR %s = \'\')', $table_field, $table_field));
     }
 
     /**
@@ -172,12 +188,14 @@ trait ClauseWhere
      */
 
      // sub array filters[$content]
-    public function whereFilterContent($filters_content, $search_table = null, $filters_operator = null)
+    public function whereFilterContent(array $filters_content, $search_table = null, $filters_operator = null)
     {
-        if (!isset($filters_content['term']) || !isset($filters_content['fields'])) {
+        if (!isset($filters_content['term'])) {
             return $this;
         }
-
+        if (!isset($filters_content['fields'])) {
+            return $this;
+        }
         if (is_null($search_table)) {
             $search_table = $this->tableLabel();
         }
@@ -193,35 +211,37 @@ trait ClauseWhere
                 $search_field = $search_mode;
                 $search_mode = self::$WHERE_LIKE_BOTH;
             }
+
             $search_field = $this->backTick($search_field, $search_table);
 
             if ($search_mode === self::$OP_EQ) {
-                $content_wc [] = "$search_field = '$search_term' "; // TODO bindthis
+                $content_wc [] = sprintf('%s = \'%s\' ', $search_field, $search_term); // TODO bindthis
             } else // %%
             {
                 $pattern = str_replace('TERM', $search_term, $search_mode);
-                $content_wc [] = " $search_field LIKE '$pattern' "; // TODO bindthis
+                $content_wc [] = sprintf(' %s LIKE \'%s\' ', $search_field, $pattern); // TODO bindthis
             }
         }
 
         if (!empty($content_wc)) {
             $operator = self::validWhereOperator($filters_operator, self::$OP_OR);
-            $content_wc = implode(" $operator ", $content_wc);
+            $content_wc = implode(sprintf(' %s ', $operator), $content_wc);
 
-            $this->where(" ($content_wc) ");
+            $this->where(sprintf(' (%s) ', $content_wc));
         }
     }
+
     // //------------------------------------------------------------  FIELDS
     protected static function validWhereOperator($operator, $default)
     {
-        $operator = strtoupper("$operator");
+        $operator = strtoupper(sprintf('%s', $operator));
         $choices = [self::$OP_AND, self::$OP_OR];
 
-        if (in_array($operator, $choices) === true) {
+        if (in_array($operator, $choices)) {
             return $operator;
         }
 
-        if (in_array($default, $choices) === true) {
+        if (in_array($default, $choices)) {
             return $default;
         }
 

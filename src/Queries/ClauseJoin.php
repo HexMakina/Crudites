@@ -10,11 +10,16 @@ trait ClauseJoin
 {
     protected $joined_tables = [];
 
-    abstract public function table(TableInterface $setter = null): TableInterface;
+    abstract public function table(TableInterface $table = null): TableInterface;
+
     abstract public function tableName();
+
     abstract public function tableAlias($setter = null);
+
     abstract public function tableLabel($table_name = null);
+
     abstract public function backTick($field, $table_name = null);
+
     abstract public function addBinding($field, $value, $table_name = null, $bind_label = null): string;
 
     public function addTables($setter)
@@ -27,7 +32,7 @@ trait ClauseJoin
     {
         list($join_table_name,$join_table_alias) = self::processParamTableNames($table_names);
 
-        if (preg_match('/^(INNER|LEFT|RIGHT|FULL)(\sOUTER)?/i', $join_type) !== 1) {
+        if (preg_match('#^(INNER|LEFT|RIGHT|FULL)(\sOUTER)?#i', $join_type) !== 1) {
             $join_type = '';
         }
 
@@ -41,31 +46,38 @@ trait ClauseJoin
         return $this->addPart('join', $sql);
     }
 
-    protected function generateJoin($join_type, $join_table_name, $join_table_alias = null, $join_fields = [])
+    protected function generateJoin($join_type, $join_table_name, $join_table_alias = null, $join_fields = []): string
     {
-        $join_table_alias = $join_table_alias ?? $join_table_name;
+        $join_table_alias ??= $join_table_name;
 
         $join_parts = [];
-        foreach ($join_fields as $join_cond) {
-            if (isset($join_cond[3])) { // 4 joins param -> t.f = t.f
-                list($table, $field, $join_table, $join_table_field) = $join_cond;
+        foreach ($join_fields as $join_field) {
+            if (isset($join_field[3])) { // 4 joins param -> t.f = t.f
+                list($table, $field, $join_table, $join_table_field) = $join_field;
                 $join_parts [] = $this->backTick($field, $table) . ' = ' . $this->backTick($join_table_field, $join_table);
-            } elseif (isset($join_cond[2])) { // 3 joins param -> t.f = v
-                list($table, $field, $value) = $join_cond;
+            } elseif (isset($join_field[2])) { // 3 joins param -> t.f = v
+                list($table, $field, $value) = $join_field;
                 $bind_label = ':loj_' . $join_table_alias . '_' . $table . '_' . $field;
                 $this->addBinding($field, $value, null, $bind_label);
 
                 $join_parts [] = $this->backTick($field, $table) . ' = ' . $bind_label;
             }
         }
+
         return sprintf('%s JOIN `%s` %s ON %s', $join_type, $join_table_name, $join_table_alias, implode(' AND ', $join_parts));
     }
 
+    /**
+     * @return mixed[]
+     */
     public function joinedTables(): array
     {
         return $this->joined_tables;
     }
 
+    /**
+     * @return mixed[]|string[]
+     */
     private static function processParamTableNames($table_names): array
     {
         // it's an array with two indexes, all fine
