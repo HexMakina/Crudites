@@ -15,16 +15,16 @@ use HexMakina\BlackBox\Database\ConnectionInterface;
 
 class Connection implements ConnectionInterface
 {
-    private $source;
+    private \HexMakina\Crudites\Source $source;
 
     // in case we change the database (f.i. INFORMATION_SCHEMA)
-    private $using_database = null;
+    private string $using_database;
 
-    private $pdo;
+    private \PDO $pdo;
 
-    private $tracks = false;
+    private ?array $tracks = null;
 
-    private static $driver_default_options = [
+    private static array $driver_default_options = [
       \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, // the one option you cannot change
       \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
       \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
@@ -33,35 +33,35 @@ class Connection implements ConnectionInterface
     /*
      * @throws CruditesException when $dsn is parsed by Source
      */
-    public function __construct($dsn, $username = '', $password = '', $driver_options = [])
+    public function __construct(string $dsn, string $username = '', string $password = '', array $driver_options = [])
     {
         $this->source = new Source($dsn);
 
         if (isset($driver_options[\PDO::ATTR_ERRMODE])) {
             unset($driver_options[\PDO::ATTR_ERRMODE]);
         }
+
         $driver_options = array_merge(self::$driver_default_options, $driver_options);
 
         $this->pdo = new \PDO($this->source->DSN(), $username, $password, $driver_options);
 
-        $this->useDatabase($this->source->database());
+        $this->useDatabase($this->source->databaseName());
     }
 
 
-
     // database level
-    public function useDatabase($name)
+    public function useDatabase(string $name): void
     {
         $this->using_database = $name;
         $this->pdo->query(sprintf('USE `%s`;', $name));
     }
 
-    public function restoreDatabase()
+    public function restoreDatabase(): void
     {
-        $this->useDatabase($this->source->database());
+        $this->useDatabase($this->source->databaseName());
     }
 
-    public function driverName()
+    public function driverName() : mixed
     {
         return $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
     }
@@ -71,19 +71,21 @@ class Connection implements ConnectionInterface
         return $this->using_database;
     }
 
+
     // statements
-    public function prepare($sql_statement, $options = [])
+    public function prepare(string $sql_statement, $options = []) : ?\PDOStatement
     {
-        if ($this->tracks !== false) {
+        if (!is_null($this->tracks)) {
             $this->track($sql_statement, __FUNCTION__, $options);
         }
 
-        return $this->pdo->prepare($sql_statement, $options);
+        $res = $this->pdo->prepare($sql_statement, $options);
+        return $res === false ? null : $res;
     }
 
-    public function query($sql_statement, $fetch_mode = null, $fetch_col_num = null)
+    public function query(string $sql_statement, $fetch_mode = null, $fetch_col_num = null) : ?\PDOStatement
     {
-        if ($this->tracks !== false) {
+        if (!is_null($this->tracks)) {
             $options = ['fetch_mode' => $fetch_mode, 'fetch_col_num' => $fetch_col_num];
             $this->track($sql_statement, __FUNCTION__, $options);
         }
@@ -91,16 +93,19 @@ class Connection implements ConnectionInterface
         if (is_null($fetch_mode)) {
             return $this->pdo->query($sql_statement);
         }
-        return $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);
+
+        $res = $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);
+        return $res === false ? null : $res;
     }
 
-    public function alter($sql_statement)
+    public function alter(string $sql_statement) : ?int
     {
-        if ($this->tracks !== false) {
+        if (!is_null($this->tracks)) {
             $this->track($sql_statement, __FUNCTION__);
         }
 
-        return $this->pdo->exec($sql_statement);
+        $res = $this->pdo->exec($sql_statement);
+        return $res === false ? null : $res;
     }
 
 
@@ -126,33 +131,36 @@ class Connection implements ConnectionInterface
         return $this->pdo->lastInsertId($name);
     }
 
+    /**
+     * @return mixed[]
+     */
     public function errorInfo(): array
     {
         return $this->pdo->errorInfo();
     }
 
-    public function errorCode(): ?string
+    public function errorCode(): string
     {
         return $this->pdo->errorCode();
     }
 
 
     // activates tracking
-    public function setTracker()
+    public function setTracker(): void
     {
         $this->tracks = [];
     }
 
-    public function track($sql_statement, $class_function = null, $options = [])
+    public function track($sql_statement, $class_function = null, $options = []): void
     {
-        $meta = ["$sql_statement"];
+        $meta = [sprintf('%s', $sql_statement)];
 
         if (is_object($sql_statement)) {
             $meta[] = get_class($sql_statement);
         }
 
         if (!is_null($class_function)) {
-            $meta[] = "$class_function(" . json_encode($options) . ")";
+            $meta[] = sprintf('%s(', $class_function) . json_encode($options) . ")";
         }
 
 

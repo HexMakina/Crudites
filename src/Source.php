@@ -37,7 +37,7 @@ class Source
     /*
      * @throws CruditesException if $dsn string is invalid or incomplete
      */
-    public function database(): string
+    public function databaseName(): string
     {
         return $this->database ?? $this->database = self::extractDatabaseFromDSN($this->dsn);
     }
@@ -47,11 +47,11 @@ class Source
         $matches = [];
 
         if (empty(preg_match('/^([a-z]+)\:/', $dsn, $matches))) {
-            throw new CruditesException('DSN_NO_DRIVER');
+            throw new CruditesException('DSN_DRIVER_NOT_FOUND');
         }
 
         if (!self::driverIsAvailable($matches[1])) {
-            throw new CruditesException('DSN_UNAVAILABLE_DRIVER');
+            throw new CruditesException('DSN_DRIVER_UNAVAILABLE');
         }
 
         return $matches[1];
