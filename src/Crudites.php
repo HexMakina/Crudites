@@ -15,14 +15,14 @@ use HexMakina\Crudites\CruditesException;
 
 class Crudites
 {
-    private static $database = null;
+    private static ?DatabaseInterface $database;
 
-    public static function setDatabase(DatabaseInterface $db)
+    public static function setDatabase(DatabaseInterface $database): void
     {
-        self::$database = $db;
+        self::$database = $database;
     }
 
-    public static function inspect($table_name)
+    public static function inspect(string $table_name)
     {
         if (is_null(self::$database)) {
             throw new CruditesException('NO_DATABASE');
@@ -30,7 +30,7 @@ class Crudites
 
         try {
             return self::$database->inspect($table_name);
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             throw new CruditesException('TABLE_INTROSPECTION::' . $table_name);
         }
     }
@@ -45,32 +45,34 @@ class Crudites
 
             return self::$database->connection();
         }
-
-        $conx = new Connection($dsn, $user, $pass);
-        return $conx;
+        return new Connection($dsn, $user, $pass);
     }
 
     //------------------------------------------------------------  DataRetrieval
     // success: return AIPK-indexed array of results (associative array or object)
-    public static function count(SelectInterface $Query)
+    public static function count(SelectInterface $select): ?int
     {
-        $Query->selectAlso(['COUNT(*) as count']);
-        $res = $Query->retCol();
+        $select->selectAlso(['COUNT(*) as count']);
+        $res = $select->retCol();
         if (is_array($res)) {
-            return intval(current($res));
+            return (int) current($res);
         }
+
         return null;
     }
 
     // success: return AIPK-indexed array of results (associative array or object)
-    public static function retrieve(SelectInterface $Query): array
+    /**
+     * @return array<int|string, mixed>
+     */
+    public static function retrieve(SelectInterface $select): array
     {
-        $pk_name = implode('_', array_keys($Query->table()->primaryKeys()));
+        $pk_name = implode('_', array_keys($select->table()->primaryKeys()));
 
         $ret = [];
 
-        if ($Query->run()->isSuccess()) {
-            foreach ($Query->retAss() as $rec) {
+        if ($select->run()->isSuccess()) {
+            foreach ($select->retAss() as $rec) {
                 $ret[$rec[$pk_name]] = $rec;
             }
         }
@@ -89,6 +91,7 @@ class Crudites
             $stmt = $conx->prepare($sql);
             $res = $stmt->execute($dat_ass);
         }
+
         return $res;
     }
 
@@ -100,12 +103,12 @@ class Crudites
             throw new CruditesException('TABLE_REQUIRES_COLUMN');
         }
 
-        $Query = $table->select(["DISTINCT `$column_name`"])
+        $Query = $table->select([sprintf('DISTINCT `%s`', $column_name)])
           ->whereNotEmpty($column_name)
           ->orderBy([$table->name(), $column_name, 'ASC']);
 
         if (!is_null($filter_by_value)) {
-            $Query->whereLike($column_name, "%$filter_by_value%");
+            $Query->whereLike($column_name, sprintf('%%%s%%', $filter_by_value));
         }
 
         $Query->orderBy($column_name, 'DESC');
@@ -121,11 +124,11 @@ class Crudites
             throw new CruditesException('TABLE_REQUIRES_COLUMN');
         }
 
-        $Query = $table->select(["DISTINCT `id`,`$column_name`"])
+        $Query = $table->select([sprintf('DISTINCT `id`,`%s`', $column_name)])
           ->whereNotEmpty($column_name)->orderBy([$table->name(), $column_name, 'ASC']);
 
         if (!is_null($filter_by_value)) {
-            $Query->whereLike($column_name, "%$filter_by_value%");
+            $Query->whereLike($column_name, sprintf('%%%s%%', $filter_by_value));
         }
 
         return $Query->retPar();
@@ -138,8 +141,10 @@ class Crudites
     {
 
         $table = self::tableNameToTable($table);
-
-        if (is_null($column = $table->column($boolean_column_name)) || !$column->type()->isBoolean()) {
+        if (is_null($column = $table->column($boolean_column_name))) {
+            return false;
+        }
+        if (!$column->type()->isBoolean()) {
             return false;
         }
 
