@@ -4,7 +4,7 @@ namespace HexMakina\Crudites\Table;
 
 use HexMakina\BlackBox\Database\ColumnTypeInterface;
 
-class Column implements \HexMakina\BlackBox\Database\TableColumnInterface
+class Column implements \HexMakina\BlackBox\Database\ColumnInterface
 {
 
     private string $name;

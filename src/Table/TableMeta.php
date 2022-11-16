@@ -6,7 +6,7 @@ use HexMakina\Crudites\CruditesException;
 use HexMakina\Crudites\Queries\Describe;
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\TableMetaInterface;
-use HexMakina\BlackBox\Database\TableColumnInterface;
+use HexMakina\BlackBox\Database\ColumnInterface;
 
 abstract class TableMeta implements TableMetaInterface
 {
@@ -16,24 +16,24 @@ abstract class TableMeta implements TableMetaInterface
 
     // protected $ORM_class_name = null;
 
-    /** @var array<string,TableColumnInterface> */
+    /** @var array<string,ColumnInterface> */
     protected array $columns = [];
 
     // auto_incremented_primary_key
-    protected ?TableColumnInterface $aipk = null;
+    protected ?ColumnInterface $aipk = null;
 
 
-    /** @var array<string,TableColumnInterface> */
+    /** @var array<string,ColumnInterface> */
     protected array $primary_keys = [];
 
-    /** @var array<string,TableColumnInterface> */
+    /** @var array<string,ColumnInterface> */
     protected array $unique_keys = [];
 
 
-    /** @var array<string,TableColumnInterface> */
+    /** @var array<string,ColumnInterface> */
     protected array $foreign_keys_by_name = [];
 
-    /** @var array<string,TableColumnInterface> */
+    /** @var array<string,ColumnInterface> */
     protected array $foreign_keys_by_table = [];
 
 
@@ -74,7 +74,7 @@ abstract class TableMeta implements TableMetaInterface
         return $ret;
     }
 
-    public function setUniqueFor(TableColumnInterface $column, Schema $schema): void
+    public function setUniqueFor(ColumnInterface $column, Schema $schema): void
     {
       $constraint = $schema->uniqueConstraintNameFor($this->name(), $column->name());
       $columns = $schema->uniqueColumnNamesFor($this->name(), $column->name());
@@ -97,7 +97,7 @@ abstract class TableMeta implements TableMetaInterface
 
     }
 
-    public function setForeignFor(TableColumnInterface $column, Schema $schema): void
+    public function setForeignFor(ColumnInterface $column, Schema $schema): void
     {
         $reference = $schema->foreignKeyFor($this->name(), $column->name());
 
@@ -111,7 +111,7 @@ abstract class TableMeta implements TableMetaInterface
     }
 
 
-    public function addColumn(TableColumnInterface $tableColumn): void
+    public function addColumn(ColumnInterface $tableColumn): void
     {
         $this->columns[$tableColumn->name()] = $tableColumn;
 
@@ -123,12 +123,12 @@ abstract class TableMeta implements TableMetaInterface
         }
     }
 
-    private function addPrimaryKey(TableColumnInterface $tableColumn): void
+    private function addPrimaryKey(ColumnInterface $tableColumn): void
     {
         $this->primary_keys[$tableColumn->name()] = $tableColumn;
     }
 
-    /** @param array<string,TableColumnInterface> $columns */
+    /** @param array<string,ColumnInterface> $columns */
     public function addUniqueKey(string $constraint_name, array $columns): void
     {
         if (!isset($this->unique_keys[$constraint_name])) {
@@ -136,9 +136,9 @@ abstract class TableMeta implements TableMetaInterface
         }
     }
 
-    public function addForeignKey(TableColumnInterface $tableColumn): void
+    public function addForeignKey(ColumnInterface $tableColumn): void
     {
-        // adds to the foreign key dictionary string column_name => TableColumnInterface
+        // adds to the foreign key dictionary string column_name => ColumnInterface
         $this->foreign_keys_by_name[$tableColumn->name()] = $tableColumn;
 
         // prepares the table name based index
@@ -146,12 +146,12 @@ abstract class TableMeta implements TableMetaInterface
 
         $this->foreign_keys_by_table[$name] ??= [];
 
-        // adds to the index tring table_name => TableColumnInterface
+        // adds to the index tring table_name => ColumnInterface
         $this->foreign_keys_by_table[$name] [] = $tableColumn;
     }
 
     //getsetter of AIPK, default get is null, cant set to null
-    public function autoIncrementedPrimaryKey(TableColumnInterface $tableColumn = null): ?\HexMakina\BlackBox\Database\TableColumnInterface
+    public function autoIncrementedPrimaryKey(ColumnInterface $tableColumn = null): ?\HexMakina\BlackBox\Database\ColumnInterface
     {
         return is_null($tableColumn) ? $this->aipk : ($this->aipk = $tableColumn);
     }
@@ -165,7 +165,7 @@ abstract class TableMeta implements TableMetaInterface
 
     // TableMetaInterface implementation
     /**
-     * @return array<string, \HexMakina\BlackBox\Database\TableColumnInterface>
+     * @return array<string, \HexMakina\BlackBox\Database\ColumnInterface>
      */
     public function columns(): array
     {
@@ -173,14 +173,14 @@ abstract class TableMeta implements TableMetaInterface
     }
 
     // TableMetaInterface implementation
-    public function column(string $name): ?TableColumnInterface
+    public function column(string $name): ?ColumnInterface
     {
         return $this->columns[$name] ?? null;
     }
 
     // TableMetaInterface implementation
     /**
-     * @return array<string, \HexMakina\BlackBox\Database\TableColumnInterface>
+     * @return array<string, \HexMakina\BlackBox\Database\ColumnInterface>
      */
     public function uniqueKeysByName(): array
     {
@@ -189,7 +189,7 @@ abstract class TableMeta implements TableMetaInterface
 
     // TableMetaInterface implementation
     /**
-     * @return array<string, \HexMakina\BlackBox\Database\TableColumnInterface>|array<string, mixed>
+     * @return array<string, \HexMakina\BlackBox\Database\ColumnInterface>|array<string, mixed>
      */
     public function primaryKeys($with_values = null): array
     {
@@ -300,7 +300,7 @@ abstract class TableMeta implements TableMetaInterface
         return $this->foreign_keys_by_table;
     }
 
-    /** @return ?array<TableColumnInterface> */
+    /** @return ?array<ColumnInterface> */
     public function singleForeignKeyTo(TableMetaInterface $tableTableMeta): ?array
     {
         $bonding_column_candidates = $this->foreignKeysByTable()[$tableTableMeta->name()] ?? [];
