@@ -74,7 +74,7 @@ abstract class TableMeta implements TableMetaInterface
         return $ret;
     }
 
-    public function setUniqueFor(ColumnInterface $column, Schema $schema): void
+    private function setUniqueFor(ColumnInterface $column, Schema $schema): void
     {
       $constraint = $schema->uniqueConstraintNameFor($this->name(), $column->name());
       $columns = $schema->uniqueColumnNamesFor($this->name(), $column->name());
@@ -97,7 +97,7 @@ abstract class TableMeta implements TableMetaInterface
 
     }
 
-    public function setForeignFor(ColumnInterface $column, Schema $schema): void
+    private function setForeignFor(ColumnInterface $column, Schema $schema): void
     {
         $reference = $schema->foreignKeyFor($this->name(), $column->name());
 
@@ -151,7 +151,7 @@ abstract class TableMeta implements TableMetaInterface
     }
 
     //getsetter of AIPK, default get is null, cant set to null
-    public function autoIncrementedPrimaryKey(ColumnInterface $tableColumn = null): ?\HexMakina\BlackBox\Database\ColumnInterface
+    public function autoIncrementedPrimaryKey(ColumnInterface $tableColumn = null): ?ColumnInterface
     {
         return is_null($tableColumn) ? $this->aipk : ($this->aipk = $tableColumn);
     }
@@ -301,9 +301,9 @@ abstract class TableMeta implements TableMetaInterface
     }
 
     /** @return ?array<ColumnInterface> */
-    public function singleForeignKeyTo(TableMetaInterface $tableTableMeta): ?array
+    public function singleForeignKeyTo(TableMetaInterface $tableMeta): ?array
     {
-        $bonding_column_candidates = $this->foreignKeysByTable()[$tableTableMeta->name()] ?? [];
+        $bonding_column_candidates = $this->foreignKeysByTable()[$tableMeta->name()] ?? [];
 
         if (count($bonding_column_candidates) === 1) {
             return current($bonding_column_candidates);
