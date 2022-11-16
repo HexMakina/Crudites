@@ -5,14 +5,10 @@ namespace HexMakina\Crudites;
 use HexMakina\Crudites\Table\Manipulation;
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\DatabaseInterface;
-use HexMakina\BlackBox\Database\TableDescriptionInterface;
 use HexMakina\BlackBox\Database\TableManipulationInterface;
-use HexMakina\BlackBox\Database\TableColumnInterface;
 
 class Database implements DatabaseInterface
 {
-    private const INTROSPECTION_DATABASE_NAME = 'INFORMATION_SCHEMA';
-
     private ConnectionInterface $connection;
     private Schema $schema;
 
