@@ -4,24 +4,30 @@ namespace HexMakina\Crudites\Table;
 
 use HexMakina\BlackBox\Database\TableManipulationInterface;
 use HexMakina\BlackBox\Database\SelectInterface;
-use HexMakina\BlackBox\Database\QueryInterface;
+use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\RowInterface;
+use HexMakina\BlackBox\Database\QueryInterface;
 use HexMakina\Crudites\Queries\{Select,Insert,Update,Delete};
 
 class Manipulation extends Description implements TableManipulationInterface
 {
 
+    public function __construct(string $table_name, ConnectionInterface $connection)
+    {
+        $this->name = $table_name;
+        $this->connection = $connection;
+    }
     /**
       * creates a new Row based on the table
       * @param array<string,mixed> $dat_ass
       */
-    public function produce(array $dat_ass = []): \HexMakina\Crudites\Table\Row
+    public function produce(array $dat_ass = []): RowInterface
     {
         return new Row($this, $dat_ass);
     }
 
     /** @param array<string,mixed> $dat_ass */
-    public function restore(array $dat_ass): \HexMakina\Crudites\Table\Row
+    public function restore(array $dat_ass): RowInterface
     {
         $row = new Row($this);
         $row->load($dat_ass);
