@@ -8,7 +8,7 @@ use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\TableDescriptionInterface;
 use HexMakina\BlackBox\Database\TableColumnInterface;
 
-class Description implements TableDescriptionInterface
+abstract class Description implements TableDescriptionInterface
 {
     protected ConnectionInterface $connection;
 
@@ -37,14 +37,6 @@ class Description implements TableDescriptionInterface
     protected array $foreign_keys_by_table = [];
 
 
-
-
-    public function __construct(string $table_name, ConnectionInterface $connection)
-    {
-        $this->name = $table_name;
-        $this->connection = $connection;
-    }
-
     public function __toString(): string
     {
         return $this->name;
@@ -56,14 +48,13 @@ class Description implements TableDescriptionInterface
     }
 
     /** @return array<string,array> */
-    public function describe(): array
+    public function describe($schema): array
     {
         $query = $this->connection()->query((new Describe($this->name())));
         if ($query === false) {
             throw new CruditesException('TABLE_DESCRIBE_FAILURE');
         }
 
-        $ret = [];
         $res = $query->fetchAll(\PDO::FETCH_UNIQUE);
 
         if ($res === false) {
@@ -71,12 +62,54 @@ class Description implements TableDescriptionInterface
         }
 
         foreach ($res as $column_name => $specs) {
-            $ret [] = new Column($this, $column_name, $specs);
-        }
+            $column = new Column($this, $column_name, $specs);
 
+            $this->setUniqueFor($column, $schema);
+            $this->setForeignFor($column, $schema);
+
+            $this->addColumn($column);
+
+        }
 
         return $ret;
     }
+
+    public function setUniqueFor(TableColumnInterface $column, Schema $schema): void
+    {
+      $constraint = $schema->uniqueConstraintNameFor($this->name(), $column->name());
+      $columns = $schema->uniqueColumnNamesFor($this->name(), $column->name());
+
+      $this->addUniqueKey($constraint, $columns);
+
+      switch(count($columns))
+      {
+        case 0:
+        return null;
+
+        case 1:
+        $column->uniqueName($constraint);
+        break;
+
+        default:
+        $column->uniqueGroupName($constraint);
+        break;
+      }
+
+    }
+
+    public function setForeignFor(TableColumnInterface $column, Schema $schema): void
+    {
+        $reference = $schema->foreignKeyFor($this->name(), $column->name());
+
+        if (!is_null($reference)) {
+            $column->isForeign(true);
+            $column->setForeignTableName($reference[0]);
+            $column->setForeignColumnName($reference[1]);
+
+            $this->addForeignKey($column);
+        }
+    }
+
 
     public function addColumn(TableColumnInterface $tableColumn): void
     {
@@ -90,12 +123,12 @@ class Description implements TableDescriptionInterface
         }
     }
 
-    public function addPrimaryKey(TableColumnInterface $tableColumn): void
+    private function addPrimaryKey(TableColumnInterface $tableColumn): void
     {
         $this->primary_keys[$tableColumn->name()] = $tableColumn;
     }
 
-    /** @param array<string,TableColumnInterface> $columns     */
+    /** @param array<string,TableColumnInterface> $columns */
     public function addUniqueKey(string $constraint_name, array $columns): void
     {
         if (!isset($this->unique_keys[$constraint_name])) {
@@ -110,9 +143,8 @@ class Description implements TableDescriptionInterface
 
         // prepares the table name based index
         $name = $tableColumn->foreignTableName();
-        if (!isset($this->foreign_keys_by_table[$name])) {
-            $this->foreign_keys_by_table[$name] = [];
-        }
+
+        $this->foreign_keys_by_table[$name] ??= [];
 
         // adds to the index tring table_name => TableColumnInterface
         $this->foreign_keys_by_table[$name] [] = $tableColumn;
@@ -244,9 +276,7 @@ class Description implements TableDescriptionInterface
         $keys = array_keys($dat_ass);
 
         foreach ($this->uniqueKeysByName() as $tableColumn) {
-            $tableColumn = [$tableColumn];
-
-            if (empty(array_diff($keys, $tableColumn))) {
+            if (empty(array_diff($keys, [$tableColumn]))) {
                 return $dat_ass;
             }
         }
