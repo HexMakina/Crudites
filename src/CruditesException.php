@@ -11,33 +11,33 @@ class CruditesException extends \Exception
         parent::__construct('CRUDITES_ERR_' . $message, $code, $previous);
     }
 
-    public function fromQuery(BaseQuery $Query)
+    public function fromQuery(BaseQuery $baseQuery): self
     {
-        list($state, $code, $message) = $Query->errorInfo();
+        list($state, $code, $message) = $baseQuery->errorInfo();
         $this->message = $this->transcript($state, $code, $message);
         return $this;
     }
 
-    private function transcript($state, $code, $message)
+    private function transcript($state, $code, $message): string
     {
         $ret = '';
 
         switch ($code) {
             case 1062:
-                if (preg_match("/for key '[a-z]+\.(.+)'$/", $message, $m) !== 1) {
-                    preg_match("/for key '(.+)'$/", $message, $m);
+                if (preg_match("#for key '[a-z]+\.(.+)'$#", $message, $m) !== 1) {
+                    preg_match("#for key '(.+)'$#", $message, $m);
                 }
 
                 $ret = $m[1];
                 break;
 
             case 1264:
-                preg_match("/for column '(.+)'/", $message, $m);
+                preg_match("#for column '(.+)'#", $message, $m);
                 $ret = $m[1];
                 break;
 
             case 1451:
-                preg_match("/CONSTRAINT `(.+)` FOREIGN/", $message, $m);
+                preg_match("#CONSTRAINT `(.+)` FOREIGN#", $message, $m);
                 $ret = $m[1];
                 break;
 
