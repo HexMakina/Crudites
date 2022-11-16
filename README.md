@@ -28,13 +28,13 @@ It is created using a DSN string, the constructor will extract and validates all
 `mysql:host=localhost;port=3307;dbname=testdb`  
 
 ## Exceptions
-If the database's name or a proper driver cannot be found, a `CruditesException` is thrown with the message 
-- `_DSN_NO_DBNAME_` 
+If the database's name or a proper driver cannot be found, a `CruditesException` is thrown with the message
+- `_DSN_NO_DBNAME_`
 - `_DSN_NO_DRIVER_`
 - `_DSN_UNAVAILABLE_DRIVER_`
 
 ## Properties
-The object stores 
+The object stores
 1. The DSN string (constructor parameter)
 2. The database name (extracted from the DSN string)
 
@@ -109,7 +109,7 @@ Introspection is a two step process:
 ## Instantiation
 It is created using a `Connection` object. The connection is stored and the database instrospection is executed.
 
-## Properties 
+## Properties
 + `Connection` object
 + Table cache (array)
 + List of foreign keys, indexed by table (array)
@@ -119,4 +119,4 @@ It is created using a `Connection` object. The connection is stored and the data
 When instantiated, the object provides the following methods:
 + name(), returns the database name
 + connection(), returns the `Connection` object
-+ inspect(string table_name), return a TableManipulation object
++ inspect(string table_name), return a Table object

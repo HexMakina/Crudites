@@ -4,13 +4,13 @@ namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\Crudites;
 use HexMakina\Crudites\CruditesException;
-use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\TableInterface;
 
 trait ClauseJoin
 {
     protected $joined_tables = [];
 
-    abstract public function table(TableManipulationInterface $setter = null): TableManipulationInterface;
+    abstract public function table(TableInterface $setter = null): TableInterface;
     abstract public function tableName();
     abstract public function tableAlias($setter = null);
     abstract public function tableLabel($table_name = null);

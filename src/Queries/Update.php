@@ -3,7 +3,7 @@
 namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\CruditesException;
-use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\TableInterface;
 
 class Update extends BaseQuery
 {
@@ -12,7 +12,7 @@ class Update extends BaseQuery
 
     private $alterations = [];
 
-    public function __construct(TableManipulationInterface $table, $update_data = [], $conditions = [])
+    public function __construct(TableInterface $table, $update_data = [], $conditions = [])
     {
         $this->table = $table;
         $this->connection = $table->connection();

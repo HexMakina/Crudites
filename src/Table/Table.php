@@ -2,14 +2,14 @@
 
 namespace HexMakina\Crudites\Table;
 
-use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\BlackBox\Database\SelectInterface;
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\RowInterface;
 use HexMakina\BlackBox\Database\QueryInterface;
 use HexMakina\Crudites\Queries\{Select,Insert,Update,Delete};
 
-class Manipulation extends Description implements TableManipulationInterface
+class Table extends TableMeta implements TableInterface
 {
 
     public function __construct(string $table_name, ConnectionInterface $connection)

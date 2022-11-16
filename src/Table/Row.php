@@ -2,14 +2,14 @@
 
 namespace HexMakina\Crudites\Table;
 
-use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\BlackBox\Database\RowInterface;
 use HexMakina\BlackBox\Database\QueryInterface;
 use HexMakina\Crudites\CruditesException;
 
 class Row implements RowInterface
 {
-    private TableManipulationInterface $table;
+    private TableInterface $table;
 
 
     /** @var array<int|string, mixed>|null $load */
@@ -27,9 +27,9 @@ class Row implements RowInterface
 
 
     /** @param array<string,mixed> $dat_ass */
-    public function __construct(TableManipulationInterface $tableManipulation, array $dat_ass = [])
+    public function __construct(TableInterface $table, array $dat_ass = [])
     {
-        $this->table = $tableManipulation;
+        $this->table = $table;
         $this->fresh = $dat_ass;
     }
 
@@ -53,7 +53,7 @@ class Row implements RowInterface
         return $dbg;
     }
 
-    public function table(): TableManipulationInterface
+    public function table(): TableInterface
     {
         return $this->table;
     }

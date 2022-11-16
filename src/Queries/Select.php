@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\BlackBox\Database\SelectInterface;
 use HexMakina\Crudites\CruditesException;
 
@@ -23,7 +23,7 @@ class Select extends BaseQuery implements SelectInterface
     protected $limit_offset = 0;
 
 
-    public function __construct(mixed $select_fields = null, TableManipulationInterface $table = null, $table_alias = null)
+    public function __construct(mixed $select_fields = null, TableInterface $table = null, $table_alias = null)
     {
         $this->table = $table;
         $this->table_alias = $table_alias;

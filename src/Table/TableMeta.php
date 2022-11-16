@@ -5,10 +5,10 @@ namespace HexMakina\Crudites\Table;
 use HexMakina\Crudites\CruditesException;
 use HexMakina\Crudites\Queries\Describe;
 use HexMakina\BlackBox\Database\ConnectionInterface;
-use HexMakina\BlackBox\Database\TableDescriptionInterface;
+use HexMakina\BlackBox\Database\TableMetaInterface;
 use HexMakina\BlackBox\Database\TableColumnInterface;
 
-abstract class Description implements TableDescriptionInterface
+abstract class TableMeta implements TableMetaInterface
 {
     protected ConnectionInterface $connection;
 
@@ -157,13 +157,13 @@ abstract class Description implements TableDescriptionInterface
     }
 
     //------------------------------------------------------------  getters
-    // TableDescriptionInterface implementation
+    // TableMetaInterface implementation
     public function name(): string
     {
         return $this->name;
     }
 
-    // TableDescriptionInterface implementation
+    // TableMetaInterface implementation
     /**
      * @return array<string, \HexMakina\BlackBox\Database\TableColumnInterface>
      */
@@ -172,13 +172,13 @@ abstract class Description implements TableDescriptionInterface
         return $this->columns;
     }
 
-    // TableDescriptionInterface implementation
+    // TableMetaInterface implementation
     public function column(string $name): ?TableColumnInterface
     {
         return $this->columns[$name] ?? null;
     }
 
-    // TableDescriptionInterface implementation
+    // TableMetaInterface implementation
     /**
      * @return array<string, \HexMakina\BlackBox\Database\TableColumnInterface>
      */
@@ -187,7 +187,7 @@ abstract class Description implements TableDescriptionInterface
         return $this->unique_keys;
     }
 
-    // TableDescriptionInterface implementation
+    // TableMetaInterface implementation
     /**
      * @return array<string, \HexMakina\BlackBox\Database\TableColumnInterface>|array<string, mixed>
      */
@@ -284,7 +284,7 @@ abstract class Description implements TableDescriptionInterface
         return [];
     }
 
-    // TableDescriptionInterface implementation
+    // TableMetaInterface implementation
 
     /** @return array<string,array> */
     public function foreignKeysByName(): array
@@ -292,7 +292,7 @@ abstract class Description implements TableDescriptionInterface
         return $this->foreign_keys_by_name;
     }
 
-    // TableDescriptionInterface implementation
+    // TableMetaInterface implementation
 
     /** @return array<string,array> */
     public function foreignKeysByTable(): array
@@ -301,9 +301,9 @@ abstract class Description implements TableDescriptionInterface
     }
 
     /** @return ?array<TableColumnInterface> */
-    public function singleForeignKeyTo(TableDescriptionInterface $tableDescription): ?array
+    public function singleForeignKeyTo(TableMetaInterface $tableTableMeta): ?array
     {
-        $bonding_column_candidates = $this->foreignKeysByTable()[$tableDescription->name()] ?? [];
+        $bonding_column_candidates = $this->foreignKeysByTable()[$tableTableMeta->name()] ?? [];
 
         if (count($bonding_column_candidates) === 1) {
             return current($bonding_column_candidates);

@@ -3,14 +3,14 @@
 namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\CruditesException;
-use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\BlackBox\Database\QueryInterface;
 
 class Insert extends BaseQuery
 {
     use ClauseJoin;
 
-    public function __construct(TableManipulationInterface $table, array $assoc_data)
+    public function __construct(TableInterface $table, array $assoc_data)
     {
         if (!is_array($assoc_data) || empty($assoc_data)) {
             throw new CruditesException('INSERT_DATA_INVALID_OR_MISSING');

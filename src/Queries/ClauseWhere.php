@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\TableInterface;
 
 trait ClauseWhere
 {
@@ -25,7 +25,7 @@ trait ClauseWhere
 
     protected $where = null;
 
-    abstract public function table(TableManipulationInterface $setter = null): TableManipulationInterface;
+    abstract public function table(TableInterface $setter = null): TableInterface;
     abstract public function tableLabel($table_name = null);
     abstract public function backTick($field, $table_name = null);
     abstract public function addBinding($field, $value, $table_name = null, $bind_label = null): string;

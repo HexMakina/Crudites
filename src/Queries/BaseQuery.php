@@ -3,7 +3,7 @@
 namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\CruditesException;
-use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\QueryInterface;
 
@@ -90,7 +90,7 @@ abstract class BaseQuery implements QueryInterface
         return $this->connection;
     }
 
-    public function table(TableManipulationInterface $setter = null): TableManipulationInterface
+    public function table(TableInterface $setter = null): TableInterface
     {
         return is_null($setter) ? $this->table : ($this->table = $setter);
     }

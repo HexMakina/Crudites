@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\BlackBox\Database\TableDescriptionInterface;
+use HexMakina\BlackBox\Database\TableMetaInterface;
 use HexMakina\Crudites\CruditesException;
 
 class Delete extends BaseQuery
@@ -10,7 +10,7 @@ class Delete extends BaseQuery
     use ClauseJoin;
     use ClauseWhere;
 
-    public function __construct(TableDescriptionInterface $table, array $conditions)
+    public function __construct(TableMetaInterface $table, array $conditions)
     {
         if (empty($conditions)) {
             throw new CruditesException('DELETE_USED_AS_TRUNCATE');

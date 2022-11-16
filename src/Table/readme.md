@@ -1,9 +1,9 @@
 # Table
-## Description
-Description objects stores everything related to the structure of the table, but offers no manipulation methods
+## TableMeta
+TableMeta objects stores everything related to the structure of the table, but offers no manipulation methods
 
-## Manipulation
-Manipulation extends Description to provide manipulation tools:
+## Table
+Table extends TableMeta to provide manipulation tools:
 
 ### Query based methods
 + insert()
