@@ -97,13 +97,11 @@ class Column implements \HexMakina\BlackBox\Database\ColumnInterface
      */
     public function default()
     {
-        $ret = $this->default_value;
-
         if (!is_null($this->default_value) && ($this->type()->isInteger() || $this->type()->isBoolean())) {
-            return (int)$ret;
+            return (int)$this->default_value;
         }
 
-        return $ret;
+        return $this->default_value;
     }
 
     public function isPrimary(bool $setter = null): bool

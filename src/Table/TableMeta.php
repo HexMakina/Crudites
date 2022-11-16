@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Table;
 
-use HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\{CruditesException,Schema};
 use HexMakina\Crudites\Queries\Describe;
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\TableMetaInterface;
@@ -47,11 +47,10 @@ abstract class TableMeta implements TableMetaInterface
         return $this->connection;
     }
 
-    /** @return array<string,array> */
-    public function describe($schema): array
+    public function describe($schema): void
     {
         $query = $this->connection()->query((new Describe($this->name())));
-        if ($query === false) {
+        if (is_null($query)) {
             throw new CruditesException('TABLE_DESCRIBE_FAILURE');
         }
 
@@ -70,31 +69,23 @@ abstract class TableMeta implements TableMetaInterface
             $this->addColumn($column);
 
         }
-
-        return $ret;
     }
 
     private function setUniqueFor(ColumnInterface $column, Schema $schema): void
     {
       $constraint = $schema->uniqueConstraintNameFor($this->name(), $column->name());
       $columns = $schema->uniqueColumnNamesFor($this->name(), $column->name());
-
+      
       $this->addUniqueKey($constraint, $columns);
 
-      switch(count($columns))
+      if(count($columns) === 1)
       {
-        case 0:
-        return null;
-
-        case 1:
         $column->uniqueName($constraint);
-        break;
-
-        default:
-        $column->uniqueGroupName($constraint);
-        break;
       }
-
+      else
+      {
+        $column->uniqueGroupName($constraint);
+      }
     }
 
     private function setForeignFor(ColumnInterface $column, Schema $schema): void
@@ -123,7 +114,7 @@ abstract class TableMeta implements TableMetaInterface
         }
     }
 
-    private function addPrimaryKey(ColumnInterface $tableColumn): void
+    public function addPrimaryKey(ColumnInterface $tableColumn): void
     {
         $this->primary_keys[$tableColumn->name()] = $tableColumn;
     }
@@ -286,7 +277,7 @@ abstract class TableMeta implements TableMetaInterface
 
     // TableMetaInterface implementation
 
-    /** @return array<string,array> */
+    /** @return array<string,ColumnInterface> */
     public function foreignKeysByName(): array
     {
         return $this->foreign_keys_by_name;
@@ -294,13 +285,12 @@ abstract class TableMeta implements TableMetaInterface
 
     // TableMetaInterface implementation
 
-    /** @return array<string,array> */
+    /** @return array<string,ColumnInterface> */
     public function foreignKeysByTable(): array
     {
         return $this->foreign_keys_by_table;
     }
 
-    /** @return ?array<ColumnInterface> */
     public function singleForeignKeyTo(TableMetaInterface $tableMeta): ?ColumnInterface
     {
         $bonding_column_candidates = $this->foreignKeysByTable()[$tableMeta->name()] ?? [];

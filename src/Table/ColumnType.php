@@ -50,7 +50,7 @@ class ColumnType implements ColumnTypeInterface
             }
         }
 
-        if (is_null($this->name)) {
+        if (empty($this->name)) {
             throw new CruditesException('FIELD_TYPE_UNKNOWN');
         }
     }
