@@ -45,10 +45,13 @@ class Schema
     private function loadSchemaFor(DatabaseInterface $db) : array
     {
       // prepare to query database INFORMATION_SCHEMA
+      $query = $this->introspectionQuery($db->name());
+
+      // switch database
       $db->connection()->useDatabase(self::INTROSPECTION_DATABASE_NAME);
 
-      // Run the query
-      $res = $db->connection()->query($this->introspectionQuery($db->name()));
+      // run the query
+      $res = $db->connection()->query($query);
 
       // return to previous database
       $db->connection()->restoreDatabase();
