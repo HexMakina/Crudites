@@ -33,9 +33,9 @@ class Column implements \HexMakina\BlackBox\Database\ColumnInterface
 
     private bool $nullable = false;
 
-    public function __construct(mixed $table, string $name, array $specs)
+    public function __construct(string $table, string $name, array $specs)
     {
-        $this->table_name = is_string($table) ? $table : $table->name();
+        $this->table_name = $table;
         $this->name = $name;
 
         $this->ColumnType = new ColumnType($specs['Type']);
