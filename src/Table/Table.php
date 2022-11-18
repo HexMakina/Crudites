@@ -61,10 +61,12 @@ class Table extends TableMeta implements TableInterface
 
     public function select(array $columns = null, string $table_alias = null): SelectInterface
     {
-        $columns ??= [$table_alias . '.*'];
         $table_alias ??= $this->name();
+        $columns ??= [$table_alias . '.*'];
+
         $select = new Select($columns, $this, $table_alias);
         $select->connection($this->connection());
+
         return $select;
     }
 }
