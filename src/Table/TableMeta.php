@@ -217,9 +217,8 @@ abstract class TableMeta implements TableMetaInterface
         $ret = $this->primaryKeysMatch($dat_ass);
 
         if (empty($ret)) {
-            return $this->uniqueKeysMatch($dat_ass);
+            $ret = $this->uniqueKeysMatch($dat_ass);
         }
-
         return $ret;
     }
 
@@ -258,21 +257,22 @@ abstract class TableMeta implements TableMetaInterface
     /**
      * @return mixed[]
      */
-    public function uniqueKeysMatch($dat_ass): array
+    public function uniqueKeysMatch(array $dat_ass): array
     {
+
+        if (empty($dat_ass)) {
+            return [];
+        }
 
         if ($this->uniqueKeysByName() === []) {
             return [];
         }
 
-        if (!is_array($dat_ass)) {
-            return [];
-        }
 
         $keys = array_keys($dat_ass);
 
-        foreach ($this->uniqueKeysByName() as $tableColumn) {
-            if (empty(array_diff($keys, [$tableColumn]))) {
+        foreach ($this->uniqueKeysByName() as $tableColumns) {
+            if (empty(array_diff($keys, $tableColumns))) {
                 return $dat_ass;
             }
         }
