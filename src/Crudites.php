@@ -80,7 +80,7 @@ class Crudites
         return $ret;
     }
 
-    public static function raw($sql, $dat_ass = [])
+    public static function raw($sql, $dat_ass = []) : ?\PDOStatement
     {
         $conx = self::connect();
         if (empty($dat_ass)) {
@@ -88,11 +88,10 @@ class Crudites
             //TODO query | alter !
             //$res = $conx->alter($sql);
         } else {
-            $stmt = $conx->prepare($sql);
-            $res = $stmt->execute($dat_ass);
+            $res = $conx->prepare($sql);
+            $res->execute($dat_ass);
         }
-
-        return $res;
+        return $res === false ? null : $res;
     }
 
     public static function distinctFor($table, $column_name, $filter_by_value = null)
