@@ -80,7 +80,7 @@ class Crudites
         return $ret;
     }
 
-    public static function raw($sql, $dat_ass = []) : ?\PDOStatement
+    public static function raw($sql, $dat_ass = []): ?\PDOStatement
     {
         $conx = self::connect();
         if (empty($dat_ass)) {

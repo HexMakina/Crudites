@@ -67,30 +67,24 @@ abstract class TableMeta implements TableMetaInterface
             $this->setForeignFor($column, $schema);
 
             $this->addColumn($column);
-
         }
     }
 
     private function setUniqueFor(ColumnInterface $column, Schema $schema): void
     {
-      $constraint = $schema->uniqueConstraintNameFor($this->name(), $column->name());
+        $constraint = $schema->uniqueConstraintNameFor($this->name(), $column->name());
 
-      if(!is_null($constraint)){
+        if (!is_null($constraint)) {
+            $columns = $schema->uniqueColumnNamesFor($this->name(), $column->name());
 
-        $columns = $schema->uniqueColumnNamesFor($this->name(), $column->name());
+            $this->addUniqueKey($constraint, $columns);
 
-        $this->addUniqueKey($constraint, $columns);
-
-        if(count($columns) === 1)
-        {
-          $column->uniqueName($constraint);
+            if (count($columns) === 1) {
+                $column->uniqueName($constraint);
+            } else {
+                $column->uniqueGroupName($constraint);
+            }
         }
-        else
-        {
-          $column->uniqueGroupName($constraint);
-        }
-      }
-
     }
 
     private function setForeignFor(ColumnInterface $column, Schema $schema): void

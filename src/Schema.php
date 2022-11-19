@@ -42,21 +42,21 @@ class Schema
     }
 
 
-    private function loadSchemaFor(DatabaseInterface $db) : array
+    private function loadSchemaFor(DatabaseInterface $db): array
     {
       // prepare to query database INFORMATION_SCHEMA
-      $query = $this->introspectionQuery($db->name());
+        $query = $this->introspectionQuery($db->name());
 
       // switch database
-      $db->connection()->useDatabase(self::INTROSPECTION_DATABASE_NAME);
+        $db->connection()->useDatabase(self::INTROSPECTION_DATABASE_NAME);
 
       // run the query
-      $res = $db->connection()->query($query);
+        $res = $db->connection()->query($query);
 
       // return to previous database
-      $db->connection()->restoreDatabase();
+        $db->connection()->restoreDatabase();
 
-      return $res->fetchAll();
+        return $res->fetchAll();
     }
 
     private function introspectionQuery(string $database_name): string
@@ -81,36 +81,36 @@ class Schema
 
     private function processSchema(array $res)
     {
-      $unique_by_constraint = [];
+        $unique_by_constraint = [];
 
-      foreach ($res as $key_usage) {
-          $table = $key_usage['TABLE_NAME'];
+        foreach ($res as $key_usage) {
+            $table = $key_usage['TABLE_NAME'];
 
-          // foreign keys
-          if (isset($key_usage['REFERENCED_TABLE_NAME'])) {
-              $this->fk_by_table[$table] ??= [];
-              $this->fk_by_table[$table][$key_usage['COLUMN_NAME']] = [$key_usage['REFERENCED_TABLE_NAME'], $key_usage['REFERENCED_COLUMN_NAME']];
-          }
+            // foreign keys
+            if (isset($key_usage['REFERENCED_TABLE_NAME'])) {
+                $this->fk_by_table[$table] ??= [];
+                $this->fk_by_table[$table][$key_usage['COLUMN_NAME']] = [$key_usage['REFERENCED_TABLE_NAME'], $key_usage['REFERENCED_COLUMN_NAME']];
+            }
 
-          // primary & uniques
-          if (!isset($key_usage['POSITION_IN_UNIQUE_CONSTRAINT'])) {
-              $unique_by_constraint[$table] ??= [];
+            // primary & uniques
+            if (!isset($key_usage['POSITION_IN_UNIQUE_CONSTRAINT'])) {
+                $unique_by_constraint[$table] ??= [];
 
-              $constraint = $key_usage['CONSTRAINT_NAME'];
-              $unique_by_constraint[$table][$constraint] ??= [];
+                $constraint = $key_usage['CONSTRAINT_NAME'];
+                $unique_by_constraint[$table][$constraint] ??= [];
 
-              $unique_by_constraint[$table][$constraint][$key_usage['ORDINAL_POSITION']] = $key_usage['COLUMN_NAME'];
-          }
-      }
+                $unique_by_constraint[$table][$constraint][$key_usage['ORDINAL_POSITION']] = $key_usage['COLUMN_NAME'];
+            }
+        }
 
       // unique indexes, indexed by table and column for easier retrieval
-      foreach ($unique_by_constraint as $table => $uniques) {
-        $this->unique_by_table[$table] ??= [];
-          foreach ($uniques as $constraint => $columns) {
-              foreach ($columns as $column_name) {
-                  $this->unique_by_table[$table][$column_name] = [0 => $constraint] + $columns;
-              }
-          }
-      }
+        foreach ($unique_by_constraint as $table => $uniques) {
+            $this->unique_by_table[$table] ??= [];
+            foreach ($uniques as $constraint => $columns) {
+                foreach ($columns as $column_name) {
+                    $this->unique_by_table[$table][$column_name] = [0 => $constraint] + $columns;
+                }
+            }
+        }
     }
 }
