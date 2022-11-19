@@ -1,81 +1,74 @@
 <?php
 
 /**
- * DSN model for validation
- *
- *
+ * OO wrapper for DSN string
  * Throws CruditesException when DSN is wrong
  */
 
 namespace HexMakina\Crudites;
 
-class Source
+use HexMakina\BlackBox\Database\SourceInterface;
+
+class Source implements SourceInterface
 {
-    private string $dsn;
+    // DSN
+    private string $name;
+
+    // null because extracted from DSN when calling driver() or databaseName()
     private ?string $driver = null;
     private ?string $database = null;
 
-    public function __construct(string $dsn)
+    // give it a well formatted DSN
+    public function __construct(string $name)
     {
-        $this->dsn = $dsn;
+        $this->name = $name;
     }
 
-    public function DSN(): string
+    public function name(): string
     {
-        return $this->dsn;
+        return $this->name;
     }
 
     /*
-     * @return string the driver name extracted from the $dsn string
+     * @throws CruditesException if $name string is invalid or incomplete
+     */
+    public function database(): string
+    {
+        if (is_null($this->database)) {
+            $this->database = $this->parseName('/dbname=(.+);/', 'DSN_DATABASE_NOT_FOUND');
+        }
+        return $this->database;
+    }
+
+    /*
+     * @return string the driver name extracted from the $name string
      * @throws CruditesException if no driver name was parsed from the DSN
      */
     public function driver(): string
     {
-        return $this->driver ?? $this->driver = self::extractDriverFromDSN($this->DSN());
+        if (is_null($this->driver)) {
+            $this->driver = $this->parseName('/^([a-z]+)\:/', 'DSN_DRIVER_NOT_FOUND');
+        }
+        return $this->driver;
+    }
+
+    /**
+      * @return boolean availability of driver name
+      */
+    public function driverAvailable(): bool
+    {
+        return in_array($this->driver(), \PDO::getAvailableDrivers(), true);
     }
 
     /*
-     * @throws CruditesException if $dsn string is invalid or incomplete
+     * @throws CruditesException if $name string is invalid or incomplete
      */
-    public function databaseName(): string
-    {
-        return $this->database ?? $this->database = self::extractDatabaseFromDSN($this->dsn);
-    }
-
-    public static function extractDriverFromDSN(string $dsn): string
+    private function parseName(string $regex, string $err): string
     {
         $matches = [];
 
-        if (empty(preg_match('/^([a-z]+)\:/', $dsn, $matches))) {
-            throw new CruditesException('DSN_DRIVER_NOT_FOUND');
-        }
-
-        if (!self::driverIsAvailable($matches[1])) {
-            throw new CruditesException('DSN_DRIVER_UNAVAILABLE');
-        }
-
-        return $matches[1];
-    }
-
-  /*
-   * @return boolean availability of driver name
-   * @throws CruditesException if driver name is not in \PDO::getAvailableDrivers()
-   */
-    public static function driverIsAvailable(string $driver): bool
-    {
-        return in_array($driver, \PDO::getAvailableDrivers(), true);
-    }
-
-  /*
-   * @return string the database name extracted from the $dsn string
-   * @throws CruditesException if no database name was parsed from the DSN
-   */
-    public static function extractDatabaseFromDSN(string $dsn): string
-    {
-        $matches = [];
-
-        if (empty(preg_match('/dbname=(.+);/', $dsn, $matches))) {
-            throw new CruditesException('DSN_NO_DBNAME');
+        if (1 !== preg_match($regex, $this->name(), $matches) || !isset($matches[1])) {
+            throw new CruditesException($err);
         }
 
         return $matches[1];
