@@ -12,7 +12,9 @@
 namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\ConnectionInterface;
-use HexMakina\Crudites\Source;
+use HexMakina\Crudites\{Source,Tracker};
+use PDO;
+use PDOStatement;
 
 class Connection implements ConnectionInterface
 {
