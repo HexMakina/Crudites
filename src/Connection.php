@@ -12,7 +12,7 @@
 namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\ConnectionInterface;
-use HexMakina\Crudites\{Source,Tracker};
+use HexMakina\Crudites\{Source};
 use PDO;
 use PDOStatement;
 
@@ -21,8 +21,6 @@ class Connection implements ConnectionInterface
     private \PDO $pdo;
 
     private Source $source;
-
-    private Tracker $tracker;
 
     // in case we change the database (f.i. INFORMATION_SCHEMA)
     private string $using_database;
@@ -48,11 +46,9 @@ class Connection implements ConnectionInterface
 
         // if PDO didn't throw an Exception, finish the object
         $this->source = new Source($dsn);
-        $this->tracker = new Tracker();
 
         $this->useDatabase($this->source->database());
     }
-
 
     // database level
     public function useDatabase(string $name): void
@@ -80,16 +76,12 @@ class Connection implements ConnectionInterface
     // statements
     public function prepare(string $sql_statement, $options = []): ?\PDOStatement
     {
-        $this->tracker->track();
-
         $res = $this->pdo->prepare($sql_statement, $options);
         return $res === false ? null : $res;
     }
 
     public function query(string $sql_statement, $fetch_mode = null, $fetch_col_num = null): ?\PDOStatement
     {
-        $this->tracker->track();
-
         if (is_null($fetch_mode)) {
             return $this->pdo->query($sql_statement);
         }
@@ -100,8 +92,6 @@ class Connection implements ConnectionInterface
 
     public function alter(string $sql_statement): ?int
     {
-        $this->tracker->track();
-
         $res = $this->pdo->exec($sql_statement);
         return $res === false ? null : $res;
     }
@@ -142,10 +132,4 @@ class Connection implements ConnectionInterface
         return $this->pdo->errorCode();
     }
 
-
-    // activates tracking
-    public function setTracker(): void
-    {
-        $this->tracker->activate();
-    }
 }
