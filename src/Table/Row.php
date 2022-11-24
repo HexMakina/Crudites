@@ -11,14 +11,13 @@ class Row implements RowInterface
 {
     private TableInterface $table;
 
-
-    /** @var array<int|string, mixed>|null $load */
+    /** @var array<int|string,mixed>|null $load from database */
     private ?array $load = null;
 
-    /** @var array<int|string,mixed> $alterations */
+    /** @var array<int|string,mixed> $alterations during lifecycle */
     private array $alterations = [];
 
-    /** @var array<int|string,mixed> $fresh */
+    /** @var array<int|string,mixed> $fresh from the constructor */
     private array $fresh = [];
 
     private ?QueryInterface $last_query = null;
@@ -26,11 +25,11 @@ class Row implements RowInterface
     private ?QueryInterface $last_alter_query = null;
 
 
-    /** @param array<string,mixed> $dat_ass */
-    public function __construct(TableInterface $table, array $dat_ass = [])
+    /** @param array<string,mixed> $datass */
+    public function __construct(TableInterface $table, array $datass = [])
     {
         $this->table = $table;
-        $this->fresh = $dat_ass;
+        $this->fresh = $datass;
     }
 
     public function __toString()
@@ -51,6 +50,19 @@ class Row implements RowInterface
         $dbg['(string)table_name'] = $this->table()->name();
 
         return $dbg;
+    }
+
+    public function get($name)
+    {
+        return $this->alterations[$name]
+            ?? $this->fresh[$name]
+            ?? $this->load[$name]
+            ?? null;
+    }
+
+    public function set($name, $value) : void
+    {
+        $this->alterations[$name] = $value;
     }
 
     public function table(): TableInterface
@@ -80,6 +92,8 @@ class Row implements RowInterface
 
     /**
      * @return array<int|string,mixed>
+     * merges the initial database load with the constructor and the alterations
+     * the result is an associative array containing all data, all up-to-date
      */
     public function export(): array
     {
@@ -89,22 +103,20 @@ class Row implements RowInterface
     /**
      * loads row content from database,
      *
-     * looks for primary key matching data in $dat_ass and sets the $load variable
+     * looks for primary key matching data in $datass and sets the $load variable
      * $load stays null if
-     * 1. not match is found in $dat_ass
+     * 1. not match is found in $datass
      * 2. multiple records are returned
      * 3. no record is found
      *
-     * @param  array<int|string,mixed> $dat_ass an associative array containing primary key data matches
+     * @param  array<int|string,mixed> $datass an associative array containing primary key data matches
      */
-    public function load(array $dat_ass): Rowinterface
+    public function load(array $datass): Rowinterface
     {
-        $pks = $this->table()->primaryKeysMatch($dat_ass);
-
+        $pks = $this->table()->primaryKeysMatch($datass);
         if (empty($pks)) {
             return $this;
         }
-
         $this->last_query = $this->table()->select()->wherePrimary($pks);
         $res = $this->last_query->retAss();
 
@@ -116,15 +128,15 @@ class Row implements RowInterface
     /**
      * records changes vis-à-vis loaded data
      *
-     * loops through the $dat_ass params
+     * loops through the $datass params
      *
-     * @param  array<int|string,mixed> $dat_ass an associative array containing the new data
+     * @param  array<int|string,mixed> $datass an associative array containing the new data
      */
-    public function alter(array $dat_ass): self
+    public function alter(array $datass): Rowinterface
     {
-        foreach (array_keys($dat_ass) as $field_name) {
+        foreach (array_keys($datass) as $field_name) {
             $column = $this->table->column($field_name);
-            // skips non exisint field name and A_I column
+            // skips non existing field name and A_I column
             if (is_null($column)) {
                 continue;
             }
@@ -134,13 +146,13 @@ class Row implements RowInterface
             }
 
             // replaces empty strings with null or default value
-            if (trim('' . $dat_ass[$field_name]) === '') {
-                $dat_ass[$field_name] = $column->isNullable() ? null : $column->default();
+            if (trim('' . $datass[$field_name]) === '') {
+                $datass[$field_name] = $column->isNullable() ? null : $column->default();
             }
 
             // checks for changes with loaded data. using == instead of === is risky but needed
-            if (!is_array($this->load) || $this->load[$field_name] != $dat_ass[$field_name]) {
-                $this->alterations[$field_name] = $dat_ass[$field_name];
+            if (!is_array($this->load) || $this->load[$field_name] != $datass[$field_name]) {
+                $this->set($field_name, $datass[$field_name]);
             }
         }
 
@@ -168,6 +180,11 @@ class Row implements RowInterface
             }
 
             $this->last_query = $this->lastAlterQuery();
+
+            if(is_null($this->lastQuery()) || !$this->lastQuery()->isSuccess()){
+                throw new CruditesException('ROW_PERSISTENCE');
+            }
+
         } catch (CruditesException $cruditesException) {
             return [$cruditesException->getMessage()];
         }
@@ -180,14 +197,17 @@ class Row implements RowInterface
     private function create(): void
     {
         $this->last_alter_query = $this->table()->insert($this->export());
-        $this->last_alter_query->run();
 
-      // creation might lead to auto_incremented changes
-      // recovering auto_incremented value and pushing it in alterations tracker
-        if ($this->last_alter_query->isSuccess()) {
-            $aipk = $this->last_alter_query->table()->autoIncrementedPrimaryKey();
+        $this->lastAlterQuery()->run();
+
+        $this->last_query = $this->lastAlterQuery();
+
+        // creation might lead to auto_incremented changes
+        // recovering auto_incremented value and pushing it in alterations tracker
+        if ($this->lastAlterQuery()->isSuccess()) {
+            $aipk = $this->lastAlterQuery()->table()->autoIncrementedPrimaryKey();
             if (!is_null($aipk)) {
-                $this->alterations[$aipk->name()] = $this->last_alter_query->connection()->lastInsertId();
+                $this->alterations[$aipk->name()] = $this->lastAlterQuery()->connection()->lastInsertId();
             }
         }
     }
@@ -196,23 +216,28 @@ class Row implements RowInterface
     {
         $pk_match = $this->table()->primaryKeysMatch($this->load);
         $this->last_alter_query = $this->table()->update($this->alterations, $pk_match);
-        $this->last_alter_query->run();
+
+        $this->lastAlterQuery()->run();
+
+        $this->last_query = $this->lastAlterQuery();
+
     }
 
     public function wipe(): bool
     {
-        $dat_ass = $this->load ?? $this->fresh ?? $this->alterations;
+        $datass = $this->load ?? $this->fresh ?? $this->alterations;
 
         // need The Primary key, then you can wipe at ease
-        if (!empty($pk_match = $this->table()->primaryKeysMatch($dat_ass))) {
+        if (!empty($pk_match = $this->table()->primaryKeysMatch($datass))) {
             $this->last_alter_query = $this->table->delete($pk_match);
             try {
                 $this->last_alter_query->run();
+                $this->last_query = $this->last_alter_query;
+
             } catch (CruditesException $cruditesException) {
                 return false;
             }
 
-            $this->last_query = $this->last_alter_query;
             return $this->last_alter_query->isSuccess();
         }
 
@@ -226,13 +251,10 @@ class Row implements RowInterface
     public function validate(): array
     {
         $errors = [];
-        $dat_ass = $this->export();
+        $datass = $this->export();
 
-        // vdt($this->table);
         foreach ($this->table->columns() as $column_name => $column) {
-            $field_value = $dat_ass[$column_name] ?? null;
-
-            $validation = $column->validateValue($field_value);
+            $validation = $column->validateValue($datass[$column_name] ?? null);
             if ($validation !== true) {
                 $errors[$column_name] = $validation;
             }
