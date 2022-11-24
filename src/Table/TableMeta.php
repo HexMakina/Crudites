@@ -206,7 +206,7 @@ abstract class TableMeta implements TableMetaInterface
     /**
      * @return mixed[]
      */
-    public function matchUniqueness($dat_ass): array
+    public function matchUniqueness(array $dat_ass): array
     {
         $ret = $this->primaryKeysMatch($dat_ass);
 
@@ -224,7 +224,7 @@ abstract class TableMeta implements TableMetaInterface
     /**
      * @return mixed[]
      */
-    public function primaryKeysMatch($dat_ass): array
+    public function primaryKeysMatch(array $dat_ass): array
     {
 
         if ($this->primaryKeys() === []) {
