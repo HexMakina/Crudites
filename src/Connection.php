@@ -77,17 +77,20 @@ class Connection implements ConnectionInterface
     public function prepare(string $sql_statement, $options = []): ?\PDOStatement
     {
         $res = $this->pdo->prepare($sql_statement, $options);
-        return $res === false ? null : $res;
+        
+        return $res instanceof \PDOStatement ? $res : null;
     }
 
     public function query(string $sql_statement, $fetch_mode = null, $fetch_col_num = null): ?\PDOStatement
     {
         if (is_null($fetch_mode)) {
-            return $this->pdo->query($sql_statement);
+            $res = $this->pdo->query($sql_statement);
+        }
+        else{
+          $res = $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);
         }
 
-        $res = $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);
-        return $res === false ? null : $res;
+        return $res instanceof \PDOStatement ? $res : null;
     }
 
     public function alter(string $sql_statement): ?int
