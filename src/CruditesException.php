@@ -54,6 +54,11 @@ class CruditesException extends \Exception
         $ret = '';
 
         switch ($code) {
+            case 1048:
+                preg_match("#Column '(.+)' cannot be null#", $message, $m);
+                $ret = $m[1] . ' cannot be null';
+                break;
+                
             case 1062:
                 if (preg_match("#for key '[a-z]+\.(.+)'$#", $message, $m) !== 1) {
                     preg_match("#for key '(.+)'$#", $message, $m);
