@@ -52,6 +52,13 @@ trait ClauseWhere
         return $this;
     }
 
+    public function whereWithBind($where, $value)
+    {
+        $this->where ??= [];
+        $this->where[] = sprintf('(%s)', $where);
+        return $this;
+    }
+
     public function whereEqualOrNull($field, $value, $table_name = null, $bindname = null)
     {
         $bind_name = $this->addBinding($field, $value, $table_name, $bindname);
@@ -124,7 +131,7 @@ trait ClauseWhere
         return $this;
     }
 
-    private function whereBindField($table_name, $field, $operator, $value, $bind_name = null)
+    public function whereBindField($table_name, $field, $operator, $value, $bind_name = null)
     {
         $bind_name = $this->addBinding($field, $value, $table_name, $bind_name);
         return $this->whereField($field, sprintf('%s %s', $operator, $bind_name), $table_name);
