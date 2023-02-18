@@ -131,12 +131,12 @@ class Column implements \HexMakina\BlackBox\Database\ColumnInterface
 
     public function uniqueName(string $setter = null)
     {
-        return ($this->unique_name = ($setter ?? $this->unique_name));
-    }
+        return $this->unique_name = $setter ?? $this->unique_name;
+    }    
 
     public function uniqueGroupName(string $setter = null)
     {
-        return ($this->unique_group_name = ($setter ?? $this->unique_group_name));
+        return $this->unique_group_name = $setter ?? $this->unique_group_name;
     }
 
     public function setForeignTableName(?string $setter): void
