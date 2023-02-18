@@ -1,13 +1,15 @@
 <?php
-/**
- * 
- * The class provides functionality for retrieving and processing database schema information using the INFORMATION_SCHEMA database.
- * 
- */
 
 namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\DatabaseInterface;
+
+/**
+ * 
+ * The class provides functionality for retrieving and processing database schema information 
+ * using the INFORMATION_SCHEMA database.
+ * 
+ */
 
 class Schema
 {

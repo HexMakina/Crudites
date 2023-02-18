@@ -1,11 +1,5 @@
 <?php
 
-/**
- * Crudités, it's a cup of carrots sticks (but are they organic ?)
- * Codd's Relational model, Unicity, Definitions, Introspection, Tests, Execution & Sets
- * Create - Retrieve - Update - Delete
- * API for writing and running SQL queries
- */
 
 namespace HexMakina\Crudites;
 
@@ -13,15 +7,37 @@ use HexMakina\BlackBox\Database\SelectInterface;
 use HexMakina\BlackBox\Database\DatabaseInterface;
 use HexMakina\Crudites\CruditesException;
 
+
+/**
+ * Crudités, it's a cup of carrots sticks (but are they organic ?)
+ * Codd's Relational model, Unicity, Definitions, Introspection, Tests, Execution & Sets
+ * Create - Retrieve - Update - Delete
+ * Library for writing and running SQL queries
+ */
+
+
 class Crudites
 {
+    /**
+     * @var DatabaseInterface|null $database  Database instance
+     */
     private static ?DatabaseInterface $database;
 
+
+    /**
+     * @param DatabaseInterface $database  Database instance
+     * @return void
+     */
     public static function setDatabase(DatabaseInterface $database): void
     {
         self::$database = $database;
     }
 
+    /**
+     * @param string $table_name  Table name
+     * @throws CruditesException
+     * @return array  Inspection of the given table name
+     */
     public static function inspect(string $table_name)
     {
         if (is_null(self::$database)) {
@@ -35,6 +51,13 @@ class Crudites
         }
     }
 
+    /**
+     * @param string|null $dsn  DSN
+     * @param string|null $user  Username
+     * @param string|null $pass  Password
+     * @return Connection  Database connection
+     * @throws CruditesException
+     */
     public static function connect($dsn = null, $user = null, $pass = null)
     {
         // no props, means connection already exists, verify and return
@@ -49,7 +72,11 @@ class Crudites
     }
 
     //------------------------------------------------------------  DataRetrieval
-    // success: return AIPK-indexed array of results (associative array or object)
+
+    /**
+     * @param SelectInterface $select  Select instance
+     * @return int|null  Number of records
+     */
     public static function count(SelectInterface $select): ?int
     {
         $select->selectAlso(['COUNT(*) as count']);

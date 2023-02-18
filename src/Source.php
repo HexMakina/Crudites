@@ -18,18 +18,30 @@ class Source implements SourceInterface
     private ?string $driver = null;
     private ?string $database = null;
 
-    // give it a well formatted DSN
+    /**
+     * Constructor method that initializes the $name attribute
+     *
+     * @param string $name A well formatted DSN string
+     */
     public function __construct(string $name)
     {
         $this->name = $name;
     }
 
+    /**
+     * Returns the DSN string
+     *
+     * @return string The DSN string
+     */
     public function name(): string
     {
         return $this->name;
     }
 
-    /*
+    /**
+     * Returns the name of the database extracted from the DSN string
+     *
+     * @return string The name of the database extracted from the DSN string
      * @throws CruditesException if $name string is invalid or incomplete
      */
     public function database(): string
@@ -40,8 +52,10 @@ class Source implements SourceInterface
         return $this->database;
     }
 
-    /*
-     * @return string the driver name extracted from the $name string
+    /**
+     * Returns the driver name extracted from the DSN string
+     *
+     * @return string The driver name extracted from the DSN string
      * @throws CruditesException if no driver name was parsed from the DSN
      */
     public function driver(): string
@@ -53,14 +67,21 @@ class Source implements SourceInterface
     }
 
     /**
-      * @return boolean availability of driver name
-      */
+     * Checks whether the driver name is available or not
+     *
+     * @return boolean true if the driver name is available, false otherwise
+     */
     public function driverAvailable(): bool
     {
         return in_array($this->driver(), \PDO::getAvailableDrivers(), true);
     }
 
-    /*
+    /**
+     * Parses the name of the database or driver from the DSN string
+     *
+     * @param string $regex The regular expression pattern used to parse the name
+     * @param string $err The error message to throw if the name is not found
+     * @return string The name parsed from the DSN string
      * @throws CruditesException if $name string is invalid or incomplete
      */
     private function parseName(string $regex, string $err): string
