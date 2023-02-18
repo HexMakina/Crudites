@@ -44,16 +44,16 @@ class Schema
 
     private function loadSchemaFor(DatabaseInterface $db): array
     {
-      // prepare to query database INFORMATION_SCHEMA
+        // prepare to query database INFORMATION_SCHEMA
         $query = $this->introspectionQuery($db->name());
 
-      // switch database
+        // switch database
         $db->connection()->useDatabase(self::INTROSPECTION_DATABASE_NAME);
 
-      // run the query
+         // run the query
         $res = $db->connection()->query($query);
 
-      // return to previous database
+        // return to previous database
         $db->connection()->restoreDatabase();
 
         return $res->fetchAll();
@@ -61,21 +61,18 @@ class Schema
 
     private function introspectionQuery(string $database_name): string
     {
-        $fields = [
-        'TABLE_NAME',
-        'CONSTRAINT_NAME',
-        'ORDINAL_POSITION',
-        'COLUMN_NAME',
-        'POSITION_IN_UNIQUE_CONSTRAINT',
-        'REFERENCED_TABLE_NAME',
-        'REFERENCED_COLUMN_NAME'
-        ];
-
-        $statement = 'SELECT ' . implode(', ', $fields)
-        . ' FROM KEY_COLUMN_USAGE'
-        . ' WHERE TABLE_SCHEMA = "%s"'
-        . ' ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION';
-
+        $statement = 'SELECT 
+            TABLE_NAME, 
+            CONSTRAINT_NAME, 
+            ORDINAL_POSITION, 
+            COLUMN_NAME, 
+            POSITION_IN_UNIQUE_CONSTRAINT, 
+            REFERENCED_TABLE_NAME, 
+            REFERENCED_COLUMN_NAME
+        FROM KEY_COLUMN_USAGE
+        WHERE TABLE_SCHEMA = "%s"
+        ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION';
+        
         return sprintf($statement, $database_name);
     }
 
