@@ -133,10 +133,6 @@ abstract class BaseQuery implements QueryInterface
 
     public function backTick($field_name, $table_name = null): string
     {
-        if (empty($table_name)) {
-            return sprintf('`%s`', $field_name);
-        }
-
         return sprintf('`%s`.`%s`', $this->tableLabel($table_name), $field_name);
     }
 
