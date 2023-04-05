@@ -113,6 +113,14 @@ abstract class PreparedQuery extends BaseQuery implements PreparedQueryInterface
         return $this->prepared;
     }
 
+    public function errorInfo(): array
+    {
+        if($this->isExecuted())
+            return $this->executed()->errorInfo();
+
+        return parent::errorInfo();
+    }
+    
     public function compare($query)
     {
         $res = parent::compare($query);
