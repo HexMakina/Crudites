@@ -49,12 +49,14 @@ abstract class TableMeta implements TableMetaInterface
 
     public function describe($schema): void
     {
-        $query = $this->connection()->query((new Describe($this->name())));
-        if (is_null($query)) {
+        $res = $this->connection()->query(new Describe($this->name()));
+
+        if (is_null($res)) {
             throw new CruditesException('TABLE_DESCRIBE_FAILURE');
         }
 
-        $res = $query->fetchAll(\PDO::FETCH_UNIQUE);
+        
+        $res = $res->fetchAll(\PDO::FETCH_UNIQUE);
 
         if ($res === false) {
             throw new CruditesException('TABLE_DESCRIBE_FETCH_FAILURE');
