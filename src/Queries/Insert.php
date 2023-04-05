@@ -29,6 +29,7 @@ class Insert extends BaseQuery
     {
         $ret = [];
         foreach ($this->table->columns() as $column_name => $column) {
+            vd($column_name);
             if ($column->isAutoIncremented()) {
                 continue;
             }
@@ -43,7 +44,10 @@ class Insert extends BaseQuery
 
     public function generate(): string
     {
-        if (empty($this->getBindingNames()) || count($this->getBindings()) !== count($this->getBindingNames())) {
+        if (empty($this->getBindings())) {
+            throw new CruditesException('INSERT_FIELDS_NO_BINDINGS');
+        }
+        if (count($this->getBindings()) !== count($this->getBindingNames())) {
             throw new CruditesException('INSERT_FIELDS_BINDINGS_MISMATCH');
         }
 
