@@ -135,11 +135,10 @@ class Connection implements ConnectionInterface
      */
     public function query(string $sql_statement, $fetch_mode = null, $fetch_col_num = null): ?\PDOStatement
     {
-        if (is_null($fetch_mode)) {
-            return $this->pdo->query($sql_statement);
-        }
-
-        $res = $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);
+        $res = is_null($fetch_mode) 
+            ?   $this->pdo->query($sql_statement) 
+            :   $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);
+        
         return $res === false ? null : $res;
     }
 
