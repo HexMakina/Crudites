@@ -11,16 +11,6 @@ class Select extends PreparedQuery implements SelectInterface
     use ClauseJoin;
     use ClauseWhere;
 
-    protected array $selection = [];
-
-    protected array $join = [];
-
-    protected array $group = [];
-
-    protected array $having = [];
-
-    protected array $order = [];
-
     protected $limit;
 
     protected $limit_number;
@@ -28,18 +18,13 @@ class Select extends PreparedQuery implements SelectInterface
     protected $limit_offset = 0;
 
 
-    public function __construct($select_fields = null, TableInterface $table = null, $table_alias = null)
+    public function __construct($columns = null, TableInterface $table = null, $table_alias = null)
     {
         $this->table = $table;
         $this->table_alias = $table_alias;
 
-        if (is_null($select_fields)) {
-            $this->selection = ['*'];
-        } elseif (is_string($select_fields)) {
-            $this->selection = explode(',', $select_fields);
-        } elseif (is_array($select_fields)) {
-            $this->selection = $select_fields;
-        }
+        $columns = is_array($columns) ? $columns : (is_string($columns) ? explode(',', $columns) : []);
+        $this->setClause('select', $columns);
     }
 
     public function tableLabel($forced_value = null)
@@ -50,11 +35,11 @@ class Select extends PreparedQuery implements SelectInterface
     public function columns($setter = null)
     {
         if (is_null($setter)) {
-            return $this->selection;
+            return $this->clause('select');
         }
 
         if (is_array($setter)) {
-            $this->selection = $setter;
+            $this->setClause('select', $setter);
         }
 
         return $this;
@@ -62,42 +47,48 @@ class Select extends PreparedQuery implements SelectInterface
 
     public function selectAlso($setter): self
     {
-        $this->selection = array_merge($this->selection, is_array($setter) ? $setter : [$setter]);
-        return $this;
+        if(!is_array($setter)){
+            $setter = [$setter];
+        }
+        $res = $this->setClause('select', array_merge($this->clause('select'), $setter));
+        return $res;
     }
 
     public function groupBy($clause): self
     {
+        $groupBy = null;
         if (is_string($clause)) {
-            $this->addPart('group', $this->backTick($clause, $this->tableLabel()));
+            $groupBy = $this->backTick($clause, $this->tableLabel());
+
         } elseif (is_array($clause)) {
-            if (isset($clause[1])) { // 0: table, 1: field
-                $this->addPart('group', $this->backTick($clause[1], $clause[0]));
-            } else { // 0: field
-                $this->addPart('group', $this->backTick($clause[0], null));
+            if (isset($clause[1])) { // 0: table, 1: field            
+                $groupBy = $this->backTick($clause[1], $clause[0]);
+            
+            } else { // 0: field            
+                $groupBy = $this->backTick($clause[0], null);
             }
         }
 
-        return $this;
+        return $this->addClause('group', $groupBy);
     }
 
     public function having($condition)
     {
-        return $this->addPart('having', $condition);
+        return $this->addClause('having', $condition);
     }
 
     public function orderBy($clause): self
     {
         if (is_string($clause)) {
-            $this->addPart('order', $clause);
+            $this->addClause('order', $clause);
         } elseif (is_array($clause) && count($clause) > 1) {
             if (isset($clause[2])) { // 0:table, 1:field, 2:direction
-                $this->addPart(
+                $this->addClause(
                     'order',
                     sprintf('%s %s', $this->backTick($clause[1], $clause[0]), $clause[2])
                 );
             } elseif (isset($clause[1])) { // 0: field, 1: direction
-                $this->addPart(
+                $this->addClause(
                     'order',
                     sprintf('%s %s', $this->backTick($clause[0], $this->tableLabel()), $clause[1])
                 );
@@ -123,20 +114,19 @@ class Select extends PreparedQuery implements SelectInterface
 
         $this->table_alias ??= '';
 
-        $query_fields = empty($this->selection) ? ['*'] : $this->selection;
-
+        $query_fields = empty($this->clause('select')) ? ['*'] : $this->clause('select');
         $ret = PHP_EOL . 'SELECT ' . implode(', ' . PHP_EOL, $query_fields);
         $ret .= PHP_EOL . sprintf(' FROM `%s` %s ', $this->tableName(), $this->table_alias);
 
-        if (!empty($this->join)) {
-            $ret .= PHP_EOL . ' ' . implode(PHP_EOL . ' ', $this->join);
+        if (!empty($this->clause('join'))) {
+            $ret .= PHP_EOL . ' ' . implode(PHP_EOL . ' ', $this->clause('join'));
         }
 
         $ret .= $this->generateWhere();
 
         foreach (['group' => 'GROUP BY', 'having' => 'HAVING', 'order' => 'ORDER BY'] as $part => $prefix) {
-            if (!empty($this->$part)) {
-                $ret .= PHP_EOL . sprintf(' %s ', $prefix) . implode(', ', $this->$part);
+            if (!empty($this->clause($part))) {
+                $ret .= PHP_EOL . sprintf(' %s ', $prefix) . implode(', ', $this->clause($part));
             }
         }
 
@@ -145,7 +135,6 @@ class Select extends PreparedQuery implements SelectInterface
             $number = $this->limit_number;
             $ret .= PHP_EOL . sprintf(' LIMIT %s, %s', $offset, $number);
         }
-
         return $ret;
     }
 

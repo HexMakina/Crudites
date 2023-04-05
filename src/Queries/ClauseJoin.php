@@ -43,7 +43,7 @@ trait ClauseJoin
 
     public function joinRaw($sql)
     {
-        return $this->addPart('join', $sql);
+        return $this->addClause('join', $sql);
     }
 
     protected function generateJoin($join_type, $join_table_name, $join_table_alias = null, $join_fields = []): string

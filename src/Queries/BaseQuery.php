@@ -13,19 +13,13 @@ abstract class BaseQuery implements QueryInterface
 
     protected $connection;
 
-    protected $table;
-
-    protected $table_alias;
-
     protected $statement;
 
+    protected $table;
+    protected $table_alias;
+    protected $clauses;
+
     protected $executed = false;
-
-    protected $state;
-
-    protected $error_code;
-
-    protected $error_text;
 
     //------------------------------------------------------------  DEBUG
     public function __debugInfo(): array
@@ -94,6 +88,28 @@ abstract class BaseQuery implements QueryInterface
         $this->{$group} ??= [];
         $this->{$group}[] = $part;
         return $this;
+    }
+
+    public function addClause(string $clause, $argument): self
+    {
+        if(!is_array($argument))
+            $argument = [$argument];
+
+        $this->clauses[$clause] ??= [];
+        $this->clauses[$clause] = array_merge($this->clauses[$clause], $argument);
+
+        return $this;
+    }
+
+    public function setClause($clause, $argument): self
+    {
+        $this->clauses[$clause] = [];
+        return $this->addClause($clause, $argument);
+    }
+
+    public function clause($clause) : array
+    {
+        return $this->clauses[$clause] ?? [];
     }
 
     //------------------------------------------------------------  PREP::FIELDS
