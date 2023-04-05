@@ -6,7 +6,7 @@ use HexMakina\Crudites\CruditesException;
 use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\BlackBox\Database\QueryInterface;
 
-class Insert extends BaseQuery
+class Insert extends PreparedQuery
 {
     use ClauseJoin;
 

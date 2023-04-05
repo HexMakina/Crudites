@@ -9,12 +9,9 @@ use HexMakina\BlackBox\Database\QueryInterface;
 
 abstract class BaseQuery implements QueryInterface
 {
-    private static int $executions = 0;
+    protected  const STATE_SUCCESS = '00000'; //PDO "error" code for "all is fine"
 
-    /**
-     * @var string
-     */
-    private const STATE_SUCCESS = '00000'; //PDO "error" code for "all is fine"
+    protected $connection;
 
     protected $table;
 
@@ -22,19 +19,9 @@ abstract class BaseQuery implements QueryInterface
 
     protected $statement;
 
-    protected array $bindings = [];
-
-    protected array $binding_names = [];
-
-    protected $connection;
-
     protected $executed = false;
 
     protected $state;
-
-    protected $prepared_statement;
-
-    protected $row_count;
 
     protected $error_code;
 
@@ -57,11 +44,6 @@ abstract class BaseQuery implements QueryInterface
             }
         }
 
-        $dbg['bindings'] = json_encode($dbg['bindings']);
-        if (empty($this->bindings)) {
-            unset($dbg['bindings']);
-        }
-
         $dbg['statement()'] = $this->statement();
         return $dbg;
     }
@@ -74,7 +56,6 @@ abstract class BaseQuery implements QueryInterface
 
     abstract public function generate(): string;
 
-
     //------------------------------------------------------------  GET/SETTERS
     public function statement($setter = null): string
     {
@@ -84,7 +65,6 @@ abstract class BaseQuery implements QueryInterface
 
         return $this->statement ?? $this->generate();
     }
-
 
     public function connection(ConnectionInterface $connection = null): ConnectionInterface
     {
@@ -136,80 +116,13 @@ abstract class BaseQuery implements QueryInterface
         return sprintf('`%s`.`%s`', $this->tableLabel($table_name), $field_name);
     }
 
-    //------------------------------------------------------------  PREP::BINDINGS
-
-    public function setBindings($dat_ass): void
-    {
-        $this->bindings = $dat_ass;
-    }
-
-    /**
-     * @return mixed[]
-     */
-    public function getBindings(): array
-    {
-        return $this->bindings;
-    }
-
-    /**
-     * @return mixed[]
-     */
-    public function getBindingNames(): array
-    {
-        return $this->binding_names;
-    }
-
-    /**
-     * @return array<int|string, string>
-     */
-    public function addBindings($assoc_data): array
-    {
-        $binding_names = [];
-        foreach ($assoc_data as $k => $v) {
-            $binding_names[$k] = $this->addBinding($k, $v);
-        }
-
-        return $binding_names;
-    }
-
-    public function addBinding($field, $value, $table_name = null, $bind_label = null): string
-    {
-        $bind_label ??= $this->bindLabel($field, $table_name);
-        $this->bindings[$bind_label] = $value;
-        $this->binding_names[$field] = $bind_label;
-
-        return $bind_label;
-    }
-
-    public function bindLabel($field, $table_name = null): string
-    {
-        return ':' . $this->tableLabel($table_name) . '_' . $field;
-    }
-
     //------------------------------------------------------------  Run
     // throws CruditesException on failure
     // returns itself
-    // DEBUG dies on \Exception
-
     public function run(): self
     {
         try {
-            if (!$this->isPrepared()) {
-                $this->prepared_statement = $this->connection()->prepare($this->statement());
-            }
-
-            if ($this->prepared_statement->execute($this->getBindings()) !== false) {
-                // execute returns TRUE on success or FALSE on failure.
-                ++self::$executions;
-
-                $this->isExecuted(true);
-
-                if ($this->prepared_statement->errorCode() === self::STATE_SUCCESS) {
-                    $this->state = self::STATE_SUCCESS;
-                    // careful: https://www.php.net/manual/en/pdostatement.rowcount.php
-                    $this->row_count = $this->prepared_statement->rowCount();
-                }
-            }
+            $this->executed = $this->connection()->query($this->statement());
         } catch (\PDOException $pdoException) {
             throw (new CruditesException($pdoException->getMessage()))->fromQuery($this);
         }
@@ -220,45 +133,41 @@ abstract class BaseQuery implements QueryInterface
     //------------------------------------------------------------  Return
     public function ret($mode = null, $option = null)
     {
-        if (!$this->isExecuted()) {
-            $this->run();
-        }
-
         if (!$this->isSuccess()) {
             return false;
         }
-
         if (is_null($option)) {
-            return $this->prepared_statement->fetchAll($mode);
+            return $this->executed()->fetchAll($mode);
         }
 
-        return $this->prepared_statement->fetchAll($mode, $option);
+        return $this->executed()->fetchAll($mode, $option);
     }
 
     //------------------------------------------------------------ Return:count
-    public function count()
+    public function count(): int
+    {
+        // careful: https://www.php.net/manual/en/pdostatement.rowcount.php
+        return $this->isSuccess() ? $this->executed()->rowCount() : -1;
+    }
+
+    //------------------------------------------------------------  Status
+    public function isExecuted(): bool
+    {
+        return $this->executed instanceof \PDOStatement;
+    }
+
+    public function executed(): \PDOStatement
     {
         if (!$this->isExecuted()) {
             $this->run();
         }
 
-        return $this->isSuccess() ? $this->row_count : null;
-    }
-
-    //------------------------------------------------------------  Status
-    public function isPrepared(): bool
-    {
-        return !is_null($this->prepared_statement) && false !== $this->prepared_statement;
-    }
-
-    public function isExecuted($setter = null): bool
-    {
-        return is_null($setter) ? $this->executed === true : ($this->executed = $setter);
+        return $this->executed;
     }
 
     public function isSuccess(): bool
     {
-        return $this->state === self::STATE_SUCCESS;
+        return $this->executed()->errorCode() === self::STATE_SUCCESS;
     }
 
     /**
@@ -266,23 +175,13 @@ abstract class BaseQuery implements QueryInterface
      */
     public function errorInfo(): array
     {
-        if ($this->isPrepared()) {
-            return $this->prepared_statement->errorInfo();
-        }
-
         return $this->connection()->errorInfo();
     }
 
-    public function compare(QueryInterface $query)
+    public function compare($query)
     {
         if ($this->statement() !== $query->statement()) {
             return 'statement';
-        }
-        if (!empty(array_diff($this->getBindings(), $query->getBindings()))) {
-            return 'bindings';
-        }
-        if (!empty(array_diff($query->getBindings(), $this->getBindings()))) {
-            return 'bindings';
         }
 
         return true;

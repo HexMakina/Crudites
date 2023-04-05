@@ -5,7 +5,7 @@ namespace HexMakina\Crudites\Queries;
 use HexMakina\Crudites\CruditesException;
 use HexMakina\BlackBox\Database\TableInterface;
 
-class Update extends BaseQuery
+class Update extends PreparedQuery
 {
     use ClauseJoin;
     use ClauseWhere;
