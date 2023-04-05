@@ -29,7 +29,6 @@ class Insert extends BaseQuery
     {
         $ret = [];
         foreach ($this->table->columns() as $column_name => $column) {
-            vd($column_name);
             if ($column->isAutoIncremented()) {
                 continue;
             }
