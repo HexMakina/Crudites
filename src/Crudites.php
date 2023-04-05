@@ -3,8 +3,7 @@
 
 namespace HexMakina\Crudites;
 
-use HexMakina\BlackBox\Database\SelectInterface;
-use HexMakina\BlackBox\Database\DatabaseInterface;
+use HexMakina\BlackBox\Database\{DatabaseInterface, TableInterface, SelectInterface};
 use HexMakina\Crudites\CruditesException;
 
 
@@ -34,24 +33,6 @@ class Crudites
     }
 
     /**
-     * @param string $table_name  Table name
-     * @throws CruditesException
-     * @return array  Inspection of the given table name
-     */
-    public static function inspect(string $table_name)
-    {
-        if (is_null(self::$database)) {
-            throw new CruditesException('NO_DATABASE');
-        }
-
-        try {
-            return self::$database->inspect($table_name);
-        } catch (\Exception $exception) {
-            throw new CruditesException('TABLE_INTROSPECTION::' . $table_name);
-        }
-    }
-
-    /**
      * @param string|null $dsn  DSN
      * @param string|null $user  Username
      * @param string|null $pass  Password
@@ -70,6 +51,27 @@ class Crudites
         }
         return new Connection($dsn, $user, $pass);
     }
+
+    
+    /**
+     * @param string $table_name  Table name
+     * @throws CruditesException
+     * @return array  Inspection of the given table name
+     */
+    public static function inspect(string $table_name): TableInterface
+    {
+        if (is_null(self::$database)) {
+            throw new CruditesException('NO_DATABASE');
+        }
+
+        try {
+            return self::$database->inspect($table_name);
+        } catch (\Exception $exception) {
+            throw new CruditesException('TABLE_INTROSPECTION::' . $table_name);
+        }
+    }
+
+
 
     //------------------------------------------------------------  DataRetrieval
 
