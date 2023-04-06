@@ -55,7 +55,7 @@ class Connection implements ConnectionInterface
      */
     public function __construct(string $dsn, string $username = '', string $password = '', array $driver_options = [])
     {
-        // Remove ERRMODE_EXCEPTION from the driver options, as it is set by default
+        // Remove ERRMODE_EXCEPTION from the custom driver options, as it is required to be ERRMODE_EXCEPTIOn
         if (isset($driver_options[\PDO::ATTR_ERRMODE])) {
             unset($driver_options[\PDO::ATTR_ERRMODE]);
         }
