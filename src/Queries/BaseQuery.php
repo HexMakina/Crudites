@@ -6,6 +6,7 @@ use HexMakina\Crudites\CruditesException;
 use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\QueryInterface;
+use HexMakina\Crudites\CruditesExceptionFactory;
 
 abstract class BaseQuery implements QueryInterface
 {
@@ -140,7 +141,8 @@ abstract class BaseQuery implements QueryInterface
         try {
             $this->executed = $this->connection()->query($this->statement());
         } catch (\PDOException $pdoException) {
-            throw (new CruditesException($pdoException->getMessage()))->fromQuery($this);
+            // prevents PDOException with credentials to be ever displayed
+            throw CruditesExceptionFactory::make($this, $pdoException);
         }
 
         return $this;

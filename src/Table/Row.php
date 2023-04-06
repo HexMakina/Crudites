@@ -6,6 +6,7 @@ use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\BlackBox\Database\RowInterface;
 use HexMakina\BlackBox\Database\QueryInterface;
 use HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\CruditesExceptionFactory;
 
 class Row implements RowInterface
 {
@@ -160,7 +161,7 @@ class Row implements RowInterface
     }
 
     /**
-      * @return array<mixed,string> an array of errors
+      * @return array<string,string> an array of errors, column name => message
       */
     public function persist(): array
     {
@@ -182,16 +183,16 @@ class Row implements RowInterface
             $this->last_query = $this->lastAlterQuery();
 
             if(is_null($this->lastQuery()) || !$this->lastQuery()->isSuccess()){
-                throw new CruditesException('ROW_PERSISTENCE');
+                throw CruditesExceptionFactory::make($this->last_query);
             }
-
+            
         } catch (CruditesException $cruditesException) {
             return [$cruditesException->getMessage()];
         }
 
         return !is_null($this->lastQuery()) && $this->lastQuery()->isSuccess()
                ? []
-               : ['CRUDITES_ERR_ROW_PERSISTENCE'];
+               : ['ROW_PERSISTENCE'];
     }
 
     private function create(): void
