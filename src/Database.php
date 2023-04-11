@@ -44,6 +44,11 @@ class Database implements DatabaseInterface
         return $this->connection;
     }
 
+    public function schema(): Schema
+    {
+        return $this->schema;
+    }
+    
     /**
      * Returns the name of the database.
      *
