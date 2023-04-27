@@ -32,6 +32,7 @@ abstract class BaseQuery implements QueryInterface
 
         $dbg = array_merge($dbg, get_object_vars($this));
         unset($dbg['table']);
+        unset($dbg['connection']);
 
         foreach (array_keys($dbg) as $k) {
             if (!isset($dbg[$k])) {
