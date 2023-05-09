@@ -1,20 +1,25 @@
 <?php
 
+
+namespace HexMakina\Crudites;
+
+use HexMakina\BlackBox\Database\{DatabaseInterface, TableInterface, SelectInterface};
+use HexMakina\Crudites\CruditesException;
+
+
 /**
  * Crudités, it's a cup of carrots sticks (but are they organic ?)
  * Codd's Relational model, Unicity, Definitions, Introspection, Tests, Execution & Sets
  * Create - Retrieve - Update - Delete
- * API for writing and running SQL queries
+ * Library for writing and running SQL queries
  */
 
-namespace HexMakina\Crudites;
-
-use HexMakina\BlackBox\Database\SelectInterface;
-use HexMakina\BlackBox\Database\DatabaseInterface;
-use HexMakina\Crudites\CruditesException;
 
 class Crudites
 {
+    /**
+     * @var DatabaseInterface|null $database  Database instance
+     */
     private static ?DatabaseInterface $database;
 
     /**
@@ -49,13 +54,15 @@ class Crudites
                 throw new CruditesException('CONNECTION_MISSING');
             }
 
-            return self::$database->connection();
         }
-        return new Connection($dsn, $user, $pass);
     }
 
     //------------------------------------------------------------  DataRetrieval
-    // success: return AIPK-indexed array of results (associative array or object)
+
+    /**
+     * @param SelectInterface $select  Select instance
+     * @return int|null  Number of records
+     */
     public static function count(SelectInterface $select): ?int
     {
         $select->selectAlso(['COUNT(*) as count']);

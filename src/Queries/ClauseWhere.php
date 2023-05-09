@@ -52,6 +52,13 @@ trait ClauseWhere
         return $this;
     }
 
+    public function whereWithBind($where, $value)
+    {
+        $this->where ??= [];
+        $this->where[] = sprintf('(%s)', $where);
+        return $this;
+    }
+
     public function whereEqualOrNull($field, $value, $table_name = null, $bindname = null)
     {
         $bind_name = $this->addBinding($field, $value, $table_name, $bindname);
@@ -62,32 +69,32 @@ trait ClauseWhere
 
     public function whereEQ($field, $value, $table_name = null, $bindname = null)
     {
-               return $this->whereBindField($table_name, $field, self::$OP_EQ, $value, $bindname);
+        return $this->whereBindField($table_name, $field, self::$OP_EQ, $value, $bindname);
     }
 
     public function whereGT($field, $value, $table_name = null, $bindname = null)
     {
-               return $this->whereBindField($table_name, $field, self::$OP_GT, $value, $bindname);
+        return $this->whereBindField($table_name, $field, self::$OP_GT, $value, $bindname);
     }
 
     public function whereLT($field, $value, $table_name = null, $bindname = null)
     {
-               return $this->whereBindField($table_name, $field, self::$OP_LT, $value, $bindname);
+        return $this->whereBindField($table_name, $field, self::$OP_LT, $value, $bindname);
     }
 
     public function whereGTE($field, $value, $table_name = null, $bindname = null)
     {
-               return $this->whereBindField($table_name, $field, self::$OP_GTE, $value, $bindname);
+        return $this->whereBindField($table_name, $field, self::$OP_GTE, $value, $bindname);
     }
 
     public function whereLTE($field, $value, $table_name = null, $bindname = null)
     {
-              return $this->whereBindField($table_name, $field, self::$OP_LTE, $value, $bindname);
+        return $this->whereBindField($table_name, $field, self::$OP_LTE, $value, $bindname);
     }
 
     public function whereNotEQ($field, $value, $table_name = null, $bindname = null)
     {
-          return $this->whereBindField($table_name, $field, self::$OP_NEQ, $value, $bindname);
+        return $this->whereBindField($table_name, $field, self::$OP_NEQ, $value, $bindname);
     }
 
     public function wherePrimary($pk_values)
@@ -124,7 +131,7 @@ trait ClauseWhere
         return $this;
     }
 
-    private function whereBindField($table_name, $field, $operator, $value, $bind_name = null)
+    public function whereBindField($table_name, $field, $operator, $value, $bind_name = null)
     {
         $bind_name = $this->addBinding($field, $value, $table_name, $bind_name);
         return $this->whereField($field, sprintf('%s %s', $operator, $bind_name), $table_name);
@@ -187,7 +194,7 @@ trait ClauseWhere
      * @param $filters_operator Object, inclusive or exclusive search
      */
 
-     // sub array filters[$content]
+    // sub array filters[$content]
     public function whereFilterContent(array $filters_content, $search_table = null, $filters_operator = null)
     {
         if (!isset($filters_content['term'])) {
@@ -215,11 +222,11 @@ trait ClauseWhere
             $search_field = $this->backTick($search_field, $search_table);
 
             if ($search_mode === self::$OP_EQ) {
-                $content_wc [] = sprintf('%s = \'%s\' ', $search_field, $search_term); // TODO bindthis
+                $content_wc[] = sprintf('%s = \'%s\' ', $search_field, $search_term); // TODO bindthis
             } else // %%
             {
                 $pattern = str_replace('TERM', $search_term, $search_mode);
-                $content_wc [] = sprintf(' %s LIKE \'%s\' ', $search_field, $pattern); // TODO bindthis
+                $content_wc[] = sprintf(' %s LIKE \'%s\' ', $search_field, $pattern); // TODO bindthis
             }
         }
 

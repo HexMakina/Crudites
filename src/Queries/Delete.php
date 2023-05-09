@@ -5,7 +5,7 @@ namespace HexMakina\Crudites\Queries;
 use HexMakina\BlackBox\Database\TableMetaInterface;
 use HexMakina\Crudites\CruditesException;
 
-class Delete extends BaseQuery
+class Delete extends PreparedQuery
 {
     use ClauseJoin;
     use ClauseWhere;
