@@ -6,7 +6,7 @@ use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\BlackBox\Database\SelectInterface;
 use HexMakina\Crudites\CruditesException;
 
-class Select extends BaseQuery implements SelectInterface
+class Select extends BaseQuery implements PreparedQueryInterface
 {
     use ClauseJoin;
     use ClauseWhere;
