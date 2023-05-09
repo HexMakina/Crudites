@@ -26,9 +26,9 @@ class Connection implements ConnectionInterface
     private string $using_database;
 
     private static array $driver_default_options = [
-      \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, // the one option you cannot change
-      \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
-      \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
+        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, // the one option you cannot change
+        \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
+        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
     ];
 
     /*
@@ -77,7 +77,7 @@ class Connection implements ConnectionInterface
     public function prepare(string $sql_statement, $options = []): ?\PDOStatement
     {
         $res = $this->pdo->prepare($sql_statement, $options);
-        
+
         return $res instanceof \PDOStatement ? $res : null;
     }
 
@@ -85,9 +85,8 @@ class Connection implements ConnectionInterface
     {
         if (is_null($fetch_mode)) {
             $res = $this->pdo->query($sql_statement);
-        }
-        else{
-          $res = $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);
+        } else {
+            $res = $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);
         }
 
         return $res instanceof \PDOStatement ? $res : null;
@@ -134,5 +133,4 @@ class Connection implements ConnectionInterface
     {
         return $this->pdo->errorCode();
     }
-
 }
