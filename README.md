@@ -1,5 +1,5 @@
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/HexMakina/Crudites/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/HexMakina/Crudites/?branch=main)
-<img src="https://img.shields.io/badge/PHP-7.0-brightgreen" alt="PHP 7.0 Required" />
+<img src="https://img.shields.io/badge/PHP-7.4-brightgreen" alt="PHP 7.04 Required" />
 [![License](http://poser.pugx.org/hexmakina/crudites/license)](https://packagist.org/packages/hexmakina/crudites)
 [![Latest Stable Version](http://poser.pugx.org/hexmakina/crudites/v)](https://packagist.org/packages/hexmakina/crudites)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/HexMakina/Crudites/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/HexMakina/Crudites/?branch=main)
