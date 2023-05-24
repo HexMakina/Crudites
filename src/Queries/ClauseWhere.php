@@ -52,7 +52,7 @@ trait ClauseWhere
         return $this;
     }
 
-    public function whereWithBind($where, $value)
+    public function whereWithBind($where)
     {
         $this->where ??= [];
         $this->where[] = sprintf('(%s)', $where);
