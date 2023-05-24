@@ -172,7 +172,6 @@ class Row implements RowInterface
         if (!empty($errors = $this->validate())) { // Table level validation
             return $errors;
         }
-
         try {
             if ($this->isNew()) {
                 $this->create();
@@ -187,12 +186,10 @@ class Row implements RowInterface
             }
             
         } catch (CruditesException $cruditesException) {
-            return [$cruditesException->getMessage()];
+            return [$this->table()->name() => $cruditesException->getMessage()];
         }
 
-        return !is_null($this->lastQuery()) && $this->lastQuery()->isSuccess()
-               ? []
-               : ['ROW_PERSISTENCE'];
+        return [];
     }
 
     private function create(): void

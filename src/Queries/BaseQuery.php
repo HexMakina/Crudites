@@ -197,7 +197,13 @@ abstract class BaseQuery implements QueryInterface
         return $this->connection()->errorInfo();
     }
 
-    public function compare($query)
+    public function errorMessageWithCodes(): string
+    {
+        list($state, $code, $message) = $this->errorInfo();
+        return sprintf('%s (state: %s, code: %s)', $message, $state, $code);
+    }
+
+    public function compare(QueryInterface $query)
     {
         if ($this->statement() !== $query->statement()) {
             return 'statement';

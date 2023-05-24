@@ -22,43 +22,15 @@ class Crudites
      */
     private static ?DatabaseInterface $database;
 
-
     /**
-     * @param DatabaseInterface $database  Database instance
-     * @return void
+     * takes a DatabaseInterface object and sets it as the global database object that the other methods will use
      */
     public static function setDatabase(DatabaseInterface $database): void
     {
         self::$database = $database;
     }
 
-    /**
-     * @param string|null $dsn  DSN
-     * @param string|null $user  Username
-     * @param string|null $pass  Password
-     * @return Connection  Database connection
-     * @throws CruditesException
-     */
-    public static function connect($dsn = null, $user = null, $pass = null)
-    {
-        // no props, means connection already exists, verify and return
-        if (!isset($dsn, $user, $pass)) {
-            if (is_null(self::$database)) {
-                throw new CruditesException('CONNECTION_MISSING');
-            }
-
-            return self::$database->connection();
-        }
-        return new Connection($dsn, $user, $pass);
-    }
-
-    
-    /**
-     * @param string $table_name  Table name
-     * @throws CruditesException
-     * @return array  Inspection of the given table name
-     */
-    public static function inspect(string $table_name): TableInterface
+    public static function inspect(string $table_name)
     {
         if (is_null(self::$database)) {
             throw new CruditesException('NO_DATABASE');
@@ -70,8 +42,20 @@ class Crudites
             throw new CruditesException('TABLE_INTROSPECTION::' . $table_name);
         }
     }
+    /**
+     * connects to the database; if the connection already exists, the function verifies and returns it. 
+     * If no connection exists, a Connection object is created with the provided parameters.
+     */
+    public static function connect($dsn = null, $user = null, $pass = null)
+    {
+        // no props, means connection already exists, verify and return
+        if (!isset($dsn, $user, $pass)) {
+            if (is_null(self::$database)) {
+                throw new CruditesException('CONNECTION_MISSING');
+            }
 
-
+        }
+    }
 
     //------------------------------------------------------------  DataRetrieval
 
@@ -90,8 +74,10 @@ class Crudites
         return null;
     }
 
-    // success: return AIPK-indexed array of results (associative array or object)
     /**
+     * retrieve(): A method that retrieves data from a SELECT statement, organizes them 
+     * in an associative array using their primary keys as the indices
+     * 
      * @return array<int|string, mixed>
      */
     public static function retrieve(SelectInterface $select): array
@@ -109,6 +95,10 @@ class Crudites
         return $ret;
     }
 
+    /**
+     * Executes a custom SQL statement and returns a PDOStatement object, 
+     * optionally binding variables to the statement.
+     */
     public static function raw($sql, $dat_ass = []): ?\PDOStatement
     {
         $conx = self::connect();
