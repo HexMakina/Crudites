@@ -67,16 +67,6 @@ class Source implements SourceInterface
     }
 
     /**
-     * Checks whether the driver name is available or not
-     *
-     * @return boolean true if the driver name is available, false otherwise
-     */
-    public function driverAvailable(): bool
-    {
-        return in_array($this->driver(), \PDO::getAvailableDrivers(), true);
-    }
-
-    /**
      * Parses the name of the database or driver from the DSN string
      *
      * @param string $regex The regular expression pattern used to parse the name
