@@ -2,11 +2,10 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\BlackBox\Database\TableInterface;
-use HexMakina\BlackBox\Database\SelectInterface;
+use HexMakina\BlackBox\Database\{TableInterface, SelectInterface};
 use HexMakina\Crudites\CruditesException;
 
-class Select extends PreparedQuery implements PreparedQueryInterface
+class Select extends PreparedQuery implements SelectInterface
 {
     use ClauseJoin;
     use ClauseWhere;
@@ -79,21 +78,26 @@ class Select extends PreparedQuery implements PreparedQueryInterface
 
     public function orderBy($clause): self
     {
-        if (is_string($clause)) {
-            $this->addClause('order', $clause);
-        } elseif (is_array($clause) && count($clause) > 1) {
+        if (is_array($clause) && count($clause) > 1) {
+
             if (isset($clause[2])) { // 0:table, 1:field, 2:direction
-                $this->addClause(
-                    'order',
-                    sprintf('%s %s', $this->backTick($clause[1], $clause[0]), $clause[2])
-                );
-            } elseif (isset($clause[1])) { // 0: field, 1: direction
-                $this->addClause(
-                    'order',
-                    sprintf('%s %s', $this->backTick($clause[0], $this->tableLabel()), $clause[1])
-                );
+                $column = $this->backTick($clause[1], $clause[0]);
+            } 
+            elseif(isset($clause[1]) || isset($clause[0])) { // 0: field, 1: direction
+                $column = $this->backTick($clause[0], $this->tableLabel());
             }
+
+            if(!isset($clause[1])){ // 0:field, direction ASC
+                array_push($clause, 'ASC');
+            }
+
+            $direction = array_pop($clause);
+
+            $clause = sprintf('%s %s', $column, $direction);
         }
+
+        if(is_string($clause))
+            $this->addClause('order', $clause);
 
         return $this;
     }
