@@ -64,7 +64,7 @@ class CruditesExceptionFactory
             },
 
             1054 => function($message){
-                return ['COLUMN_DOES_NOT_EXIST'];
+                return ['COLUMN_DOES_NOT_EXIST', $message];
             },
 
             1062 => function($message){
@@ -78,7 +78,7 @@ class CruditesExceptionFactory
             },
   
             1146 => function($message){
-                return ['TABLE_DOES_NOT_EXIST'];
+                return ['TABLE_DOES_NOT_EXIST', $message];
             },
 
             1264 => function($message){
@@ -87,7 +87,7 @@ class CruditesExceptionFactory
             },
 
             1364 => function($message){
-                return ['FIELD_REQUIRED'];
+                return ['FIELD_REQUIRED', $message];
             },
 
             1451 => function($message){
