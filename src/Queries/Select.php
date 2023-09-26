@@ -2,11 +2,10 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\BlackBox\Database\TableInterface;
-use HexMakina\BlackBox\Database\SelectInterface;
+use HexMakina\BlackBox\Database\{TableInterface, SelectInterface};
 use HexMakina\Crudites\CruditesException;
 
-class Select extends PreparedQuery implements PreparedQueryInterface
+class Select extends PreparedQuery implements SelectInterface
 {
     use ClauseJoin;
     use ClauseWhere;
@@ -50,7 +49,7 @@ class Select extends PreparedQuery implements PreparedQueryInterface
         if(!is_array($setter)){
             $setter = [$setter];
         }
-        $res = $this->setClause('select', array_merge($this->clause('select'), $setter));
+        $res = $this->setClause('select', array_unique(array_merge($this->clause('select'), $setter)));
         return $res;
     }
 
@@ -124,16 +123,19 @@ class Select extends PreparedQuery implements PreparedQueryInterface
 
         $ret .= $this->generateWhere();
 
+        
         foreach (['group' => 'GROUP BY', 'having' => 'HAVING', 'order' => 'ORDER BY'] as $part => $prefix) {
             if (!empty($this->clause($part))) {
                 $ret .= PHP_EOL . sprintf(' %s ', $prefix) . implode(', ', $this->clause($part));
             }
         }
 
+
+
         if (!empty($this->limit_number)) {
             $offset = $this->limit_offset ?? 0;
             $number = $this->limit_number;
-            $ret .= PHP_EOL . sprintf(' LIMIT %s, %s', $offset, $number);
+            $ret .= PHP_EOL . sprintf(' LIMIT %s OFFSET %s', $number, $offset);
         }
         return $ret;
     }
