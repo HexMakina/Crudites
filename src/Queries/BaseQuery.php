@@ -98,15 +98,22 @@ abstract class BaseQuery implements QueryInterface
             $argument = [$argument];
 
         $this->clauses[$clause] ??= [];
-        $this->clauses[$clause] = array_merge($this->clauses[$clause], $argument);
+        $this->clauses[$clause] = array_unique(array_merge($this->clauses[$clause], $argument));
 
         return $this;
     }
 
-    public function setClause($clause, $argument): self
+    public function setClause($clause, $argument=null): self
     {
-        $this->clauses[$clause] = [];
-        return $this->addClause($clause, $argument);
+        if(is_null($argument)){
+            unset($this->clauses[$clause]);
+        }
+        else{
+            $this->clauses[$clause] = [];
+            $this->addClause($clause, $argument);
+        }
+
+        return $this;
     }
 
     public function clause($clause) : array
