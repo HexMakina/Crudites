@@ -29,7 +29,7 @@ class CruditesExceptionFactory
             return new CruditesException('ERROR_INFO_UNAVAILABLE', 0, $exception);
 
         list($message, $code) = self::transcript($errorInfo);
-
+        
         // TODO: losing the parsing work from transcript. IMPROVE
         if(is_array($message))
             $message = array_shift($message);
@@ -53,23 +53,23 @@ class CruditesExceptionFactory
     private static function transcript(array $errorInfo): array
     {
         list($state, $code, $message) = $errorInfo;
-
         $functs = [
+            // violation: column cannot be null
             1048 => function($message){
-                if (preg_match("#for key '[a-z]+\.(.+)'$#", $message, $m) !== 1) {
-                    preg_match("#for key '(.+)'$#", $message, $m);
-                }
-
-                return ['DUPLICATE_ENTRY', $m[1]];
+                preg_match("#Column '(.+)' cannot be null#", $message, $m);
+                return ['FIELD_REQUIRED', $m[1]];
             },
 
             1054 => function($message){
                 return ['COLUMN_DOES_NOT_EXIST', $message];
             },
-
+            
+            // violation: duplicate key
             1062 => function($message){
-                preg_match("#Column '(.+)' cannot be null#", $message, $m);
-                return ['FIELD_REQUIRED', $m[1]];
+                if (preg_match("#for key '[a-z]+\.(.+)'$#", $message, $m) !== 1) {
+                    preg_match("#for key '(.+)'$#", $message, $m);
+                }
+                return ['DUPLICATE_KEY', $m[1]];
             },
 
             1064 => function($message){
@@ -96,7 +96,6 @@ class CruditesExceptionFactory
             },
          
         ];
-
         if(isset($functs[$code]))
             return [call_user_func($functs[$code], $message), $code];
 
