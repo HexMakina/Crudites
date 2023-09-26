@@ -46,6 +46,8 @@ class Crudites
      * connects to the database; if the connection already exists, the function verifies and returns it. 
      * If no connection exists, a Connection object is created with the provided parameters.
      */
+
+     // TODO finish this code for Turing's sakes
     public static function connect($dsn = null, $user = null, $pass = null)
     {
         // no props, means connection already exists, verify and return
@@ -53,7 +55,6 @@ class Crudites
             if (is_null(self::$database)) {
                 throw new CruditesException('CONNECTION_MISSING');
             }
-
         }
     }
 
@@ -101,7 +102,7 @@ class Crudites
      */
     public static function raw($sql, $dat_ass = []): ?\PDOStatement
     {
-        $conx = self::connect();
+        $conx = self::$database->connection();
         if (empty($dat_ass)) {
             $res = $conx->query($sql);
             //TODO query | alter !
