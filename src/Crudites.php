@@ -161,10 +161,10 @@ class Crudites
 
         $table = self::tableNameToTable($table);
         if (is_null($column = $table->column($boolean_column_name))) {
-            return false;
+            throw new \InvalidArgumentException('TOGGLE_REQUIRES_EXISTING_COLUMN');
         }
         if (!$column->type()->isBoolean()) {
-            return false;
+            throw new \InvalidArgumentException('TOGGLE_REQUIRES_BOOLEAN_COLUMN');
         }
 
         // TODO: still using 'id' instead of table->primaries
