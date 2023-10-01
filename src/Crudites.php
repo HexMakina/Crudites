@@ -3,7 +3,7 @@
 
 namespace HexMakina\Crudites;
 
-use HexMakina\BlackBox\Database\{DatabaseInterface, TableInterface, SelectInterface};
+use HexMakina\BlackBox\Database\{DatabaseInterface, ConnectionInterface, SelectInterface};
 use HexMakina\Crudites\CruditesException;
 
 
@@ -46,16 +46,18 @@ class Crudites
      * connects to the database; if the connection already exists, the function verifies and returns it. 
      * If no connection exists, a Connection object is created with the provided parameters.
      */
-
-     // TODO finish this code for Turing's sakes
-    public static function connect($dsn = null, $user = null, $pass = null)
+    public static function connect($dsn = null, $user = null, $pass = null): ConnectionInterface
     {
-        // no props, means connection already exists, verify and return
+        // no props, assumes connection made, verify and return
         if (!isset($dsn, $user, $pass)) {
             if (is_null(self::$database)) {
-                throw new CruditesException('CONNECTION_MISSING');
+                throw new CruditesException('NO_DATABASE');
             }
+
+            return self::$database->connection();
         }
+        
+        return new Connection($dsn, $user, $pass);
     }
 
     //------------------------------------------------------------  DataRetrieval
@@ -105,13 +107,12 @@ class Crudites
         $conx = self::$database->connection();
         if (empty($dat_ass)) {
             $res = $conx->query($sql);
-            //TODO query | alter !
-            //$res = $conx->alter($sql);
         } else {
             $res = $conx->prepare($sql);
             $res->execute($dat_ass);
         }
-        return $res === false ? null : $res;
+        
+        return $res instanceof \PDOStatement? $res : null;
     }
 
     public static function distinctFor($table, $column_name, $filter_by_value = null)
