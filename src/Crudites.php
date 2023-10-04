@@ -172,8 +172,9 @@ class Crudites
         // TODO: not using the QueryInterface Way of binding stuff
         $Query = $table->update();
         $statement = sprintf(
-            "UPDATE %s SET %s = !%s WHERE id=:id",
+            "UPDATE %s SET %s = COALESCE(!%s, 1) WHERE id=:id",
             $table->name(),
+            $boolean_column_name,
             $boolean_column_name,
             $boolean_column_name
         );
