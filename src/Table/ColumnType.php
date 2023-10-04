@@ -4,6 +4,7 @@ namespace HexMakina\Crudites\Table;
 
 use HexMakina\Crudites\CruditesException;
 use HexMakina\BlackBox\Database\ColumnTypeInterface;
+use HexMakina\Crudites\Errors\CruditesError;
 
 class ColumnType implements ColumnTypeInterface
 {
@@ -138,22 +139,22 @@ class ColumnType implements ColumnTypeInterface
     }
 
 
-    public function validateValue(string $value)
+    public function validateValue($value=null): ?CruditesError
     {
-        $ret = true;
+        $res = null;
 
         if ($this->isDateOrTime() && date_create($value) === false) {
-            $ret = 'ERR_FIELD_FORMAT';
+            $res = 'ERR_DATETIME_FORMAT';
         } elseif ($this->isYear() && preg_match('#^\d{4}$#', $value) !== 1) {
-            $ret = 'ERR_FIELD_FORMAT';
+            $res = 'ERR_YEAR_FORMAT';
         } elseif ($this->isNumeric() && !is_numeric($value)) {
-            $ret = 'ERR_FIELD_FORMAT';
+            $res = 'ERR_NUMERIC_FORMAT';
         } elseif ($this->isString() && $this->getLength() < strlen($value)) {
-            $ret = 'ERR_FIELD_TOO_LONG';
+            $res = 'ERR_TEXT_TOO_LONG';
         } elseif ($this->isEnum() && !in_array($value, $this->getEnumValues())) {
-            $ret = 'ERR_FIELD_VALUE_RESTRICTED_BY_ENUM';
+            $res = 'ERR_INVALID_ENUM_VALUE';
         }
 
-        return $ret;
+        return is_null($res) ? $res : new CruditesError($res);
     }
 }
