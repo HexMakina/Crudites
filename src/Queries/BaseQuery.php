@@ -67,9 +67,8 @@ abstract class BaseQuery implements QueryInterface
         if (!is_null($connection)) {
             $this->connection = $connection;
         }
-
-        if (is_null($this->connection)) {
-            throw new CruditesException('NO_CONNECTION');
+        elseif (is_null($this->connection)) {
+            throw new CruditesException('BASEQUERY_HAS_NO_CONNECTION');
         }
 
         return $this->connection;
@@ -98,7 +97,7 @@ abstract class BaseQuery implements QueryInterface
             $argument = [$argument];
 
         $this->clauses[$clause] ??= [];
-        $this->clauses[$clause] = array_unique(array_merge($this->clauses[$clause], $argument));
+        $this->clauses[$clause] = array_unique(array_merge($this->clauses[$clause], $argument), SORT_REGULAR);
 
         return $this;
     }
