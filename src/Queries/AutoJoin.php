@@ -107,7 +107,7 @@ class AutoJoin
     {
         $joinable_tables = $select->table()->foreignKeysByTable();
         foreach ($select->joinedTables() as $join_table) {
-            $joinable_tables += Crudites::inspect($join_table)->foreignKeysByTable();
+            $joinable_tables += Crudites::database()->inspect($join_table)->foreignKeysByTable();
         }
 
         return $joinable_tables;
@@ -120,7 +120,7 @@ class AutoJoin
         }
 
         foreach ($select->table()->foreignKeysByTable() as $foreign_table_name => $fk_columns) {
-            $foreign_table = Crudites::inspect($foreign_table_name);
+            $foreign_table = Crudites::database()->inspect($foreign_table_name);
 
             $single_fk = count($fk_columns) === 1; //assumption
             foreach ($fk_columns as $fk_column) {
