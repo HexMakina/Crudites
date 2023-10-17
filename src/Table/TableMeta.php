@@ -52,9 +52,8 @@ abstract class TableMeta implements TableMetaInterface
         $res = $this->connection()->query(new Describe($this->name()));
 
         if (is_null($res)) {
-            throw new CruditesException('TABLE_DESCRIBE_FAILURE');
+            throw new CruditesException(__FUNCTION__.'() table introspection failed ['.$this->name().']');
         }
-
         
         $res = $res->fetchAll(\PDO::FETCH_UNIQUE);
 
