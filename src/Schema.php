@@ -2,12 +2,16 @@
 
 namespace HexMakina\Crudites;
 
+use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\DatabaseInterface;
+use HexMakina\BlackBox\Database\TableInterface;
+use HexMakina\Crudites\Table\Table;
 
 /**
- * 
- * The class provides functionality for retrieving and processing database schema information 
- * using the INFORMATION_SCHEMA database.
+ * The class provides an abstraction for database schema information.
+ * It is build using the INFORMATION_SCHEMA database and the DESCRIBE query
+ * Querying the INFORMATION_SCHEMA is done once, the KEY_COLUMN_USAGE table are stored in arrays
+ * Querying DESCRIBE is done on demand, and the result is cached
  * 
  */
 
@@ -21,7 +25,12 @@ class Schema
     /** @var array<string,array> */
     private array $unique_by_table = [];
 
-    
+    /** @var array<string,TableInterface> The cache of table objects */
+    private array $table_cache = [];
+
+    private Introspector $introspector;
+    private ConnectionInterface $connection;
+
     /**
      * Constructor.
      *
@@ -29,10 +38,25 @@ class Schema
      */
     public function __construct(DatabaseInterface $db)
     {
-        $res = $this->loadSchemaFor($db);
-        $this->parseSchemaResult($res);
+        $this->connection = $db->connection();
+        $this->introspector = new Introspector($db->name(), $db->connection());
+        $this->fk_by_table = $this->introspector->foreignKeysByTable();
+        $this->unique_by_table = $this->introspector->uniqueKeysByTable();
     }
 
+
+    public function table(string $name): TableInterface
+    {
+        if (isset($this->table_cache[$name])) {
+            return $this->table_cache[$name];
+        }
+
+        $table = new Table($name, $this->connection);
+        $table->describe($this);
+        
+        $this->table_cache[$name] = $table;
+        return $this->table_cache[$name];
+    }
 
     /**
      * Gets the name of the unique constraint that the specified column belongs to, if any.
@@ -77,96 +101,9 @@ class Schema
         return $this->fk_by_table[$table_name][$column_name] ?? null;
     }
 
-
-    /**
-     * Loads the schema for the specified database.
-     *
-     * @param DatabaseInterface $db The database instance to load the schema from.
-     *
-     * @return array The schema data.
-     */
-    private function loadSchemaFor(DatabaseInterface $db): array
+    public function foreignKeysByTable(): array
     {
-        // prepare to query database INFORMATION_SCHEMA
-        $query = $this->introspectionQuery($db->name());
-
-        // switch database
-        $db->connection()->useDatabase(self::INTROSPECTION_DATABASE_NAME);
-
-         // run the query
-        $res = $db->connection()->query($query);
-
-        // return to previous database
-        $db->connection()->restoreDatabase();
-
-        return $res->fetchAll();
+        return $this->fk_by_table;
     }
-
-
-    /**
-     * Generates the SQL query to load the schema for the specified database.
-     *
-     * @param string $database_name The name of the database.
-     *
-     * @return string The SQL query.
-     */
-    private function introspectionQuery(string $database_name): string
-    {
-        $statement = 'SELECT 
-            TABLE_NAME, 
-            CONSTRAINT_NAME, 
-            ORDINAL_POSITION, 
-            COLUMN_NAME, 
-            POSITION_IN_UNIQUE_CONSTRAINT, 
-            REFERENCED_TABLE_NAME, 
-            REFERENCED_COLUMN_NAME
-        FROM KEY_COLUMN_USAGE
-        WHERE TABLE_SCHEMA = "%s"
-        ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION';
-        
-        return sprintf($statement, $database_name);
-    }
-
-    /**
-     * Takes the result set from the database schema query 
-     * and build a representation of the schema that can be used by the rest of the clas
-     *
-     * @param array $res the result set to process
-     *
-     * @return void
-     */
-    private function parseSchemaResult(array $res)
-    {
-        $unique_by_constraint = [];
-
-        foreach ($res as $key_usage) {
-            $table = $key_usage['TABLE_NAME'];
-
-            // foreign keys
-            if (isset($key_usage['REFERENCED_TABLE_NAME'])) {
-                $this->fk_by_table[$table] ??= [];
-                $this->fk_by_table[$table][$key_usage['COLUMN_NAME']] = [$key_usage['REFERENCED_TABLE_NAME'], $key_usage['REFERENCED_COLUMN_NAME']];
-            }
-
-            // primary & uniques
-            if (!isset($key_usage['POSITION_IN_UNIQUE_CONSTRAINT'])) {
-                $unique_by_constraint[$table] ??= [];
-
-                $constraint = $key_usage['CONSTRAINT_NAME'];
-                $unique_by_constraint[$table][$constraint] ??= [];
-
-                $unique_by_constraint[$table][$constraint][$key_usage['ORDINAL_POSITION']] = $key_usage['COLUMN_NAME'];
-            }
-        }
-
-      // unique indexes, indexed by table and column for easier retrieval
-        foreach ($unique_by_constraint as $table => $uniques) {
-            $this->unique_by_table[$table] ??= [];
-            foreach ($uniques as $constraint => $columns) {
-                foreach ($columns as $column_name) {
-                    $this->unique_by_table[$table][$column_name] = [0 => $constraint] + $columns;
-                }
-            }
-        }
-    }
+    
 }

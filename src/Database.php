@@ -2,10 +2,10 @@
 
 namespace HexMakina\Crudites;
 
-use HexMakina\Crudites\Table\Table;
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\DatabaseInterface;
 use HexMakina\BlackBox\Database\TableInterface;
+use HexMakina\Crudites\Relation\DatabaseRelations;
 
 /**
  * Class Database
@@ -20,8 +20,7 @@ class Database implements DatabaseInterface
     /** @var Schema The database schema object */
     private Schema $schema;
 
-    /** @var array<string,TableInterface> The cache of table objects */
-    private $table_cache = [];
+    private DatabaseRelations $relations;
 
     /**
      * Database constructor.
@@ -31,7 +30,6 @@ class Database implements DatabaseInterface
     public function __construct(ConnectionInterface $connection)
     {
         $this->connection = $connection;
-        $this->schema = new Schema($this);
     }
 
     /**
@@ -46,9 +44,19 @@ class Database implements DatabaseInterface
 
     public function schema(): Schema
     {
+        if(!isset($this->schema))
+            $this->schema = new Schema($this);
+
         return $this->schema;
     }
     
+    public function relations(): DatabaseRelations
+    {
+        if(is_null($this->relations))
+            $this->relations = new DatabaseRelations($this);
+        
+        return $this->relations;
+    }
     /**
      * Returns the name of the database.
      *
@@ -67,14 +75,6 @@ class Database implements DatabaseInterface
      */
     public function inspect(string $table_name): TableInterface
     {
-        if (isset($this->table_cache[$table_name])) {
-            return $this->table_cache[$table_name];
-        }
-
-        $table = new Table($table_name, $this->connection());
-        $table->describe($this->schema);
-
-        $this->table_cache[$table_name] = $table;
-        return $this->table_cache[$table_name];
+        return $this->schema()->table($table_name);
     }
 }
