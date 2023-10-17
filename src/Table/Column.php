@@ -181,7 +181,7 @@ class Column implements \HexMakina\BlackBox\Database\ColumnInterface
         if(!is_null($field_value)) {
             $error = $this->type()->validateValue($field_value);
         }
-        else if(!$this->isNullable() && !is_null($this->default())){
+        else if(!$this->isNullable() && is_null($this->default())){
             $error = new CruditesError('ERR_REQUIRED_VALUE');
         }
         
