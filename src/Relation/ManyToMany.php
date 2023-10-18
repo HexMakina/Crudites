@@ -67,4 +67,11 @@ class ManyToMany extends AbstractRelation
             return $e->getMessage();
         }
     }
+
+    public function getIds(int $parent_id)
+    {
+        $pivot_table = $this->db->inspect($this->pivot_table);
+        $res = $pivot_table->select([$this->pivot_secondary])->whereEQ($this->pivot_primary, $parent_id);
+        return $res->retCol();
+    }
 }
