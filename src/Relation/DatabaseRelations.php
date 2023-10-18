@@ -23,19 +23,24 @@ class DatabaseRelations
 
             if(count($join) == 1){
                 $res = new HasOne($table, $join, $this->db);
+                $relations["$res"] = $res;
             }
             else if(count($join) == 2){
                 $res = new ManyToMany($table, $join, $this->db);
+                $relations["$res"] = $res;
+
+                $res = new ManyToMany($table, array_reverse($join), $this->db);
+                $relations["$res"] = $res;
             }
             else if(count($join) == 3){
                 $res = new ManyToManyQualified($table, $join, $this->db);
+                $relations["$res"] = $res;
             }
             else
             {
                 vd($join, 'skipping '.$table);
             }
             
-            $relations["$res"] = $res;
         }
 
         return $relations;
