@@ -52,7 +52,7 @@ class Database implements DatabaseInterface
     
     public function relations(): DatabaseRelations
     {
-        if(is_null($this->relations))
+        if(!isset($this->relations))
             $this->relations = new DatabaseRelations($this);
         
         return $this->relations;
