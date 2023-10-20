@@ -11,7 +11,6 @@ use HexMakina\Crudites\Table\Table;
 abstract class AbstractRelation
 {
     protected DatabaseInterface $db;
-    // protected ConnectionInterface $connection;
 
     protected $primary_table;
     protected $primary_col;
@@ -21,12 +20,28 @@ abstract class AbstractRelation
 
     public const NAME='ABSTRACT_RELATION';
 
+    
+    public function __debugInfo()
+    {
+        return [
+            'primary_table' => $this->primary_table,
+            'primary_col' => $this->primary_col,
+            'secondary_table' => $this->secondary_table,
+            'secondary_col' => $this->secondary_col,
+        ];
+    }
 
+    
     public function __toString()
+    {
+        return $this->urn();
+    }
+    
+    public function urn()
     {
         return sprintf('%s-%s-%s', $this->primary_table, static::NAME, $this->secondary_table);
     }
-        
+
     public function setDatabase(DatabaseInterface $db)
     {
         $this->db = $db;
@@ -39,4 +54,7 @@ abstract class AbstractRelation
     public function target(){
         return $this->secondary_table;
     }
+
+    abstract public function link(int $primary_id, $mixed_id);
+    abstract public function unlink(int $primary_id, $mixed_id);
 }
