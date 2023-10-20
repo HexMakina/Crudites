@@ -25,13 +25,13 @@ class CruditesExceptionFactory
         elseif (!is_null($exception))
             $errorInfo = $exception->errorInfo;
 
-        if(!is_array($errorInfo))
+        if (!is_array($errorInfo))
             return new CruditesException('ERROR_INFO_UNAVAILABLE', 0, $exception);
 
         list($message, $code) = self::transcript($errorInfo);
-        
+
         // TODO: losing the parsing work from transcript. IMPROVE
-        if(is_array($message))
+        if (is_array($message))
             $message = array_shift($message);
 
         return new CruditesException($message, $code, null); // exception could reveal database credentials
@@ -55,48 +55,55 @@ class CruditesExceptionFactory
         list($state, $code, $message) = $errorInfo;
         $functs = [
             // violation: column cannot be null
-            1048 => function($message){
+            1048 => function ($message) {
                 preg_match("#Column '(.+)' cannot be null#", $message, $m);
                 return ['FIELD_REQUIRED', $m[1]];
             },
 
-            1054 => function($message){
+            1054 => function ($message) {
                 return ['COLUMN_DOES_NOT_EXIST', $message];
             },
-            
+
             // violation: duplicate key
-            1062 => function($message){
+            1062 => function ($message) {
+                if (preg_match("#'([^']+)' for key '([^']+)'#", $message, $m)) {
+                    $entry = $m[1];
+                    $key = $m[2];
+                    return ["DUPLICATE_KEY:$key:$entry"];
+                }
+                
                 if (preg_match("#for key '[a-z]+\.(.+)'$#", $message, $m) !== 1) {
                     preg_match("#for key '(.+)'$#", $message, $m);
                 }
-                return ['DUPLICATE_KEY', $m[1]];
+
+                return ["DUPLICATE_KEY:".$m[1]];
             },
 
-            1064 => function($message){
+            1064 => function ($message) {
                 preg_match("#right syntax to use near '(.+)'#", $message, $m);
                 return ['SYNTAX_ERROR', $m[1]];
             },
-  
-            1146 => function($message){
+
+            1146 => function ($message) {
                 return ['TABLE_DOES_NOT_EXIST', $message];
             },
 
-            1264 => function($message){
+            1264 => function ($message) {
                 preg_match("#for column '(.+)'#", $message, $m);
                 return ['VALUE_OUT_OF_RANGE', $m[1]];
             },
 
-            1364 => function($message){
+            1364 => function ($message) {
                 return ['FIELD_REQUIRED', $message];
             },
 
-            1451 => function($message){
+            1451 => function ($message) {
                 preg_match("#CONSTRAINT `(.+)` FOREIGN#", $message, $m);
                 return ['RELATIONAL_INTEGRITY', $m[1]];
             },
-         
+
         ];
-        if(isset($functs[$code]))
+        if (isset($functs[$code]))
             return [call_user_func($functs[$code], $message), $code];
 
         return ['FUBAR #' . $state . '-' . $code . '-' . $message, $code];
