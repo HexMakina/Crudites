@@ -41,6 +41,9 @@ abstract class BaseQuery implements QueryInterface
         }
 
         $dbg['statement()'] = $this->statement();
+        if($this->executed() instanceof \PDOStatement)
+        $dbg['errorInfo'] = $this->executed()->errorInfo();
+
         return $dbg;
     }
 
