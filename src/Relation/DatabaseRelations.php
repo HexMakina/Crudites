@@ -16,6 +16,15 @@ class DatabaseRelations
         $this->relations = $this->listRelations();
     }
 
+    public function __debugInfo()
+    {
+        return [
+            'database' => $this->db->name(), 
+            'list' => array_keys($this->relations),
+            'relations' => $this->relations
+            ];
+    }
+
     public function listRelations(): array
     {
         $relations = [];
@@ -34,6 +43,9 @@ class DatabaseRelations
             }
             else if(count($join) == 3){
                 $res = new ManyToManyQualified($table, $join, $this->db);
+                $relations["$res"] = $res;
+
+                $res = new ManyToManyQualified($table, array_reverse($join), $this->db);
                 $relations["$res"] = $res;
             }
             else
