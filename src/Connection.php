@@ -112,10 +112,8 @@ class Connection implements ConnectionInterface
 
     /**
      * Returns the name of the driver used by the PDO instance.
-     *
-     * @return string The name of the driver.
      */
-    public function driverName(): mixed
+    public function driverName()
     {
         return $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
     }
