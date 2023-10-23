@@ -58,6 +58,16 @@ class ManyToMany extends AbstractRelation
         return $res->retCol();
     }
 
+    public function getTargets(int $parent_id): array
+    {
+        $table = $this->db->inspect($this->secondary_table);
+        $select = $table->select()
+            ->join([$this->pivot_table], [[$this->secondary_table, $this->secondary_col, $this->pivot_table, $this->pivot_secondary]], 'INNER')
+            ->whereEQ($this->pivot_primary, $parent_id, $this->pivot_table);
+        
+        return $select->retAss();
+    }
+
     private function query(int $parent_id, array $children_ids, string $method)
     {
         if($parent_id < 1) {
