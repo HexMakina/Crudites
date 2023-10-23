@@ -2,9 +2,7 @@
 
 namespace HexMakina\Crudites;
 
-use HexMakina\BlackBox\Database\ConnectionInterface;
-use HexMakina\BlackBox\Database\DatabaseInterface;
-use HexMakina\BlackBox\Database\TableInterface;
+use HexMakina\BlackBox\Database\{ConnectionInterface, SchemaInterface, DatabaseInterface, TableInterface};
 use HexMakina\Crudites\Relation\DatabaseRelations;
 
 /**
@@ -42,7 +40,7 @@ class Database implements DatabaseInterface
         return $this->connection;
     }
 
-    public function schema(): Schema
+    public function schema(): SchemaInterface
     {
         if(!isset($this->schema))
             $this->schema = new Schema($this);

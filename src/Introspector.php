@@ -10,8 +10,11 @@ class Introspector
 
     private string $database;
     private ConnectionInterface $connection;
-
+    
+    /** @var array<string,array> */
     private $fk_by_table = [];
+    
+    /** @var array<string,array> */
     private $unique_by_table = [];
 
 
@@ -24,13 +27,25 @@ class Introspector
         $this->parseSchemaResult($information_schema);
     }
 
-    public function foreignKeysByTable(): array
+    public function foreignKeysByTable($table = null, $column = null): array
     {
+        if(isset($column)){
+            return $this->fk_by_table[$table][$column] ?? [];
+        }
+        if(isset($table)){
+            return $this->fk_by_table[$table] ?? [];
+        }
         return $this->fk_by_table;
     }
 
-    public function uniqueKeysByTable(): array
+    public function uniqueKeysByTable($table = null, $column = null): array
     {
+        if(isset($column)){
+            return $this->unique_by_table[$table][$column] ?? [];
+        }
+        if(isset($table)){
+            return $this->unique_by_table[$table] ?? [];
+        }
         return $this->unique_by_table;
     }
 

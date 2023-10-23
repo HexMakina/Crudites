@@ -4,6 +4,7 @@ namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\DatabaseInterface;
+use HexMakina\BlackBox\Database\SchemaInterface;
 use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\Crudites\Table\Table;
 
@@ -15,13 +16,8 @@ use HexMakina\Crudites\Table\Table;
  * 
  */
 
-class Schema
+class Schema implements SchemaInterface
 {
-    private const INTROSPECTION_DATABASE_NAME = 'INFORMATION_SCHEMA';
-
-    /** @var array<string,array> */
-    private array $fk_by_table = [];
-
     /** @var array<string,array> */
     private array $unique_by_table = [];
 
@@ -71,7 +67,6 @@ class Schema
         return $this->unique_by_table[$table][$column][0] ?? null;
     }
 
-
     /**
      * Gets an array of column names that are part of the same unique constraint as the specified column.
      *
@@ -87,23 +82,17 @@ class Schema
                : [];
     }
 
-
     /**
      * Gets the foreign key that references the specified column, if any.
      *
-     * @param string $table_name The name of the table.
-     * @param string $column_name The name of the column.
+     * @param string|null $table_name The name of the table. Defaults to null.
+     * @param string|null $column_name The name of the column. Defaults to null.
      *
-     * @return array|null An array containing the name of the referenced table and column, or null if the column is not part of a foreign key.
+     * @return array An array containing the name of the referenced table and column, empty if the column is not part of a foreign key.
      */
-    public function foreignKeyFor(string $table_name, string $column_name): ?array
+    public function foreignKeysFor(?string $table_name = null, ?string $column_name = null): array
     {
-        return $this->fk_by_table[$table_name][$column_name] ?? null;
-    }
-
-    public function foreignKeysByTable(): array
-    {
-        return $this->fk_by_table;
+        return $this->introspector->foreignKeysByTable($table_name, $column_name);
     }
     
 }

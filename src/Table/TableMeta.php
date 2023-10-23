@@ -90,9 +90,8 @@ abstract class TableMeta implements TableMetaInterface
 
     private function setForeignFor(ColumnInterface $column, Schema $schema): void
     {
-        $reference = $schema->foreignKeyFor($this->name(), $column->name());
-
-        if (!is_null($reference)) {
+        $reference = $schema->foreignKeysFor($this->name(), $column->name());
+        if (!empty($reference)) {
             $column->isForeign(true);
             $column->setForeignTableName($reference[0]);
             $column->setForeignColumnName($reference[1]);
@@ -284,7 +283,6 @@ abstract class TableMeta implements TableMetaInterface
     }
 
     // TableMetaInterface implementation
-
     /** @return array<string,ColumnInterface> */
     public function foreignKeysByTable(): array
     {

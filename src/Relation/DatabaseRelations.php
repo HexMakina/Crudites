@@ -28,7 +28,7 @@ class DatabaseRelations
     public function listRelations(): array
     {
         $relations = [];
-        foreach($this->db->schema()->foreignKeysByTable() as $table => $join){
+        foreach($this->db->schema()->foreignKeysFor() as $table => $join){
 
             if(count($join) == 1){
                 $res = new HasOne($table, $join, $this->db);
@@ -61,6 +61,19 @@ class DatabaseRelations
     public function relations(): array
     {
         return $this->relations;
+    }
+
+    public function relationsBySource(string $source): array
+    {
+        $ret = [];
+
+        foreach($this->relations as $urn => $relation){
+            if($relation->source() === $source){
+                $ret[$urn] = $relation;
+            }
+        }
+
+        return $ret;
     }
 
     public function getRelation(string $relation): ?AbstractRelation
