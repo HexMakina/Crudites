@@ -35,6 +35,13 @@ class Connection implements ConnectionInterface
      */
     private string $using_database;
 
+
+    /**
+     * @var Source $source The Source instance used to parse the DSN
+     */
+    private Source $source;
+
+    
     /**
      * Constructor.
      *
@@ -203,11 +210,11 @@ class Connection implements ConnectionInterface
         // 0: the SQLSTATE associated with the last operation on the database handle
         $info['state'] = $info[0] ?? null;
 
-        // 1: error message
-        $info['message'] = $info[1] ?? null;
+        // 1: driver-specific error code.
+        $info['code'] = $info[1] ?? null;
 
-        // 2: an array of driver specific error information
-        $info['details'] = $info[2] ?? null;
+        // 2: driver-specific error message
+        $info['message'] = $info[2] ?? null;
         
         return $info;
     }
