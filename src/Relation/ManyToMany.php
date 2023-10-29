@@ -41,68 +41,73 @@ class ManyToMany extends AbstractRelation
         [$this->secondary_table, $this->secondary_col] = $join[$this->pivot_secondary];
     }
 
-    public function link(int $parent_id, $children_ids)
+    public function link(int $source, $target_ids): array
     {
-        return $this->query($parent_id, $children_ids, 'insert');
+        return $this->query($source, $target_ids, 'insert');
     }
 
-    public function unlink(int $parent_id, $children_ids)
+    public function unlink(int $source, $target_ids): array
     {
-        return $this->query($parent_id, $children_ids, 'delete');
+        return $this->query($source, $target_ids, 'delete');
     }
 
-    public function getIds(int $parent_id)
+    public function getIds(int $source)
     {
         $pivot_table = $this->db->inspect($this->pivot_table);
-        $res = $pivot_table->select([$this->pivot_secondary])->whereEQ($this->pivot_primary, $parent_id);
+        $res = $pivot_table->select([$this->pivot_secondary])->whereEQ($this->pivot_primary, $source);
         return $res->retCol();
     }
 
-    public function getTargets(int $parent_id): array
+    public function getTargets(int $source): array
     {
         $table = $this->db->inspect($this->secondary_table);
         $select = $table->select()
             ->join([$this->pivot_table], [[$this->secondary_table, $this->secondary_col, $this->pivot_table, $this->pivot_secondary]], 'INNER')
-            ->whereEQ($this->pivot_primary, $parent_id, $this->pivot_table);
+            ->whereEQ($this->pivot_primary, $source, $this->pivot_table);
         
         return $select->retAss();
     }
 
-    private function query(int $parent_id, array $children_ids, string $method)
+    private function query(int $source, array $target_ids, string $method): array
     {
-        if($parent_id < 1) {
+        if($source < 1) {
             throw new \InvalidArgumentException('MISSING_PARENT_ID');
         }
-
+        
         if($method !== 'insert' && $method !== 'delete') {
             throw new \InvalidArgumentException('INVALID_METHOD');
         }
-
-        $children_ids = array_unique($children_ids);
-
-        if(empty($children_ids)){
+        
+        $target_ids = array_unique($target_ids);
+        
+        if(empty($target_ids)){
             throw new \InvalidArgumentException('NO_UNIQUE_CHILDREN');
         }
-
+        
+        $errors = [];
         $pivot_table = $this->db->inspect($this->pivot_table);
 
-        foreach ($children_ids as $child_id) {
+        foreach ($target_ids as $target) {
 
             $query = call_user_func_array([$pivot_table, $method], 
             [
                 [
-                    $this->pivot_primary => $parent_id, 
-                    $this->pivot_secondary => $child_id
+                    $this->pivot_primary => $source, 
+                    $this->pivot_secondary => $target
                 ]
             ]);
-
             $query->run();
 
             if (!$query->isSuccess()) {
-                // vd($query);
-                throw CruditesExceptionFactory::make($query);
+                $errors[] = $query->error();
+
+                if($query->error()->getCode() !== 1062){
+                    throw CruditesExceptionFactory::make($query);
+                }
             }
         }
+
+        return $errors;
     }
 
 
