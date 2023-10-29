@@ -28,7 +28,7 @@ class ManyToManyQualified extends ManyToMany
         return $this->primary_table . '-hasAndBelongsToManyQualified-' . $this->secondary_table;
     }
 
-
+    // what a mess...
     protected function propertiesFromJoin($join)
     {
         $tables = explode('_', $this->pivot_table);
@@ -53,31 +53,47 @@ class ManyToManyQualified extends ManyToMany
         }
     }
 
-    public function link(int $parent_id, $children_ids)
+    public function getTargets(int $source): array
     {
-        return $this->query($parent_id, $children_ids, 'insert');
+        $table = $this->db->inspect($this->secondary_table);
+        $select = $table->select()
+            ->join([$this->pivot_table], [[$this->secondary_table, $this->secondary_col, $this->pivot_table, $this->pivot_secondary]], 'INNER')
+            ->whereEQ($this->pivot_primary, $source, $this->pivot_table);
+        $select->selectAlso([
+            $this->pivot_qualified.'s' => ["GROUP_CONCAT(DISTINCT `$this->pivot_qualified` SEPARATOR ', ')"]
+        ]);
+        $select->groupBy('id');
+        $select->groupBy([$this->pivot_table, $this->pivot_secondary]);
+        return $select->retAss();
     }
 
-    public function unlink(int $parent_id, $children_ids)
+    public function link(int $source, $targetWithQualifier): array
     {
-        return $this->query($parent_id, $children_ids, 'delete');
+        return $this->query($source, $targetWithQualifier, 'insert');
     }
 
-    private function query(int $parent_id, array $many_ids, string $method)
+    public function unlink(int $source, $targetWithQualifier): array
     {
-        if($parent_id < 1) {
+        return $this->query($source, $targetWithQualifier, 'delete');
+    }
+
+    private function query(int $source, array $targetWithQualifier, string $method): array
+    {
+        if($source < 1) {
             throw new \InvalidArgumentException('MISSING_PARENT_ID');
         }
 
         if($method !== 'insert' && $method !== 'delete') {
-            throw new \InvalidArgumentException('INVALID_METHOD');
+            throw new \InvalidArgumentException('INVALID_STATEMENT');
         }
 
-        try {
+        $errors = [];
 
+        try {
+            vd($targetWithQualifier, $this->pivot_table);
             $pivot_table = $this->db->inspect($this->pivot_table);
 
-            foreach ($many_ids as ['qualified' => $qualified_id, 'qualifier' => $qualifier_id]) {
+            foreach ($targetWithQualifier as [$qualified_id, $qualifier_id]) {
 
                 if (empty($qualified_id) || empty($qualifier_id)) {
                     throw new \InvalidArgumentException('MANY_IDS_MISSING_A_QUALIFYING_ID');
@@ -85,7 +101,7 @@ class ManyToManyQualified extends ManyToMany
                 $query = call_user_func_array([$pivot_table, $method], 
                     [
                         [
-                            $this->pivot_primary => $parent_id, 
+                            $this->pivot_primary => $source, 
                             $this->pivot_secondary => $qualified_id, 
                             $this->pivot_qualified => $qualifier_id
                         ]
@@ -93,13 +109,15 @@ class ManyToManyQualified extends ManyToMany
                 $query->run();
                 
                 if (!$query->isSuccess()) {
+                    $errors[] = $query->error();
                     throw CruditesExceptionFactory::make($query);
                 }
             }
         } catch (\Exception $e) {
-            // dd($e);
-            return $e->getMessage();
+            $errors [] = $e->getMessage();
         }
+
+        return $errors;
     }
 
 }
