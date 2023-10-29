@@ -42,33 +42,39 @@ class Select extends PreparedQuery implements SelectInterface
         return $this->columns ?? [];
     }
 
-    public function selectAlso($setter): self
+   /**
+     * Adds additional columns to the SELECT statement.
+     *
+     * @param array $setter An array of column names to be added to the SELECT statement.
+     *
+     *   $setter = [
+     *       'alias' => 'column',
+     *       2 => 'column',
+     *       'alias' => ['table', 'column'],
+     *       5 => ['table', 'column'],
+     *   ];
+     * 
+     * @return self Returns the current instance of the Select class.
+     */
+    public function selectAlso(array $setter): self
     {
-        if (is_null($setter))
-            return $this->columns;
-
-
-        if (is_string($setter))
-            $setter = explode(',', $setter);
-
-
-        if (!is_array($setter))
-            $setter = [];
+        if (empty($setter))
+            throw new \InvalidArgumentException('EMPTY_SETTER_ARRAY');
 
         foreach ($setter as $alias => $columnInfo) {
-            
+
             $table = $this->tableLabel();
             $column = null;
             
-            if (is_int($alias)) {
+            if (is_int($alias)) { // no alias provided
                 $column = $columnInfo;
                 $alias = null;
-
+                
             } elseif (is_array($columnInfo)) {
                 if (isset($columnInfo[1])) {
                     [$table, $column] = $columnInfo;
                 } else {
-                    $table = -1;
+                    $table = '';
                     $column = $columnInfo[0];
                 }
             }
@@ -87,7 +93,11 @@ class Select extends PreparedQuery implements SelectInterface
         if(empty($table))
             $table = -1;
 
-        $this->columns[$table][] = empty($alias) ? $name : [$name, $alias];
+        if(empty($alias))
+            $alias = $name;
+
+        $this->columns[$table][$alias] = $name;
+        // $this->columns[$table][] = empty($alias) ? $name : [$name, $alias];
     }
 
     public function groupBy($clause): self
@@ -183,11 +193,9 @@ class Select extends PreparedQuery implements SelectInterface
 
     private function generateSelectColumns()
     {
-        $query_fields = $this->columns();
-
         $ticked = [];
 
-        foreach ($query_fields as $table => $columns) {
+        foreach ($this->columns() as $table => $columns) {
 
             if(in_array('*', $columns)) {
                 $ticked [] = sprintf('`%s`.*', $this->tableLabel(), '*');
@@ -195,20 +203,18 @@ class Select extends PreparedQuery implements SelectInterface
             }
             elseif(is_int($table)){
                 // GROUP_CONCAT, SUM, COUNT, etc
-                foreach($columns as $columnInfo){
-                    $ticked [] = sprintf('%s AS `%s`', $columnInfo[0], $columnInfo[1]);
-            }
+                foreach($columns as $alias => $columnInfo){
+                    $ticked [] = sprintf('%s AS `%s`', $columnInfo, $alias);
+                }
             }
             else{
-                foreach($columns as $columnInfo){
+                foreach($columns as $alias => $name){
                     // do we have an alias ?
-                    if(is_array($columnInfo)){
-                        [$column, $alias] = $columnInfo;
-                        $ticked [] = sprintf('%s AS `%s`', $this->backTick($column, $table), $alias);
-
+                    if($alias !== $name){
+                        $ticked [] = sprintf('%s AS `%s`', $this->backTick($name, $table), $alias);
                     }
                     else{
-                        $ticked [] = $this->backTick($columnInfo, $table);
+                        $ticked [] = $this->backTick($name, $table);
                     }
                 }
             }
