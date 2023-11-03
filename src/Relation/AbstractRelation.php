@@ -34,10 +34,10 @@ abstract class AbstractRelation
     
     public function __toString()
     {
-        return $this->urn();
+        return $this->nss();
     }
     
-    public function urn()
+    public function nss()
     {
         return sprintf('%s-%s-%s', $this->primary_table, static::NAME, $this->secondary_table);
     }
