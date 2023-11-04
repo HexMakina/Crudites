@@ -122,12 +122,13 @@ class Select extends PreparedQuery implements SelectInterface
     }
 
     /**
-     * @param $clause, cannot be empty, must be an array or a string
+     * @param $clause, non empty array or string, arrays will be stringified and backTicked
      * 
-     * if array, it must adhere to this format
-     *       [0] => field
-     *       [1] => direction (null, default ASC)
-     *       [2] => table (null, default tableLabel())
+     * array structure:
+     *       [0] => column
+     *       [1] => direction (optional, default ASC)
+     *       [2] => table (optional, default tableLabel())
+     * 
      */ 
     public function orderBy($clause): self
     {
