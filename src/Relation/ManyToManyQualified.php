@@ -79,12 +79,13 @@ class ManyToManyQualified extends ManyToMany
 
     private function query(int $source, array $targetWithQualifier, string $method): array
     {
+        
         if($source < 1) {
             throw new \InvalidArgumentException('MISSING_PARENT_ID');
         }
 
         if($method !== 'insert' && $method !== 'delete') {
-            throw new \InvalidArgumentException('INVALID_STATEMENT');
+            throw new \InvalidArgumentException('INVALID_METHOD');
         }
 
         $errors = [];

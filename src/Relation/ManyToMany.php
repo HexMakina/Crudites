@@ -15,6 +15,8 @@ class ManyToMany extends AbstractRelation
 
     public const NAME = 'hasAndBelongsToMany';
 
+    public const ACTION_LINK = 'insert';
+    public const ACTION_UNLINK = 'delete';
 
     public function __debugInfo()
     {
@@ -43,12 +45,12 @@ class ManyToMany extends AbstractRelation
 
     public function link(int $source, $target_ids): array
     {
-        return $this->query($source, $target_ids, 'insert');
+        return $this->query($source, $target_ids, self::ACTION_LINK);
     }
 
     public function unlink(int $source, $target_ids): array
     {
-        return $this->query($source, $target_ids, 'delete');
+        return $this->query($source, $target_ids, self::ACTION_UNLINK);
     }
 
     public function getIds(int $source)
@@ -74,7 +76,7 @@ class ManyToMany extends AbstractRelation
             throw new \InvalidArgumentException('MISSING_PARENT_ID');
         }
         
-        if($method !== 'insert' && $method !== 'delete') {
+        if($method !== self::ACTION_LINK && $method !== self::ACTION_UNLINK) {
             throw new \InvalidArgumentException('INVALID_METHOD');
         }
         
