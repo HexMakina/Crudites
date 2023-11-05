@@ -3,10 +3,9 @@
 namespace HexMakina\Crudites\Relation;
 
 use HexMakina\BlackBox\Database\DatabaseInterface;
-use HexMakina\Crudites\CruditesException;
 use HexMakina\Crudites\CruditesExceptionFactory;
 
-class ManyToMany extends AbstractRelation
+class OneToMany extends AbstractRelation
 {
 
     protected $pivot_table;

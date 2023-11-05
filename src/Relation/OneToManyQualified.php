@@ -3,9 +3,9 @@
 namespace HexMakina\Crudites\Relation;
 
 use HexMakina\Crudites\CruditesExceptionFactory;
-use HexMakina\Crudites\Relation\ManyToMany;
+use HexMakina\Crudites\Relation\OneToMany;
 
-class ManyToManyQualified extends ManyToMany
+class OneToManyQualified extends OneToMany
 {
     private $pivot_qualified;   // FK to the table storing the qualifiers
 
