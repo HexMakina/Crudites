@@ -36,14 +36,6 @@ class Crudites
         return self::$database;
     }
 
-    // public static function inspect(string $table_name): ?TableInterface
-    // {
-    //     if (!isset(self::$database)) {
-    //         throw new CruditesException('NO_DATABASE');
-    //     }
-
-    //     return self::$database->inspect($table_name);
-    // }
     /**
      * connects to the database; if the connection already exists, the function verifies and returns it. 
      * If no connection exists, a Connection object is created with the provided parameters.
