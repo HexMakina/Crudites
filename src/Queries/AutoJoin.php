@@ -84,16 +84,19 @@ class AutoJoin
             // if(is_null($select_also) empty($select_also))
             //   $select_also=[$other_table_alias.'.*'];
             if (!empty($select_also)) {
-                foreach ($select_also as $select_field) {
-                    if (is_null($other_table->column(sprintf('%s', $select_field)))) {
-                        $computed_selection = sprintf('%s', $select_field); // table column does not exist, no nood to prefix
-                    } else {
-                        $computed_selection = sprintf('%s.%s as ', $other_table_alias, $select_field) . $other_table_alias . sprintf('_%s', $select_field);
-                    }
+                // foreach ($select_also as $select_field) {
 
-                    // vd($computed_selection);
-                    $select->selectAlso($computed_selection);
-                }
+                //     $res = [];
+                //     if (is_null($other_table->column(sprintf('%s', $select_field)))) {
+                //         $res[] = $select_field;
+                //     } else {
+                //         $res[$other_table_alias . '_' . $select_field] = [$select_field, $other_table_alias];
+                //     }
+
+                //     vd($res);
+                //     // vd($computed_selection);
+                    $select->selectAlso($select_also);
+                // }
             }
         }
 
@@ -143,11 +146,9 @@ class AutoJoin
                 }
 
                 foreach ($foreign_table->columns() as $col) {
-                    // if (!$col->isHidden()) {
-                      $select_also [] = sprintf('%s', $col);
-                    // }
-                }
+                    $select_also[$foreign_table_alias.'_'.$col] = [$foreign_table_alias, "$col"];
 
+                }
                 self::join($select, [$foreign_table, $foreign_table_alias], $select_also);
             }
         }
