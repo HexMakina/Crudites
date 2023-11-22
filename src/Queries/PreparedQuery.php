@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\CruditesExceptionFactory;
 use HexMakina\BlackBox\Database\PreparedQueryInterface;
 
 abstract class PreparedQuery extends BaseQuery implements PreparedQueryInterface
@@ -86,24 +86,20 @@ abstract class PreparedQuery extends BaseQuery implements PreparedQueryInterface
     public function run(): self
     {
         try {
-            
             if($this->prepared()->execute($this->getBindings()) === true);
                 $this->executed = $this->prepared();
-
         } catch (\PDOException $pdoException) {
-            throw (new CruditesException($pdoException->getMessage()))->fromQuery($this);
+            throw CruditesExceptionFactory::make($this, $pdoException);
         }
 
         return $this;
     }
 
-
-    //------------------------------------------------------------  Status
     public function isPrepared(): bool
     {
         return $this->prepared instanceof \PDOStatement;
     }
-
+    
     public function prepared(): \PDOStatement
     {
         if (!$this->isPrepared()) {

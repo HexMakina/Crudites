@@ -3,7 +3,8 @@
 
 namespace HexMakina\Crudites;
 
-use HexMakina\BlackBox\Database\{DatabaseInterface, ConnectionInterface, SelectInterface};
+use DateTimeInterface;
+use HexMakina\BlackBox\Database\{DatabaseInterface, ConnectionInterface, TableInterface, SelectInterface};
 use HexMakina\Crudites\CruditesException;
 
 
@@ -20,7 +21,7 @@ class Crudites
     /**
      * @var DatabaseInterface|null $database  Database instance
      */
-    private static ?DatabaseInterface $database;
+    protected static ?DatabaseInterface $database;
 
     /**
      * takes a DatabaseInterface object and sets it as the global database object that the other methods will use
@@ -30,18 +31,11 @@ class Crudites
         self::$database = $database;
     }
 
-    public static function inspect(string $table_name)
+    public static function database(): DatabaseInterface
     {
-        if (is_null(self::$database)) {
-            throw new CruditesException('NO_DATABASE');
-        }
-
-        try {
-            return self::$database->inspect($table_name);
-        } catch (\Exception $exception) {
-            throw new CruditesException('TABLE_INTROSPECTION::' . $table_name);
-        }
+        return self::$database;
     }
+
     /**
      * connects to the database; if the connection already exists, the function verifies and returns it. 
      * If no connection exists, a Connection object is created with the provided parameters.
@@ -104,10 +98,11 @@ class Crudites
      */
     public static function raw($sql, $dat_ass = []): ?\PDOStatement
     {
+        $conx = self::$database->connection();
         if (empty($dat_ass)) {
-            $res = self::connect()->query($sql);
+            $res = $conx->query($sql);
         } else {
-            $res = self::connect()->prepare($sql);
+            $res = $conx->prepare($sql);
             $res->execute($dat_ass);
         }
         
@@ -124,13 +119,13 @@ class Crudites
 
         $Query = $table->select([sprintf('DISTINCT `%s`', $column_name)])
           ->whereNotEmpty($column_name)
-          ->orderBy([$table->name(), $column_name, 'ASC']);
+          ->orderBy([$column_name, 'ASC', $table->name()]);
 
         if (!is_null($filter_by_value)) {
             $Query->whereLike($column_name, sprintf('%%%s%%', $filter_by_value));
         }
 
-        $Query->orderBy($column_name, 'DESC');
+        $Query->orderBy([$column_name, 'DESC']);
         // ddt($Query);
         return $Query->retCol();
     }
@@ -144,7 +139,7 @@ class Crudites
         }
 
         $Query = $table->select([sprintf('DISTINCT `id`,`%s`', $column_name)])
-          ->whereNotEmpty($column_name)->orderBy([$table->name(), $column_name, 'ASC']);
+          ->whereNotEmpty($column_name)->orderBy([$column_name, 'ASC', $table->name()]);
 
         if (!is_null($filter_by_value)) {
             $Query->whereLike($column_name, sprintf('%%%s%%', $filter_by_value));
@@ -161,18 +156,19 @@ class Crudites
 
         $table = self::tableNameToTable($table);
         if (is_null($column = $table->column($boolean_column_name))) {
-            return false;
+            throw new \InvalidArgumentException('TOGGLE_REQUIRES_EXISTING_COLUMN');
         }
         if (!$column->type()->isBoolean()) {
-            return false;
+            throw new \InvalidArgumentException('TOGGLE_REQUIRES_BOOLEAN_COLUMN');
         }
 
         // TODO: still using 'id' instead of table->primaries
         // TODO: not using the QueryInterface Way of binding stuff
         $Query = $table->update();
         $statement = sprintf(
-            "UPDATE %s SET %s = !%s WHERE id=:id",
+            "UPDATE %s SET %s = COALESCE(!%s, 1) WHERE id=:id",
             $table->name(),
+            $boolean_column_name,
             $boolean_column_name,
             $boolean_column_name
         );
@@ -185,6 +181,6 @@ class Crudites
 
     private static function tableNameToTable($table)
     {
-        return is_string($table) ? self::inspect($table) : $table;
+        return is_string($table) ? self::database()->inspect($table) : $table;
     }
 }

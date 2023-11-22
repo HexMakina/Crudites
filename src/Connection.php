@@ -13,36 +13,35 @@
 namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\ConnectionInterface;
-use HexMakina\Crudites\Source;
-use PDO;
-use PDOStatement;
-
 class Connection implements ConnectionInterface
 {
     /**
-     * @var \PDO $pdo The PDO instance used for the connection
+     * sing encapsulation, the PDO instance is not accessible from outside the class
+     * this allows to change the underlying database driver without breaking the Crudites API
+     * (as long as the new driver is compatible with PDO)
+     * the PDO instance is created in the constructor and stored in the $pdo property
+     * the $pdo property is private, so it can only be accessed from within the class
+     * 
+     * the PDO instance is created with the following options:
+     *      ERRMODE_EXCEPTION: throws exceptions on errors
+     *      CASE_NATURAL: column names are returned in their natural case
+     *      FETCH_ASSOC: returns rows as associative arrays
+     * 
      */
     private \PDO $pdo;
+    
+    /**
+     * @var string $using_database The name of the database currently in use
+     */
+    private string $using_database;
+
 
     /**
      * @var Source $source The Source instance used to parse the DSN
      */
     private Source $source;
 
-    /**
-     * @var string $using_database The name of the database currently in use
-     */
-    private string $using_database;
-
-    /**
-     * @var array $driver_default_options Default options to be used for the PDO instance
-     */
-    private static array $driver_default_options = [
-        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, // the one option you cannot change
-        \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
-        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
-    ];
-
+    
     /**
      * Constructor.
      *
@@ -55,37 +54,63 @@ class Connection implements ConnectionInterface
      */
     public function __construct(string $dsn, string $username = '', string $password = '', array $driver_options = [])
     {
-        // Remove ERRMODE_EXCEPTION from the custom driver options, as it is required to be ERRMODE_EXCEPTIOn
-        if (isset($driver_options[\PDO::ATTR_ERRMODE])) {
-            unset($driver_options[\PDO::ATTR_ERRMODE]);
-        }
-
-        // Merge driver options with default options
-        $driver_options = array_merge(self::$driver_default_options, $driver_options);
-
-        // Create a new PDO instance with the given options
-        $this->pdo = new \PDO($dsn, $username, $password, $driver_options);
-
         // Create a new Source instance and parse the DSN to extract the database name
         $this->source = new Source($dsn);
 
+        // Create a new PDO instance with the given options
+        $this->pdo = new \PDO($dsn, $username, $password, self::options($driver_options));
+        
         // Set the using_database property to the extracted database name
         $this->useDatabase($this->source->database());
     }
 
     /**
-     * Set the currently used database.
+     * Magic method, transfers calls to the PDO instance
+     * replaced: commit(), rollback(), lastInserId(), errorInfo(), errorCode()
+     */
+    public function __call($method, $args)
+    {
+        if (!method_exists($this->pdo, $method))
+            throw new \BadMethodCallException("Method $method() does not exist against PDO");
+    
+        return call_user_func_array([$this->pdo, $method], $args);
+    }
+    
+    /**
+     * Returns the default options to be used for the PDO instance
+     *
+     * @param array $provided The provided options
+     * @return array The default options
+     */
+    private static function options(array $provided = []): array
+    {
+        if (isset($provided[\PDO::ATTR_ERRMODE])) {
+            unset($provided[\PDO::ATTR_ERRMODE]);          // the one option you cannot change
+        }
+        
+        return array_merge(
+            [
+                \PDO::ATTR_ERRMODE  => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_CASE     => \PDO::CASE_NATURAL,
+                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
+            ]
+            , $provided);
+    }
+
+    /**
+     * Set the currently used database
+     * Keeps track of the currently used database in the $using_database property
      *
      * @param string $name The name of the database to use
      */
     public function useDatabase(string $name): void
     {
-        $this->using_database = $name;
         $this->pdo->query(sprintf('USE `%s`;', $name));
+        $this->using_database = $name;
     }
 
     /**
-     * Restore the default database after a useDatabase call
+     * Resets to the original database after ::useDatabase()
      */
     public function restoreDatabase(): void
     {
@@ -94,10 +119,8 @@ class Connection implements ConnectionInterface
 
     /**
      * Returns the name of the driver used by the PDO instance.
-     *
-     * @return string The name of the driver.
      */
-    public function driverName(): mixed
+    public function driverName()
     {
         return $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
     }
@@ -112,12 +135,13 @@ class Connection implements ConnectionInterface
         return $this->using_database;
     }
 
+
     /**
      * Prepares an SQL statement for execution and returns a statement object
      *
      * @param string $sql_statement the SQL statement to prepare
      * @param array $options options for the prepared statement
-     * @return PDOStatement|null a PDOStatement object or null on failure
+     * @return \PDOStatement|null a PDOStatement object or null on failure
      */
     public function prepare(string $sql_statement, $options = []): ?\PDOStatement
     {
@@ -132,14 +156,18 @@ class Connection implements ConnectionInterface
      * @param string $sql_statement the SQL statement to execute
      * @param mixed $fetch_mode the fetch mode to use, or null to use the default mode
      * @param mixed $fetch_col_num a fetch argument used by some fetch modes
-     * @return PDOStatement|null a PDOStatement object or null on failure
+     * @return \PDOStatement|null a PDOStatement object or null on failure
      */
     public function query(string $sql_statement, $fetch_mode = null, $fetch_col_num = null): ?\PDOStatement
     {
-        if (is_null($fetch_mode)) {
-            $res = $this->pdo->query($sql_statement);
-        } else {
-            $res = $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);
+        try{
+            if (is_null($fetch_mode)) {
+                $res = $this->pdo->query($sql_statement);
+            } else {
+                $res = $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);
+            }
+        }catch(\PDOException $e){
+            throw new CruditesException($e->getMessage(), $e->getCode());   
         }
 
         return $res instanceof \PDOStatement ? $res : null;
@@ -168,58 +196,26 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * Commits the current transaction
-     *
-     * @return bool true on success or false on failure
-     */
-    public function commit(): bool
-    {
-        return $this->pdo->commit();
-    }
+     * makes the errorInfo array associative 'state', 'message', 'details'
+     * url: https://www.php.net/manual/en/pdo.errorinfo.php
 
-    /**
-     * Rolls back the current transaction
-     *
-     * @return bool true on success or false on failure
+     * 
+     * SQLSTATE is a five characters alphanumeric identifier defined in the ANSI SQL standard
      */
-    public function rollback(): bool
+    public function error(): array
     {
-        return $this->pdo->rollback();
-    }
+        //url: https://www.php.net/manual/en/pdo.errorinfo.php
+        $info = $this->pdo->errorInfo();
 
-    /**
-     * Returns the ID of the last inserted row or sequence value
-     *
-     * @param string|null $name the name of the sequence object from which the ID should be returned
-     * @return mixed the ID of the last inserted row or sequence value
-     */
-    public function lastInsertId($name = null)
-    {
-        return $this->pdo->lastInsertId($name);
-    }   
+        // 0: the SQLSTATE associated with the last operation on the database handle
+        $info['state'] = $info[0] ?? null;
 
-    /**
-     * Returns extended error information for the last operation on the database handle.
-     *
-     * The array consists of the following fields:
-     *   0: error code
-     *   1: error message
-     *   2: an array of driver specific error information
-     *
-     * @return mixed[]|null An array of error information, or null if no error occurred
-     */
-    public function errorInfo(): ?array
-    {
-        return $this->pdo->errorInfo();
-    }
+        // 1: driver-specific error code.
+        $info['code'] = $info[1] ?? null;
 
-    /**
-     * Retrieves the SQLSTATE associated with the last operation on the database handle.
-     *
-     * @return string|null The error code associated with the last operation, or null if no error occurred
-     */
-    public function errorCode(): ?string
-    {
-        return $this->pdo->errorCode();
+        // 2: driver-specific error message
+        $info['message'] = $info[2] ?? null;
+        
+        return $info;
     }
 }

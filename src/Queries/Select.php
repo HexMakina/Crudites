@@ -10,6 +10,7 @@ class Select extends PreparedQuery implements SelectInterface
     use ClauseJoin;
     use ClauseWhere;
 
+    protected $columns;
     protected $limit;
 
     protected $limit_number;
@@ -22,8 +23,7 @@ class Select extends PreparedQuery implements SelectInterface
         $this->table = $table;
         $this->table_alias = $table_alias;
 
-        $columns = is_array($columns) ? $columns : (is_string($columns) ? explode(',', $columns) : []);
-        $this->setClause('select', $columns);
+        $this->columns($columns);
     }
 
     public function tableLabel($forced_value = null)
@@ -31,26 +31,73 @@ class Select extends PreparedQuery implements SelectInterface
         return $forced_value ?? $this->table_alias ?? $this->tableName();
     }
 
-    public function columns($setter = null)
+    public function columns($setter = null): array
     {
-        if (is_null($setter)) {
-            return $this->clause('select');
+        if (!is_null($setter))
+        {
+            $this->columns = [];
+            $this->selectAlso($setter);
         }
+        
+        return $this->columns ?? [];
+    }
 
-        if (is_array($setter)) {
-            $this->setClause('select', $setter);
+   /**
+     * Adds additional columns to the SELECT statement.
+     *
+     * @param array $setter An array of column names to be added to the SELECT statement.
+     *
+     *   $setter = [
+     *       'alias' => 'column',
+     *       2 => 'column',
+     *       'alias' => ['table', 'column'],
+     *       5 => ['table', 'column'],
+     *   ];
+     * 
+     * @return self Returns the current instance of the Select class.
+     */
+    public function selectAlso(array $setter): self
+    {
+        if (empty($setter))
+            throw new \InvalidArgumentException('EMPTY_SETTER_ARRAY');
+
+        foreach ($setter as $alias => $columnInfo) {
+
+            $table = $this->tableLabel();
+            $column = null;
+            
+            if (is_int($alias)) { // no alias provided
+                $column = $columnInfo;
+                $alias = null;
+                
+            } elseif (is_array($columnInfo)) {
+                if (isset($columnInfo[1])) {
+                    [$table, $column] = $columnInfo;
+                } else {
+                    $table = '';
+                    $column = $columnInfo[0];
+                }
+            }
+            else {
+                $column = $columnInfo;
+            }
+
+            $this->addColumn($column, $alias, $table);
         }
 
         return $this;
     }
 
-    public function selectAlso($setter): self
+    public function addColumn(string $name, string $alias = null, string $table = null)
     {
-        if(!is_array($setter)){
-            $setter = [$setter];
-        }
-        $res = $this->setClause('select', array_merge($this->clause('select'), $setter));
-        return $res;
+        if(empty($table))
+            $table = -1;
+
+        if(empty($alias))
+            $alias = $name;
+
+        $this->columns[$table][$alias] = $name;
+        // $this->columns[$table][] = empty($alias) ? $name : [$name, $alias];
     }
 
     public function groupBy($clause): self
@@ -58,11 +105,9 @@ class Select extends PreparedQuery implements SelectInterface
         $groupBy = null;
         if (is_string($clause)) {
             $groupBy = $this->backTick($clause, $this->tableLabel());
-
         } elseif (is_array($clause)) {
             if (isset($clause[1])) { // 0: table, 1: field            
                 $groupBy = $this->backTick($clause[1], $clause[0]);
-            
             } else { // 0: field            
                 $groupBy = $this->backTick($clause[0], null);
             }
@@ -76,28 +121,30 @@ class Select extends PreparedQuery implements SelectInterface
         return $this->addClause('having', $condition);
     }
 
+    /**
+     * @param $clause, non empty array or string, arrays will be stringified and backTicked
+     * 
+     * array structure:
+     *       [0] => column
+     *       [1] => direction (optional, default ASC)
+     *       [2] => table (optional, default tableLabel())
+     * 
+     */ 
     public function orderBy($clause): self
     {
-        if (is_array($clause) && count($clause) > 1) {
+        if(empty($clause) || (!is_array($clause) && !is_string($clause)))
+            throw new \InvalidArgumentException('ORDER_BY_INVALID_CLAUSE');
 
-            if (isset($clause[2])) { // 0:table, 1:field, 2:direction
-                $column = $this->backTick($clause[1], $clause[0]);
-            } 
-            elseif(isset($clause[1]) || isset($clause[0])) { // 0: field, 1: direction
-                $column = $this->backTick($clause[0], $this->tableLabel());
-            }
+        if (is_array($clause)) {
 
-            if(!isset($clause[1])){ // 0:field, direction ASC
-                array_push($clause, 'ASC');
-            }
-
-            $direction = array_pop($clause);
-
-            $clause = sprintf('%s %s', $column, $direction);
+            $column     = $clause[0];
+            $direction  = $clause[1] ?? 'ASC';
+            $table      = $clause[2] ?? $this->tableLabel();
+            
+            $clause =  sprintf('%s %s', $this->backTick($column, $table), $direction);
         }
 
-        if(is_string($clause))
-            $this->addClause('order', $clause);
+        $this->addClause('orderBy', $clause);
 
         return $this;
     }
@@ -118,9 +165,11 @@ class Select extends PreparedQuery implements SelectInterface
 
         $this->table_alias ??= '';
 
-        $query_fields = empty($this->clause('select')) ? ['*'] : $this->clause('select');
-        $ret = PHP_EOL . 'SELECT ' . implode(', ' . PHP_EOL, $query_fields);
-        $ret .= PHP_EOL . sprintf(' FROM `%s` %s ', $this->tableName(), $this->table_alias);
+        $ret = PHP_EOL . 'SELECT ' . implode(', ' . PHP_EOL, $this->generateSelectColumns());
+
+        $ret .= PHP_EOL . sprintf(' FROM `%s`', $this->tableLabel());
+        if ($this->tableName() !== $this->table_alias)
+            $ret .= ' ' . $this->table_alias;
 
         if (!empty($this->clause('join'))) {
             $ret .= PHP_EOL . ' ' . implode(PHP_EOL . ' ', $this->clause('join'));
@@ -128,20 +177,52 @@ class Select extends PreparedQuery implements SelectInterface
 
         $ret .= $this->generateWhere();
 
-        foreach (['group' => 'GROUP BY', 'having' => 'HAVING', 'order' => 'ORDER BY'] as $part => $prefix) {
+
+        foreach (['group' => 'GROUP BY', 'having' => 'HAVING', 'orderBy' => 'ORDER BY'] as $part => $prefix) {
             if (!empty($this->clause($part))) {
                 $ret .= PHP_EOL . sprintf(' %s ', $prefix) . implode(', ', $this->clause($part));
             }
         }
 
         if (!empty($this->limit_number)) {
-            $offset = $this->limit_offset ?? 0;
-            $number = $this->limit_number;
-            $ret .= PHP_EOL . sprintf(' LIMIT %s, %s', $offset, $number);
+            $ret .= PHP_EOL . sprintf(' LIMIT %s OFFSET %s', $this->limit_number, $this->limit_offset ?? 0);
         }
+
+
         return $ret;
     }
 
+    private function generateSelectColumns()
+    {
+        $ticked = [];
+
+        foreach ($this->columns() as $table => $columns) {
+
+            if(in_array('*', $columns)) {
+                $ticked [] = sprintf('`%s`.*', $this->tableLabel(), '*');
+                continue;
+            }
+            elseif(is_int($table)){
+                // GROUP_CONCAT, SUM, COUNT, etc
+                foreach($columns as $alias => $columnInfo){
+                    $ticked [] = sprintf('%s AS `%s`', $columnInfo, $alias);
+                }
+            }
+            else{
+                foreach($columns as $alias => $name){
+                    // do we have an alias ?
+                    if($alias !== $name){
+                        $ticked [] = sprintf('%s AS `%s`', $this->backTick($name, $table), $alias);
+                    }
+                    else{
+                        $ticked [] = $this->backTick($name, $table);
+                    }
+                }
+            }
+        }
+
+        return $ticked;
+    }
     //------------------------------------------------------------ SELECT:FETCHING RESULT
 
     public function retObj($c = null)

@@ -139,11 +139,10 @@ trait ClauseWhere
 
     public function whereNumericIn($field, $values, $table_name = null)
     {
-        if (is_array($values) && !empty($values)) {
-            return $this->whereField($field, sprintf(' IN (%s)', implode(',', $values)), $table_name);
+        if(!is_array($values) || empty($values)){
+            throw new \InvalidArgumentException('IN_VALUES_ARE_EMPTY');
         }
-
-        return $this;
+        return $this->whereField($field, sprintf(' IN (%s)', implode(',', $values)), $table_name);
     }
 
     public function whereStringIn($field, $values, $table_name = null)

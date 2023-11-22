@@ -41,6 +41,9 @@ abstract class BaseQuery implements QueryInterface
         }
 
         $dbg['statement()'] = $this->statement();
+        if($this->executed() instanceof \PDOStatement)
+        $dbg['errorInfo'] = $this->executed()->errorInfo();
+
         return $dbg;
     }
 
@@ -67,9 +70,8 @@ abstract class BaseQuery implements QueryInterface
         if (!is_null($connection)) {
             $this->connection = $connection;
         }
-
-        if (is_null($this->connection)) {
-            throw new CruditesException('NO_CONNECTION');
+        elseif (is_null($this->connection)) {
+            throw new CruditesException('BASEQUERY_HAS_NO_CONNECTION');
         }
 
         return $this->connection;
@@ -98,15 +100,22 @@ abstract class BaseQuery implements QueryInterface
             $argument = [$argument];
 
         $this->clauses[$clause] ??= [];
-        $this->clauses[$clause] = array_merge($this->clauses[$clause], $argument);
+        $this->clauses[$clause] = array_unique(array_merge($this->clauses[$clause], $argument), SORT_REGULAR);
 
         return $this;
     }
 
-    public function setClause($clause, $argument): self
+    public function setClause($clause, $argument=null): self
     {
-        $this->clauses[$clause] = [];
-        return $this->addClause($clause, $argument);
+        if(is_null($argument)){
+            unset($this->clauses[$clause]);
+        }
+        else{
+            $this->clauses[$clause] = [];
+            $this->addClause($clause, $argument);
+        }
+
+        return $this;
     }
 
     public function clause($clause) : array

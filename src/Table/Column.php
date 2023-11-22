@@ -3,6 +3,7 @@
 namespace HexMakina\Crudites\Table;
 
 use HexMakina\BlackBox\Database\ColumnTypeInterface;
+use HexMakina\Crudites\Errors\CruditesError;
 
 class Column implements \HexMakina\BlackBox\Database\ColumnInterface
 {
@@ -169,17 +170,25 @@ class Column implements \HexMakina\BlackBox\Database\ColumnInterface
         return $this->foreign_column_name;
     }
 
-    public function validateValue($field_value = null)
+    public function validateValue($field_value = null): ?CruditesError
     {
         if ($this->isAutoIncremented() || $this->type()->isBoolean()) {
-            $ret = true;
-        } elseif (is_null($field_value)) {
-            $ret = ($this->isNullable() || !is_null($this->default())) ? true : 'ERR_FIELD_REQUIRED';
-        } else {
-          // nothing found on the Column level, lets check for Typing error
-            $ret = $this->type()->validateValue($field_value);
-        }
+            return null;
+        } 
 
-        return $ret;
+        $error = null;
+        
+        if(!is_null($field_value)) {
+            $error = $this->type()->validateValue($field_value);
+        }
+        else if(!$this->isNullable() && is_null($this->default())){
+            $error = new CruditesError('ERR_REQUIRED_VALUE');
+        }
+        
+        if (!is_null($error) && $error instanceof CruditesError) {
+            $error->setTable($this->tableName());  
+            $error->setColumns([$this]);
+        }
+        return $error;
     }
 }

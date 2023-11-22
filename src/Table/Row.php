@@ -182,7 +182,8 @@ class Row implements RowInterface
             $this->last_query = $this->lastAlterQuery();
 
             if(is_null($this->lastQuery()) || !$this->lastQuery()->isSuccess()){
-                throw CruditesExceptionFactory::make($this->last_query);
+                $res = CruditesExceptionFactory::make($this->last_query);
+                throw $res;
             }
             
         } catch (CruditesException $cruditesException) {
@@ -252,8 +253,10 @@ class Row implements RowInterface
         $datass = $this->export();
 
         foreach ($this->table->columns() as $column_name => $column) {
+
             $validation = $column->validateValue($datass[$column_name] ?? null);
-            if ($validation !== true) {
+            
+            if (!empty($validation)) {
                 $errors[$column_name] = $validation;
             }
         }
