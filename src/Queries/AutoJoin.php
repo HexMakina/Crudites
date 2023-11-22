@@ -78,7 +78,7 @@ class AutoJoin
         if (!empty($joins)) {
             // vd('ottojoin: '.$query->table()->name().' with '.$other_table_name.' as '.$other_table_alias);
             $select->join([$other_table_name, $other_table_alias], $joins, $relation_type);
-            $select->addTables([$other_table_alias => $other_table_name]);
+            $select->addJoinedTable($other_table_name, $other_table_alias);
 
 
             // if(is_null($select_also) empty($select_also))
