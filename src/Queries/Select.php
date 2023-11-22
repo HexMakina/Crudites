@@ -52,6 +52,8 @@ class Select extends PreparedQuery implements SelectInterface
      *       2 => 'column',
      *       'alias' => ['table', 'column'],
      *       5 => ['table', 'column'],
+     *       'alias_function' => ['GROUP_CONCAT(..)'],
+     *       6 => ['GROUP_CONCAT(..)'],
      *   ];
      * 
      * @return self Returns the current instance of the Select class.
@@ -61,28 +63,30 @@ class Select extends PreparedQuery implements SelectInterface
         if (empty($setter))
             throw new \InvalidArgumentException('EMPTY_SETTER_ARRAY');
 
-        foreach ($setter as $alias => $columnInfo) {
+        foreach ($setter as $alias => $column) {
 
-            $table = $this->tableLabel();
-            $column = null;
-            
-            if (is_int($alias)) { // no alias provided
-                $column = $columnInfo;
+            $table = null;
+
+            // no alias provided, $setter = [0 => 'firstname']
+            if (is_int($alias)) { 
                 $alias = null;
-                
-            } elseif (is_array($columnInfo)) {
-                if (isset($columnInfo[1])) {
-                    [$table, $column] = $columnInfo;
-                } else {
+            }
+            
+            if (is_array($column)) {
+
+                if (isset($column[1])) {
+                    [$table, $column] = $column;
+                } 
+                else {
                     $table = '';
-                    $column = $columnInfo[0];
+                    $column = $column[0];
                 }
             }
             else {
-                $column = $columnInfo;
+                $column = $column;
             }
 
-            $this->addColumn($column, $alias, $table);
+            $this->addColumn($column, $alias, $table ?? $this->tableLabel());
         }
 
         return $this;
