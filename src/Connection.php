@@ -13,17 +13,20 @@
 namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\ConnectionInterface;
+
 class Connection implements ConnectionInterface
 {
+
+
+
     /**
-     * sing encapsulation, the PDO instance is not accessible from outside the class
-     * this allows to change the underlying database driver without breaking the Crudites API
-     * (as long as the new driver is compatible with PDO)
-     * the PDO instance is created in the constructor and stored in the $pdo property
+     * using \PDO encapsulation
+     * 
+     * the PDO instance is created on instantiation
      * the $pdo property is private, so it can only be accessed from within the class
      * 
      * the PDO instance is created with the following options:
-     *      ERRMODE_EXCEPTION: throws exceptions on errors
+     *      ERRMODE_EXCEPTION: throws exceptions on errors (mandatory)
      *      CASE_NATURAL: column names are returned in their natural case
      *      FETCH_ASSOC: returns rows as associative arrays
      * 
@@ -66,7 +69,7 @@ class Connection implements ConnectionInterface
 
     /**
      * Magic method, transfers calls to the PDO instance
-     * replaced: commit(), rollback(), lastInserId(), errorInfo(), errorCode()
+     * but ConnectionInterface requires: commit(), rollback(), lastInserId(), errorInfo(), errorCode()
      */
     public function __call($method, $args)
     {
@@ -185,15 +188,7 @@ class Connection implements ConnectionInterface
         return $res === false ? null : $res;
     }
 
-    /**
-     * Initiates a transaction
-     *
-     * @return bool true on success or false on failure
-     */
-    public function transact(): bool
-    {
-        return $this->pdo->beginTransaction();
-    }
+
 
     /**
      * makes the errorInfo array associative 'state', 'message', 'details'
@@ -217,5 +212,67 @@ class Connection implements ConnectionInterface
         $info['message'] = $info[2] ?? null;
         
         return $info;
+    }
+
+
+    /**
+     * Initiates a transaction, alias for beginTransaction()
+     *
+     * @return bool true on success or false on failure
+     */
+    public function transact(): bool
+    {
+        return $this->pdo->beginTransaction();
+    }
+
+    /**
+     * Commits the current transaction
+     *
+     * @return bool True on success, false on failure
+     */
+    public function commit(): bool
+    {
+        return $this->pdo->commit();
+    }
+
+    /**
+     * Rolls back the current transaction
+     *
+     * @return bool True on success, false on failure
+     */
+    public function rollback(): bool
+    {
+        return $this->pdo->rollback();
+    }
+
+    /**
+     * Returns the ID of the last inserted row or sequence value
+     *
+     * @param string|null $name Name of the sequence object from which the ID should be returned (optional)
+     * @return string The ID of the last inserted row or sequence value
+     */
+    public function lastInsertId($name = null)
+    {
+        return $this->pdo->lastInsertId($name);
+    }
+
+    /**
+     * Retrieves the SQLSTATE associated with the last operation on the database handle
+     *
+     * @return string The SQLSTATE code
+     */
+    public function errorCode(): string
+    {
+        return $this->pdo->errorCode();
+    }
+
+    /**
+     * Retrieves extended error information associated with the last operation on the database handle
+     *
+     * @return array An array of error information
+     */
+    public function errorInfo(): array
+    {
+        return $this->pdo->errorInfo();
     }
 }

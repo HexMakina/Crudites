@@ -62,7 +62,7 @@ class Crudites
      */
     public static function count(SelectInterface $select): ?int
     {
-        $select->selectAlso(['COUNT(*) as count']);
+        $select->selectAlso(['count' => ['COUNT(*)']]);
         $res = $select->retCol();
         if (is_array($res)) {
             return (int) current($res);

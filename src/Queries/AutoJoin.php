@@ -74,29 +74,14 @@ class AutoJoin
             }
         }
 
-        // vd($relation_type.' '.json_encode($joins));
         if (!empty($joins)) {
-            // vd('ottojoin: '.$query->table()->name().' with '.$other_table_name.' as '.$other_table_alias);
+            
             $select->join([$other_table_name, $other_table_alias], $joins, $relation_type);
-            $select->addTables([$other_table_alias => $other_table_name]);
+            $select->addJoinedTable($other_table_name, $other_table_alias);
 
 
-            // if(is_null($select_also) empty($select_also))
-            //   $select_also=[$other_table_alias.'.*'];
             if (!empty($select_also)) {
-                // foreach ($select_also as $select_field) {
-
-                //     $res = [];
-                //     if (is_null($other_table->column(sprintf('%s', $select_field)))) {
-                //         $res[] = $select_field;
-                //     } else {
-                //         $res[$other_table_alias . '_' . $select_field] = [$select_field, $other_table_alias];
-                //     }
-
-                //     vd($res);
-                //     // vd($computed_selection);
-                    $select->selectAlso($select_also);
-                // }
+                $select->selectAlso($select_also);
             }
         }
 
@@ -146,9 +131,13 @@ class AutoJoin
                 }
 
                 foreach ($foreign_table->columns() as $col) {
-                    $select_also[$foreign_table_alias.'_'.$col] = [$foreign_table_alias, "$col"];
 
+                    if($col->isNullable())
+                        continue;
+
+                    $select_also[$foreign_table_alias.'_'.$col] = [$foreign_table_alias, "$col"];
                 }
+
                 self::join($select, [$foreign_table, $foreign_table_alias], $select_also);
             }
         }

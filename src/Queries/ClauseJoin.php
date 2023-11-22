@@ -10,23 +10,28 @@ trait ClauseJoin
 {
     protected $joined_tables = [];
 
-    abstract public function table(TableInterface $table = null): TableInterface;
-
-    abstract public function tableName();
-
-    abstract public function tableAlias($setter = null);
-
-    abstract public function tableLabel($table_name = null);
-
     abstract public function backTick($field, $table_name = null);
 
     abstract public function addBinding($field, $value, $table_name = null, $bind_label = null): string;
 
-    public function addTables($setter)
+
+    /**
+     * Adds a joined table to the query.
+     *
+     * @param string $join_table_name The name of the table to join.
+     * @param string $join_table_alias The alias for the joined table.
+     * @throws \InvalidArgumentException If the alias is already allocated for a different table.
+     */
+    public function addJoinedTable($join_table_name, $join_table_alias)
     {
-        $this->joined_tables = array_merge($this->joined_tables, is_array($setter) ? $setter : [$setter]);
-        return $this;
+        if(!isset($this->joined_tables[$join_table_alias])){
+            $this->joined_tables[$join_table_alias] = $join_table_name;
+        }
+        elseif ($this->joined_tables[$join_table_alias] !== $join_table_name){
+            throw new \InvalidArgumentException(sprintf(__FUNCTION__.'(): ALIAS `%s` ALREADY ALLOCATED FOR TABLE  `%s`', $join_table_alias, $join_table_name));
+        }
     }
+
 
     public function join($table_names, $joins, $join_type = '')
     {
@@ -35,6 +40,8 @@ trait ClauseJoin
         if (preg_match('#^(INNER|LEFT|RIGHT|FULL)(\sOUTER)?#i', $join_type) !== 1) {
             $join_type = '';
         }
+        $this->addJoinedTable($join_table_name, $join_table_alias);
+
         $raw_join = $this->generateJoin($join_type, $join_table_name, $join_table_alias, $joins);
         $this->joinRaw($raw_join);
 
@@ -52,16 +59,31 @@ trait ClauseJoin
 
         $join_parts = [];
         foreach ($join_fields as $join_field) {
-            if (isset($join_field[3])) { // 4 joins param -> t.f = t.f
-                list($table, $field, $join_table, $join_table_field) = $join_field;
-                $join_parts [] = $this->backTick($field, $table) . ' = ' . $this->backTick($join_table_field, $join_table);
-            } elseif (isset($join_field[2])) { // 3 joins param -> t.f = v
-                list($table, $field, $value) = $join_field;
-                $bind_label = ':loj_' . $join_table_alias . '_' . $table . '_' . $field;
+            $table = array_shift($join_field);
+            $field = array_shift($join_field);
+            
+            if(is_null($table) || is_null($field) || !isset($join_field[0])){
+                throw new \InvalidArgumentException('INVALID_JOIN_FIELDS');
+            }
+
+            $right_operand = null;
+            // 4 join params -> t.f = t.f
+            if (isset($join_field[1])) { 
+                $right_operand = $this->backTick($join_field[1], $join_field[0]);
+
+            } 
+            // 3 join params -> t.f = v
+            else{ 
+                $value = $join_field[0];
+                // join bind label
+                $bind_label = sprintf(':jbl_%s_%s_%s', $join_table_alias, $table, $field);
                 $this->addBinding($field, $value, null, $bind_label);
 
-                $join_parts [] = $this->backTick($field, $table) . ' = ' . $bind_label;
+                $right_operand = $bind_label;
             }
+      
+
+            $join_parts[] = sprintf('%s = %s', $this->backTick($field, $table), $right_operand);
         }
 
         return sprintf('%s JOIN `%s` %s ON %s', $join_type, $join_table_name, $join_table_alias, implode(' AND ', $join_parts));
