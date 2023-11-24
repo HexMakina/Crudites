@@ -78,22 +78,29 @@ class AutoJoin
         if (!empty($joins)) {
             // vd('ottojoin: '.$query->table()->name().' with '.$other_table_name.' as '.$other_table_alias);
             $select->join([$other_table_name, $other_table_alias], $joins, $relation_type);
-            $select->addTables([$other_table_alias => $other_table_name]);
+            $select->addJoinedTable($other_table_name, $other_table_alias);
 
 
             // if(is_null($select_also) empty($select_also))
             //   $select_also=[$other_table_alias.'.*'];
             if (!empty($select_also)) {
                 foreach ($select_also as $select_field) {
-                    if (is_null($other_table->column(sprintf('%s', $select_field)))) {
-                        $computed_selection = sprintf('%s', $select_field); // table column does not exist, no nood to prefix
+                    
+                    $field_name = sprintf('%s', $select_field);
+
+                    if (is_null($other_table->column($field_name))) {
+                        $computed_selection[] = [$field_name]; // table column does not exist, no need to prefix
                     } else {
-                        $computed_selection = sprintf('%s.%s as ', $other_table_alias, $select_field) . $other_table_alias . sprintf('_%s', $select_field);
+                        $alias_field_name = sprintf('%s_%s', $other_table_alias, $select_field);
+                        // $computed_selection = sprintf('%s.%s as %s', $other_table_alias, $select_field, $alias_field_name);
+                        $computed_selection[$alias_field_name] = [$other_table_alias, $select_field];
                     }
 
-                    // vd($computed_selection);
-                    $select->selectAlso($computed_selection);
                 }
+                // vd($select_also, $select);
+                $select->selectAlso($computed_selection);
+                // vd($computed_selection, $select);
+
             }
         }
 
@@ -143,9 +150,11 @@ class AutoJoin
                 }
 
                 foreach ($foreign_table->columns() as $col) {
-                    // if (!$col->isHidden()) {
-                      $select_also [] = sprintf('%s', $col);
-                    // }
+
+                    if($col->isNullable())
+                        continue;
+
+                    $select_also []= sprintf('%s', $col);
                 }
 
                 self::join($select, [$foreign_table, $foreign_table_alias], $select_also);
