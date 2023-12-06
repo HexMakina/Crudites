@@ -171,9 +171,9 @@ class Select extends PreparedQuery implements SelectInterface
 
         $ret = PHP_EOL . 'SELECT ' . implode(', ' . PHP_EOL, $this->generateSelectColumns());
 
-        $ret .= PHP_EOL . sprintf(' FROM `%s`', $this->tableLabel());
-        if ($this->tableName() !== $this->table_alias)
-            $ret .= ' ' . $this->table_alias;
+        $ret .= PHP_EOL . sprintf(' FROM `%s`', $this->tableName());
+        if ($this->tableName() !== $this->tableLabel())
+            $ret .= ' ' . $this->tableLabel();
 
         if (!empty($this->clause('join'))) {
             $ret .= PHP_EOL . ' ' . implode(PHP_EOL . ' ', $this->clause('join'));
