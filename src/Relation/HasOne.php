@@ -27,12 +27,12 @@ class HasOne extends AbstractRelation
     }
 
     public function link(int $primary_id, $secondary_id){
-        $table = $this->db->inspect($this->primary_table);
+        $table = $this->db->table($this->primary_table);
         $table->insert($this->primary_table, [$this->primary_col => $primary_id, $this->secondary_col => $secondary_id]);
     }
 
     public function unlink(int $primary_id, $secondary_id){
-        $table = $this->db->inspect($this->primary_table);
+        $table = $this->db->table($this->primary_table);
         $table->delete($this->primary_table, [$this->primary_col => $primary_id, $this->secondary_col => $secondary_id]);
 
     }

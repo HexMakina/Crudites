@@ -181,6 +181,6 @@ class Crudites
 
     private static function tableNameToTable($table)
     {
-        return is_string($table) ? self::database()->inspect($table) : $table;
+        return is_string($table) ? self::database()->table($table) : $table;
     }
 }

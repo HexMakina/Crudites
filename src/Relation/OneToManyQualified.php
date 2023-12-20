@@ -55,7 +55,7 @@ class OneToManyQualified extends OneToMany
 
     public function getTargets(int $source): array
     {
-        $table = $this->db->inspect($this->secondary_table);
+        $table = $this->db->table($this->secondary_table);
         $select = $table->select()
             ->join([$this->pivot_table], [[$this->secondary_table, $this->secondary_col, $this->pivot_table, $this->pivot_secondary]], 'INNER')
             ->whereEQ($this->pivot_primary, $source, $this->pivot_table);
@@ -92,7 +92,7 @@ class OneToManyQualified extends OneToMany
 
         try {
             vd($targetWithQualifier, $this->pivot_table);
-            $pivot_table = $this->db->inspect($this->pivot_table);
+            $pivot_table = $this->db->table($this->pivot_table);
 
             foreach ($targetWithQualifier as [$qualified_id, $qualifier_id]) {
 
