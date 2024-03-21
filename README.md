@@ -8,9 +8,18 @@
 
 _"Crudités, it's a cup of carrots sticks"_
 
-**C**odd's **R**elations, **U**nicity, **D**efinitions, **I**ntrospection, **T**ransaction, **E**xecution & **S**ets
-
-**C**reate - **R**etrieve - **U**pdate - **D**elete
+**C**reate - **R**etrieve - **U**pdate - **D**elete - **I**ntrospection, **T**ransaction, **E**rrors & **S**chema
+```
+CRUDITES
+C  Create          Connect & CRUD
+R  Retrieve        Relations
+U  Update          ?
+D  Disable         Design & Discover
+I  ?               Import & Export
+T  Transact        Transact & Trace
+E  Errors          Errors
+S  Schema          Safe queries
+```
 
 Crudites is a PHP PDO wrapper
 
