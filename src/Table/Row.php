@@ -27,10 +27,16 @@ class Row implements RowInterface
 
 
     /** @param array<string,mixed> $datass */
-    public function __construct(TableInterface $table, array $datass = [])
+    /**
+     * Represents a row in a table.
+     *
+     * @param TableInterface $table The table to which the row belongs.
+     * @param array $fresh The fresh data for the row.
+     */
+    public function __construct(TableInterface $table, array $fresh = [])
     {
         $this->table = $table;
-        $this->fresh = $datass;
+        $this->fresh = $fresh;
     }
 
     public function __toString()
@@ -114,13 +120,14 @@ class Row implements RowInterface
      */
     public function load(array $datass): Rowinterface
     {
-        $pks = $this->table()->primaryKeysMatch($datass);
-        if (empty($pks)) {
+        $unique_identifiers = $this->table()->matchUniqueness($datass);
+        
+        if (empty($unique_identifiers)) {
             return $this;
         }
-        $this->last_query = $this->table()->select()->wherePrimary($pks);
-        $res = $this->last_query->retAss();
-
+        $this->last_query = $this->table()->select()->whereFieldsEQ($unique_identifiers);
+        $res = $this->last_query->ret(\PDO::FETCH_ASSOC);
+        
         $this->load = (is_array($res) && count($res) === 1) ? current($res) : null;
 
         return $this;
@@ -178,7 +185,6 @@ class Row implements RowInterface
             } else {
                 $this->update();
             }
-
             $this->last_query = $this->lastAlterQuery();
 
             if(is_null($this->lastQuery()) || !$this->lastQuery()->isSuccess()){
@@ -199,8 +205,6 @@ class Row implements RowInterface
 
         $this->lastAlterQuery()->run();
 
-        $this->last_query = $this->lastAlterQuery();
-
         // creation might lead to auto_incremented changes
         // recovering auto_incremented value and pushing it in alterations tracker
         if ($this->lastAlterQuery()->isSuccess()) {
@@ -215,11 +219,7 @@ class Row implements RowInterface
     {
         $pk_match = $this->table()->primaryKeysMatch($this->load);
         $this->last_alter_query = $this->table()->update($this->alterations, $pk_match);
-
         $this->lastAlterQuery()->run();
-
-        $this->last_query = $this->lastAlterQuery();
-
     }
 
     public function wipe(): bool
