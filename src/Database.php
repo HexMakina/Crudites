@@ -71,8 +71,27 @@ class Database implements DatabaseInterface
      * @param string $table_name The name of the table to inspect
      * @return TableInterface The TableInterface object representing the inspected table
      */
+    /**
+     * Inspects a table and returns a TableInterface object.
+     *
+     * @param string $table_name The name of the table to inspect
+     * @return TableInterface The TableInterface object representing the inspected table
+     * @deprecated Use the table() method instead
+     */
     public function inspect(string $table_name): TableInterface
     {
+        trigger_error('The inspect() method is deprecated. Use the table() method instead.', E_USER_DEPRECATED);
         return $this->schema()->table($table_name);
+    }
+
+        /**
+     * Inspects a table and returns a TableInterface object.
+     *
+     * @param string $table_name The name of the table to inspect
+     * @return TableInterface The TableInterface object representing the inspected table
+     */
+    public function table(string $name): TableInterface
+    {
+        return $this->schema()->table($name);
     }
 }

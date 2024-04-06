@@ -54,14 +54,14 @@ class OneToMany extends AbstractRelation
 
     public function getIds(int $source)
     {
-        $pivot_table = $this->db->inspect($this->pivot_table);
+        $pivot_table = $this->db->table($this->pivot_table);
         $res = $pivot_table->select([$this->pivot_secondary])->whereEQ($this->pivot_primary, $source);
         return $res->retCol();
     }
 
     public function getTargets(int $source): array
     {
-        $table = $this->db->inspect($this->secondary_table);
+        $table = $this->db->table($this->secondary_table);
         $select = $table->select()
             ->join([$this->pivot_table], [[$this->secondary_table, $this->secondary_col, $this->pivot_table, $this->pivot_secondary]], 'INNER')
             ->whereEQ($this->pivot_primary, $source, $this->pivot_table);
@@ -86,7 +86,7 @@ class OneToMany extends AbstractRelation
         }
         
         $errors = [];
-        $pivot_table = $this->db->inspect($this->pivot_table);
+        $pivot_table = $this->db->table($this->pivot_table);
 
         foreach ($target_ids as $target) {
 

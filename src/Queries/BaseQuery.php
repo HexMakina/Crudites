@@ -7,6 +7,7 @@ use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\QueryInterface;
 use HexMakina\Crudites\CruditesExceptionFactory;
+use HexMakina\Crudites\Errors\CruditesError;
 
 abstract class BaseQuery implements QueryInterface
 {
@@ -198,13 +199,30 @@ abstract class BaseQuery implements QueryInterface
         return $this->executed()->errorCode() === self::STATE_SUCCESS;
     }
 
-    /**
-     * @return mixed[]
+
+   /**
+     * makes the errorInfo array associative 'state', 'message', 'details'
+     * url: https://www.php.net/manual/en/pdo.errorinfo.php
+
+     * 
+     * SQLSTATE is a five characters alphanumeric identifier defined in the ANSI SQL standard
      */
-    public function errorInfo(): array
+    public function error(): CruditesError
     {
-        return $this->connection()->errorInfo();
+        $res = new CruditesError();
+        $res->import($this->executed());
+
+        return $res;
     }
+
+
+    // /**
+    //  * @return mixed[]
+    //  */
+    // public function errorInfo(): array
+    // {
+    //     return $this->connection()->errorInfo();
+    // }
 
     public function errorMessageWithCodes(): string
     {

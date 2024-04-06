@@ -126,7 +126,10 @@ class Select extends PreparedQuery implements SelectInterface
     }
 
     /**
-     * @param $clause, non empty array or string, arrays will be stringified and backTicked
+    /**
+     * Selects data from the database based on the given clause.
+     *
+     * @param array|string $clause The clause used to filter the data. If an array is provided, it will be stringified and backticked.
      * 
      * array structure:
      *       [0] => column
@@ -171,9 +174,9 @@ class Select extends PreparedQuery implements SelectInterface
 
         $ret = PHP_EOL . 'SELECT ' . implode(', ' . PHP_EOL, $this->generateSelectColumns());
 
-        $ret .= PHP_EOL . sprintf(' FROM `%s`', $this->tableLabel());
-        if ($this->tableName() !== $this->table_alias)
-            $ret .= ' ' . $this->table_alias;
+        $ret .= PHP_EOL . sprintf(' FROM `%s`', $this->tableName());
+        if ($this->tableName() !== $this->tableLabel())
+            $ret .= ' ' . $this->tableLabel();
 
         if (!empty($this->clause('join'))) {
             $ret .= PHP_EOL . ' ' . implode(PHP_EOL . ' ', $this->clause('join'));
