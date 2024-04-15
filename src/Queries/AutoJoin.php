@@ -30,7 +30,6 @@ class AutoJoin
             // $joins []= [$bonding_column->tableName(), $bonding_column->name(), $other_table_alias ?? $bonding_column->foreignTableAlias(), $bonding_column->foreignColumnName()];
             $joins [] = [$select->tableAlias(), $bonding_column->name(), $other_table_alias ?? $bonding_column->foreignTableAlias(), $bonding_column->foreignColumnName()];
         } elseif (!is_null($bonding_column = $other_table->singleForeignKeyTo($select->table()))) {
-            // vd(__FUNCTION__.' : '.$other_table.' has fk to '.$query->table());
             $relation_type ??= 'LEFT OUTER';
             $joins [] = [$select->tableLabel(), $bonding_column->foreignColumnName(), $other_table_alias ?? $other_table->name(), $bonding_column->name()];
         } else {
@@ -56,15 +55,12 @@ class AutoJoin
                         break;
                     }
 
-                    // vd($query->tableName() . " $other_table_name");
-                    // vd($bonding_column);
 
                     $joins = [];
 
                     $bonding_column = current($bonding_column);
                     $joins [] = [$other_table_alias, $bonding_column->name(), $bonding_column->foreignTableAlias(), $bonding_column->foreignColumnName()];
 
-                    // vd($other_table_alias);
                     $bonding_column = current($bondable_tables[$table_name]);
                     $joins [] = [$bonding_column->tableName(), $bonding_column->name(), $bonding_column->foreignTableAlias(), $bonding_column->foreignColumnName()];
 
@@ -103,14 +99,18 @@ class AutoJoin
 
     public static function eager(SelectInterface $select, $table_aliases = []): void
     {
-        if (isset($table_aliases[$select->tableName()])) {
-            $select->tableAlias($table_aliases[$select->tableName()]);
+        
+        if (isset($table_aliases[$select->table()->name()])) {
+            $select->tableAlias($table_aliases[$select->table()->name()]);
         }
 
         foreach ($select->table()->foreignKeysByTable() as $foreign_table_name => $fk_columns) {
             $foreign_table = Crudites::database()->table($foreign_table_name);
 
+        
+
             $single_fk = count($fk_columns) === 1; //assumption
+
             foreach ($fk_columns as $fk_column) {
                 $select_also = [];
 
@@ -129,11 +129,11 @@ class AutoJoin
 
                     // auto select non nullable columns
                 }
-
+     
                 foreach ($foreign_table->columns() as $col) {
 
-                    if($col->isNullable())
-                        continue;
+                    // if($col->isNullable())
+                    //     continue;
 
                     $select_also[$foreign_table_alias.'_'.$col] = [$foreign_table_alias, "$col"];
                 }
