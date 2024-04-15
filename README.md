@@ -11,14 +11,14 @@ _"Crudités, it's a cup of carrots sticks"_
 **C**reate - **R**etrieve - **U**pdate - **D**elete - **I**ntrospection, **T**ransaction, **E**rrors & **S**chema
 ```
 CRUDITES
-C  Create          Connect & CRUD
-R  Retrieve        Relations
-U  Update          ?
-D  Disable         Design & Discover
-I  ?               Import & Export
-T  Transact        Transact & Trace
-E  Errors          Errors
-S  Schema          Safe queries
+C  CRUD
+R  Relations
+U  Uniques as PK
+D  Disable, Don't Delete
+I  Introspect & Inspect
+T  Transactions and Tracking
+E  Errors
+S  Security
 ```
 
 Crudites is a PHP PDO wrapper
