@@ -4,9 +4,9 @@ namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\CruditesException;
 use HexMakina\BlackBox\Database\TableInterface;
-use HexMakina\BlackBox\Database\QueryInterface;
+use HexMakina\BlackBox\Database\PreparedQueryInterface;
 
-class Insert extends PreparedQuery
+class Insert extends PreparedQuery implements PreparedQueryInterface
 {
     use ClauseJoin;
 
@@ -23,7 +23,7 @@ class Insert extends PreparedQuery
         $this->connection = $table->connection();
 
         // Add the data bindings to the query
-        $this->addBindings($assoc_data);
+        $this->makeBindings($assoc_data);
     }
 
     /**
@@ -32,7 +32,7 @@ class Insert extends PreparedQuery
      * @param array $assoc_data - An associative array of data to be inserted
      * @return array<int|string, string> - An array of bindings
      */
-    public function addBindings($assoc_data): array
+    private function makeBindings($assoc_data): array
     {
         $ret = [];
         foreach ($this->table->columns() as $column_name => $column) {
@@ -43,7 +43,7 @@ class Insert extends PreparedQuery
 
             // Add the column binding to the query if it is present in the associative data array
             if (isset($assoc_data[$column_name])) {
-                $ret[$column_name] = $this->addBinding($column_name, $assoc_data[$column_name]);
+                $ret[$column_name] = $this->addBinding($column_name, $assoc_data[$column_name], $this->table->name());
             }
         }
 
@@ -56,19 +56,19 @@ class Insert extends PreparedQuery
      * @throws CruditesException - Thrown if there are no bindings or if the number of bindings does not match the number of binding names
      * @return string - The generated SQL INSERT statement
      */
-    public function generate(): string
+    public function statement(): string
     {
         // Throw an exception if there are no bindings
         if (empty($this->getBindings())) {
             throw new CruditesException('INSERT_FIELDS_NO_BINDINGS');
         }
-        // Throw an exception if the number of bindings does not match the number of binding names
-        if (count($this->getBindings()) !== count($this->getBindingNames())) {
-            throw new CruditesException('INSERT_FIELDS_BINDINGS_MISMATCH');
-        }
+
 
         // Generate the INSERT statement with backticks around the field names
-        $fields = '`' . implode('`, `', array_keys($this->getBindingNames())) . '`';
+        $fields = $this->getBindingNames();
+        $fields = array_keys($fields[$this->table()->name()]);
+        
+        $fields = '`' . implode('`, `', $fields) . '`';
         $bindings = implode(', ', array_keys($this->getBindings()));
 
         return sprintf('INSERT INTO `%s` (%s) VALUES (%s)', $this->table, $fields, $bindings);

@@ -41,7 +41,7 @@ trait ClauseWhere
 
     abstract public function backTick($field, $table_name = null);
 
-    abstract public function addBinding($field, $value, $table_name = null, $bind_label = null): string;
+    abstract public function addBinding($field, $value, $table_name, $bind_label = null): string;
 
     public function where($where_condition)
     {
@@ -153,7 +153,7 @@ trait ClauseWhere
             foreach ($values as $i => $v) {
                 // TODO dirty patching. mathematical certainty of uniqueness needed
                 $placeholder_name = ':' . $table_name . '_' . $field . '_awS_in_' . $count_values . '_' . $i;
-                $this->addBinding($field, $v, null, $placeholder_name);
+                $this->addBinding($field, $v, $table_name, $placeholder_name);
                 $in .= sprintf('%s,', $placeholder_name);
             }
 
@@ -163,6 +163,26 @@ trait ClauseWhere
 
         return $this;
     }
+
+    // public function whereIn($field, $values, $table_name = null)
+    // {
+    //     if (!is_array($values) || empty($values)) {
+    //         throw new \InvalidArgumentException('IN_VALUES_ARE_EMPTY');
+    //     }
+
+    //     $placeholders = implode(',', array_fill(0, count($values), '?'));
+
+    //     $table_field = $this->backTick($field, $table_name);
+    //     $condition = sprintf('%s IN (%s)', $table_field, $placeholders);
+
+    //     $this->where($condition);
+
+    //     foreach ($values as $value) {
+    //         $this->addBinding($field, $value, $table_name); // this won't work.. gotta change everything
+    //     }
+
+    //     return $this;
+    // }
 
     public function whereIsNull($field, $table_name = null)
     {
