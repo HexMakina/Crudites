@@ -126,8 +126,7 @@ class Row implements RowInterface
             return $this;
         }
         $this->last_query = $this->table()->select()->whereFieldsEQ($unique_identifiers);
-        $res = $this->last_query->ret(\PDO::FETCH_ASSOC);
-        
+        $res = $this->last_query->prepare()->run()->ret(\PDO::FETCH_ASSOC);
         $this->load = (is_array($res) && count($res) === 1) ? current($res) : null;
 
         return $this;
@@ -186,7 +185,6 @@ class Row implements RowInterface
                 $this->update();
             }
             $this->last_query = $this->lastAlterQuery();
-
             if(is_null($this->lastQuery()) || !$this->lastQuery()->isSuccess()){
                 $res = CruditesExceptionFactory::make($this->last_query);
                 throw $res;
@@ -203,6 +201,7 @@ class Row implements RowInterface
     {
         $this->last_alter_query = $this->table()->insert($this->export());
 
+        $this->lastAlterQuery()->prepare();
         $this->lastAlterQuery()->run();
 
         // creation might lead to auto_incremented changes
@@ -219,6 +218,7 @@ class Row implements RowInterface
     {
         $pk_match = $this->table()->primaryKeysMatch($this->load);
         $this->last_alter_query = $this->table()->update($this->alterations, $pk_match);
+        $this->lastAlterQuery()->prepare();
         $this->lastAlterQuery()->run();
     }
 
@@ -230,7 +230,10 @@ class Row implements RowInterface
         if (!empty($pk_match = $this->table()->primaryKeysMatch($datass))) {
             $this->last_alter_query = $this->table->delete($pk_match);
             try {
+
+                $this->last_alter_query->prepare();
                 $this->last_alter_query->run();
+
                 $this->last_query = $this->last_alter_query;
 
             } catch (CruditesException $cruditesException) {

@@ -21,8 +21,8 @@ class Delete extends PreparedQuery
         $this->whereFieldsEQ($conditions);
     }
 
-    public function generate(): string
+    public function statement(): string
     {
-        return sprintf('DELETE FROM `%s` %s ', $this->tableName(), $this->generateWhere());
+        return sprintf('DELETE FROM `%s` %s ', $this->table()->name(), $this->generateWhere());
     }
 }

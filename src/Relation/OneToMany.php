@@ -97,6 +97,7 @@ class OneToMany extends AbstractRelation
                     $this->pivot_secondary => $target
                 ]
             ]);
+            $query->prepare();
             $query->run();
 
             if (!$query->isSuccess()) {

@@ -28,7 +28,7 @@ class Select extends PreparedQuery implements SelectInterface
 
     public function tableLabel($forced_value = null)
     {
-        return $forced_value ?? $this->table_alias ?? $this->tableName();
+        return $forced_value ?? $this->table_alias ?? $this->table()->name();
     }
 
     public function columns($setter = null): array
@@ -164,7 +164,7 @@ class Select extends PreparedQuery implements SelectInterface
         return $this;
     }
 
-    public function generate(): string
+    public function statement(): string
     {
         if (is_null($this->table)) {
             throw new CruditesException('NO_TABLE');
@@ -174,8 +174,8 @@ class Select extends PreparedQuery implements SelectInterface
 
         $ret = PHP_EOL . 'SELECT ' . implode(', ' . PHP_EOL, $this->generateSelectColumns());
 
-        $ret .= PHP_EOL . sprintf(' FROM `%s`', $this->tableName());
-        if ($this->tableName() !== $this->tableLabel())
+        $ret .= PHP_EOL . sprintf(' FROM `%s`', $this->table()->name());
+        if ($this->table()->name() !== $this->tableLabel())
             $ret .= ' ' . $this->tableLabel();
 
         if (!empty($this->clause('join'))) {
@@ -230,6 +230,7 @@ class Select extends PreparedQuery implements SelectInterface
 
         return $ticked;
     }
+    
     //------------------------------------------------------------ SELECT:FETCHING RESULT
 
     public function retObj($c = null)

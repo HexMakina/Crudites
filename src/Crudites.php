@@ -174,6 +174,7 @@ class Crudites
         );
         $Query->statement($statement);
         $Query->setBindings([':id' => $id]);
+        $query->prepare();
         $Query->run();
 
         return $Query->isSuccess();
