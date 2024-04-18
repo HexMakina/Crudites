@@ -14,7 +14,7 @@ class Source implements SourceInterface
     // DSN
     private string $name;
 
-    // null because extracted from DSN when calling driver() or databaseName()
+    // null because extracted from DSN when calling driver() or database()
     private ?string $driver = null;
     private ?string $database = null;
 

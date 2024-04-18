@@ -78,12 +78,15 @@ class Connection implements ConnectionInterface
     
         return call_user_func_array([$this->pdo, $method], $args);
     }
-    
+
     /**
-     * Returns the default options to be used for the PDO instance
-     *
-     * @param array $provided The provided options
-     * @return array The default options
+     * Returns an array of PDO options for database connection.
+     * all other options can be overridden by the provided array.
+     * 
+     * \PDO::ATTR_ERRMODE  is ALWAYS \PDO::ERRMODE_EXCEPTION,
+     * 
+     * @param array $provided An array of additional options to merge with the default options.
+     * @return array The merged array of PDO options.
      */
     private static function options(array $provided = []): array
     {
@@ -92,6 +95,12 @@ class Connection implements ConnectionInterface
         }
         
         return array_merge(
+            /**
+                * Default options:
+             * - \PDO::ATTR_ERRMODE: Sets the error mode to throw exceptions.
+             * - \PDO::ATTR_CASE: Sets the case mode to natural case.
+             * - \PDO::ATTR_DEFAULT_FETCH_MODE: 
+             */
             [
                 \PDO::ATTR_ERRMODE  => \PDO::ERRMODE_EXCEPTION,
                 \PDO::ATTR_CASE     => \PDO::CASE_NATURAL,
