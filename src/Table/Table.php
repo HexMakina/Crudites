@@ -29,9 +29,7 @@ class Table extends TableMeta implements TableInterface
     /** @param array<string,mixed> $dat_ass */
     public function restore(array $dat_ass): RowInterface
     {
-        $row = new Row($this);
-        $row->load($dat_ass);
-        return $row;
+        return $this->produce()->load($dat_ass);
     }
 
     public function insert(array $dat_ass): QueryInterface

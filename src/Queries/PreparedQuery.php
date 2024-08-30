@@ -2,13 +2,11 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\Crudites\CruditesExceptionFactory;
-use HexMakina\BlackBox\Database\PreparedQueryInterface;
+use HexMakina\Crudites\{CruditesException, CruditesExceptionFactory};
+use HexMakina\BlackBox\Database\QueryInterface;
 
-abstract class PreparedQuery extends BaseQuery implements PreparedQueryInterface
+abstract class PreparedQuery extends BaseQuery
 {
-    private static int $executions = 0;
-
     protected array $bindings = [];
 
     protected array $binding_names = [];
@@ -28,8 +26,6 @@ abstract class PreparedQuery extends BaseQuery implements PreparedQueryInterface
         return $dbg;
     }
 
-
-    abstract public function generate(): string;
 
     //------------------------------------------------------------  PREP::BINDINGS
 
@@ -54,23 +50,14 @@ abstract class PreparedQuery extends BaseQuery implements PreparedQueryInterface
         return $this->binding_names;
     }
 
-    /**
-     * @return array<int|string, string>
-     */
-    public function addBindings($assoc_data): array
-    {
-        $binding_names = [];
-        foreach ($assoc_data as $k => $v) {
-            $binding_names[$k] = $this->addBinding($k, $v);
-        }
-        return $binding_names;
-    }
-
     public function addBinding($field, $value, $table_name = null, $bind_label = null): string
     {
+        $table_label = $this->tableLabel($table_name);
         $bind_label ??= $this->bindLabel($field, $table_name);
+
+        $this->binding_names[$table_label] ??= [];
+        $this->binding_names[$table_label][$field] = $bind_label;
         $this->bindings[$bind_label] = $value;
-        $this->binding_names[$field] = $bind_label;
 
         return $bind_label;
     }
@@ -85,9 +72,17 @@ abstract class PreparedQuery extends BaseQuery implements PreparedQueryInterface
     // returns itself
     public function run(): self
     {
+
         try {
-            if($this->prepared()->execute($this->getBindings()) === true);
+            if (is_null($this->prepared()))
+                throw new CruditesException('QUERY_NOT_PREPARED');
+
+            // https://www.php.net/manual/en/pdostatement.execute.php
+            $res = $this->prepared()->execute($this->getBindings());
+
+            if ($res) {
                 $this->executed = $this->prepared();
+            }
         } catch (\PDOException $pdoException) {
             throw CruditesExceptionFactory::make($this, $pdoException);
         }
@@ -95,33 +90,42 @@ abstract class PreparedQuery extends BaseQuery implements PreparedQueryInterface
         return $this;
     }
 
-    public function isPrepared(): bool
+    public function prepared(): ?\PDOStatement
     {
-        return $this->prepared instanceof \PDOStatement;
+        if(is_null($this->prepared))
+            $this->prepare();
+        
+        return $this->prepared;
     }
-    
-    public function prepared(): \PDOStatement
+
+    public function prepare(): self
     {
-        if (!$this->isPrepared()) {
-            $this->prepared = $this->connection()->prepare($this->statement());
+        $res = $this->connection()->prepare($this->statement());
+
+        if (is_null($res)) {
+            throw new CruditesException('QUERY_PREPARATION_FAILED');
         }
 
-        return $this->prepared;
+        $this->prepared = $res;
+        return $this;
     }
 
     public function errorInfo(): array
     {
-        if($this->isExecuted())
+        if ($this->isExecuted())
             return $this->executed()->errorInfo();
+
+        if (!is_null($this->prepared()))
+            return $this->prepared()->errorInfo();
 
         return parent::errorInfo();
     }
-    
+
     public function compare($query)
     {
         $res = parent::compare($query);
 
-        if($res !== true)
+        if ($res !== true)
             return $res;
 
         if (!empty(array_diff($this->getBindings(), $query->getBindings()))) {

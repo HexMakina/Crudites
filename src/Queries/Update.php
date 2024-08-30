@@ -18,7 +18,7 @@ class Update extends PreparedQuery
         $this->connection = $table->connection();
 
         if (!empty($update_data)) {
-            $this->addBindings($update_data);
+            $this->makeBindings($update_data);
         }
 
         if (!empty($conditions)) {
@@ -33,7 +33,7 @@ class Update extends PreparedQuery
     /**
      * @return array<int|string, string>
      */
-    public function addBindings($update_data): array
+    private function makeBindings($update_data): array
     {
         $binding_names = [];
         foreach ($update_data as $field_name => $value) {
@@ -48,14 +48,14 @@ class Update extends PreparedQuery
                 $value = 0;
             }
 
-            $binding_names[$field_name] = $this->addBinding($field_name, $value);
+            $binding_names[$field_name] = $this->addBinding($field_name, $value, $this->table->name());
             $this->alterations [] = $this->backTick($field_name) . ' = ' . $binding_names[$field_name];
         }
 
         return $binding_names;
     }
 
-    public function generate(): string
+    public function statement(): string
     {
         if (empty($this->alterations)) {
             throw new CruditesException('UPDATE_NO_ALTERATIONS');

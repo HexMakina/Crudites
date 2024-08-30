@@ -12,7 +12,7 @@ trait ClauseJoin
 
     abstract public function backTick($field, $table_name = null);
 
-    abstract public function addBinding($field, $value, $table_name = null, $bind_label = null): string;
+    abstract public function addBinding($field, $value, $table_name, $bind_label = null): string;
 
 
     /**
@@ -68,7 +68,7 @@ trait ClauseJoin
 
             $right_operand = null;
             // 4 join params -> t.f = t.f
-            if (isset($join_field[1])) { 
+            if (isset($join_field[1])) {
                 $right_operand = $this->backTick($join_field[1], $join_field[0]);
 
             } 
@@ -76,8 +76,10 @@ trait ClauseJoin
             else{ 
                 $value = $join_field[0];
                 // join bind label
-                $bind_label = sprintf(':jbl_%s_%s_%s', $join_table_alias, $table, $field);
-                $this->addBinding($field, $value, null, $bind_label);
+
+                $bind_label = sprintf(':jbl_%s_%s', $join_table_alias, $field);
+                // vd($bind_label, 'bind_label');
+                $this->addBinding($field, $value, $join_table_alias, $bind_label);
 
                 $right_operand = $bind_label;
             }

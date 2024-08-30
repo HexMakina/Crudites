@@ -173,6 +173,7 @@ class Crudites
         );
         $Query->statement($statement);
         $Query->setBindings([':id' => $id]);
+        $query->prepare();
         $Query->run();
 
         return $Query->isSuccess();
@@ -180,6 +181,6 @@ class Crudites
 
     private static function tableNameToTable($table)
     {
-        return is_string($table) ? self::database()->inspect($table) : $table;
+        return is_string($table) ? self::database()->table($table) : $table;
     }
 }

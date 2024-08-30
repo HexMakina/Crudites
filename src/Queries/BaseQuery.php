@@ -7,6 +7,7 @@ use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\QueryInterface;
 use HexMakina\Crudites\CruditesExceptionFactory;
+use HexMakina\Crudites\Errors\CruditesError;
 
 abstract class BaseQuery implements QueryInterface
 {
@@ -27,7 +28,7 @@ abstract class BaseQuery implements QueryInterface
     {
         $dbg = [];
         if ($this->table !== null) {
-            $dbg['table_name()'] = $this->tableName();
+            $dbg['table_name()'] = $this->table()->name();
         }
 
         $dbg = array_merge($dbg, get_object_vars($this));
@@ -41,8 +42,9 @@ abstract class BaseQuery implements QueryInterface
         }
 
         $dbg['statement()'] = $this->statement();
-        if($this->executed() instanceof \PDOStatement)
-        $dbg['errorInfo'] = $this->executed()->errorInfo();
+
+        if ($this->isExecuted())
+            $dbg['errorInfo'] = $this->executed()->errorInfo();
 
         return $dbg;
     }
@@ -53,24 +55,12 @@ abstract class BaseQuery implements QueryInterface
     }
 
 
-    abstract public function generate(): string;
-
     //------------------------------------------------------------  GET/SETTERS
-    public function statement($setter = null): string
-    {
-        if (!is_null($setter)) {
-            $this->statement = $setter;
-        }
-
-        return $this->statement ?? $this->generate();
-    }
-
     public function connection(ConnectionInterface $connection = null): ConnectionInterface
     {
         if (!is_null($connection)) {
             $this->connection = $connection;
-        }
-        elseif (is_null($this->connection)) {
+        } elseif (is_null($this->connection)) {
             throw new CruditesException('BASEQUERY_HAS_NO_CONNECTION');
         }
 
@@ -82,11 +72,6 @@ abstract class BaseQuery implements QueryInterface
         return is_null($table) ? $this->table : ($this->table = $table);
     }
 
-    public function tableName(): string
-    {
-        return $this->table()->name();
-    }
-
     public function addPart($group, $part): self
     {
         $this->{$group} ??= [];
@@ -96,7 +81,7 @@ abstract class BaseQuery implements QueryInterface
 
     public function addClause(string $clause, $argument): self
     {
-        if(!is_array($argument))
+        if (!is_array($argument))
             $argument = [$argument];
 
         $this->clauses[$clause] ??= [];
@@ -105,12 +90,11 @@ abstract class BaseQuery implements QueryInterface
         return $this;
     }
 
-    public function setClause($clause, $argument=null): self
+    public function setClause($clause, $argument = null): self
     {
-        if(is_null($argument)){
+        if (is_null($argument)) {
             unset($this->clauses[$clause]);
-        }
-        else{
+        } else {
             $this->clauses[$clause] = [];
             $this->addClause($clause, $argument);
         }
@@ -118,7 +102,7 @@ abstract class BaseQuery implements QueryInterface
         return $this;
     }
 
-    public function clause($clause) : array
+    public function clause($clause): array
     {
         return $this->clauses[$clause] ?? [];
     }
@@ -126,7 +110,7 @@ abstract class BaseQuery implements QueryInterface
     //------------------------------------------------------------  PREP::FIELDS
     public function tableLabel($table_name = null)
     {
-        return $table_name ?? $this->tableName();
+        return $table_name ?? $this->table()->name();
     }
 
     public function tableAlias($setter = null): string
@@ -135,7 +119,7 @@ abstract class BaseQuery implements QueryInterface
             $this->table_alias = $setter;
         }
 
-        return $this->table_alias ?? $this->tableName();
+        return $this->table_alias ?? $this->table()->name();
     }
 
     public function backTick($field_name, $table_name = null): string
@@ -159,11 +143,17 @@ abstract class BaseQuery implements QueryInterface
     }
 
     //------------------------------------------------------------  Return
+    
     public function ret($mode = null, $option = null)
     {
+        if(!$this->isExecuted()){
+            $this->run();
+        }
+
         if (!$this->isSuccess()) {
             return false;
         }
+        
         if (is_null($option)) {
             return $this->executed()->fetchAll($mode);
         }
@@ -184,23 +174,20 @@ abstract class BaseQuery implements QueryInterface
         return $this->executed instanceof \PDOStatement;
     }
 
-    public function executed(): \PDOStatement
+    public function isSuccess(): bool
     {
-        if (!$this->isExecuted()) {
-            $this->run();
-        }
+        return $this->isExecuted() && $this->executed()->errorCode() === self::STATE_SUCCESS;
+    }
 
+    public function executed(): ?\PDOStatement
+    {
         return $this->executed;
     }
 
-    public function isSuccess(): bool
-    {
-        return $this->executed()->errorCode() === self::STATE_SUCCESS;
-    }
 
-    /**
-     * @return mixed[]
-     */
+    // /**
+    //  * @return mixed[]
+    //  */
     public function errorInfo(): array
     {
         return $this->connection()->errorInfo();

@@ -1,9 +1,7 @@
 <?php
 
 namespace HexMakina\Crudites;
-
-use HexMakina\Crudites\Table\Table;
-use HexMakina\BlackBox\Database\{ConnectionInterface, TableInterface};
+use HexMakina\BlackBox\Database\{ConnectionInterface};
 
 class Introspector
 {
