@@ -189,6 +189,11 @@ trait ClauseWhere
         return $this->whereField($field, 'IS NULL', $table_name);
     }
 
+    public function whereIsNotNull($field, $table_name = null)
+    {
+        return $this->whereField($field, 'IS NOT NULL', $table_name);
+    }
+
     public function whereField($field, $condition, $table_name = null)
     {
         $table_field = $this->backTick($field, $table_name);
