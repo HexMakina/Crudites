@@ -164,20 +164,14 @@ class Crudites
 
         // TODO: still using 'id' instead of table->primaries
         // TODO: not using the QueryInterface Way of binding stuff
-        $Query = $table->update();
         $statement = sprintf(
             "UPDATE %s SET %s = COALESCE(!%s, 1) WHERE id=:id",
             $table->name(),
             $boolean_column_name,
-            $boolean_column_name,
             $boolean_column_name
         );
-        $Query->statement($statement);
-        $Query->setBindings([':id' => $id]);
-        $query->prepare();
-        $Query->run();
-
-        return $Query->isSuccess();
+        $res = self::raw($statement, [':id' => $id]);
+        return $res->errorCode() === '00000';
     }
 
     private static function tableNameToTable($table)
