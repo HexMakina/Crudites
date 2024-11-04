@@ -4,9 +4,9 @@ namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\CruditesException;
 use HexMakina\BlackBox\Database\TableInterface;
-use HexMakina\BlackBox\Database\PreparedQueryInterface;
+use HexMakina\BlackBox\Database\QueryInterface;
 
-class Insert extends PreparedQuery implements PreparedQueryInterface
+class Insert extends PreparedQuery implements QueryInterface
 {
     use ClauseJoin;
 

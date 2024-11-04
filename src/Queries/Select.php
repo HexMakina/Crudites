@@ -48,11 +48,11 @@ class Select extends PreparedQuery implements SelectInterface
      * @param array $setter An array of column names to be added to the SELECT statement.
      *
      *   $setter = [
-     *       'alias' => 'column',
+     *       'column_alias' => 'column',
      *       2 => 'column',
-     *       'alias' => ['table', 'column'],
+     *       'table_column_alias' => ['table', 'column'],
      *       5 => ['table', 'column'],
-     *       'alias_function' => ['GROUP_CONCAT(..)'],
+     *       'function_alias' => ['GROUP_CONCAT(..)'],
      *       6 => ['GROUP_CONCAT(..)'],
      *   ];
      * 

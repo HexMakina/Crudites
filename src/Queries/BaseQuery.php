@@ -143,8 +143,13 @@ abstract class BaseQuery implements QueryInterface
     }
 
     //------------------------------------------------------------  Return
+    
     public function ret($mode = null, $option = null)
     {
+        if(!$this->isExecuted()){
+            $this->run();
+        }
+
         if (!$this->isSuccess()) {
             return false;
         }

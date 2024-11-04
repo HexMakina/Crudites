@@ -9,10 +9,10 @@ class Introspector
 
     private string $database;
     private ConnectionInterface $connection;
-    
+
     /** @var array<string,array> */
     private $fk_by_table = [];
-    
+
     /** @var array<string,array> */
     private $unique_by_table = [];
 
@@ -21,28 +21,39 @@ class Introspector
     {
         $this->database = $database;
         $this->connection = $connection;
-        
+
         $information_schema = $this->fetchKeyColumnUsage();
         $this->parseSchemaResult($information_schema);
     }
 
     public function foreignKeysByTable($table = null, $column = null): array
     {
-        if(isset($column)){
+        if (isset($column)) {
             return $this->fk_by_table[$table][$column] ?? [];
         }
-        if(isset($table)){
+        if (isset($table)) {
             return $this->fk_by_table[$table] ?? [];
         }
         return $this->fk_by_table;
     }
 
+    /**
+     * Returns the unique keys by table and column.
+     *
+     * If both $table and $column are provided, it returns the unique keys for the specified table and column.
+     * If only $table is provided, it returns the unique keys for the specified table.
+     * If neither $table nor $column is provided, it returns all the unique keys.
+     *
+     * @param string|null $table The table name.
+     * @param string|null $column The column name.
+     * @return array The unique keys.
+     */
     public function uniqueKeysByTable($table = null, $column = null): array
     {
-        if(isset($column)){
+        if (isset($column)) {
             return $this->unique_by_table[$table][$column] ?? [];
         }
-        if(isset($table)){
+        if (isset($table)) {
             return $this->unique_by_table[$table] ?? [];
         }
         return $this->unique_by_table;
@@ -60,7 +71,7 @@ class Introspector
         // switch database
         $this->connection->useDatabase(self::INTROSPECTION_DATABASE_NAME);
 
-         // run the query
+        // run the query
         $res = $this->connection->query($this->introspectionQuery());
 
         // return to previous database
@@ -90,7 +101,7 @@ class Introspector
         FROM KEY_COLUMN_USAGE
         WHERE TABLE_SCHEMA = "%s"
         ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION';
-        
+
         return sprintf($statement, $this->database);
     }
 
@@ -126,7 +137,7 @@ class Introspector
             }
         }
 
-      // unique indexes, indexed by table and column for easier retrieval
+        // unique indexes, indexed by table and column for easier retrieval
         foreach ($unique_by_constraint as $table => $uniques) {
             $this->unique_by_table[$table] ??= [];
             foreach ($uniques as $constraint => $columns) {
@@ -136,7 +147,4 @@ class Introspector
             }
         }
     }
-
 }
-
-?>

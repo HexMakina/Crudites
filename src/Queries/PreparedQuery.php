@@ -3,9 +3,9 @@
 namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\{CruditesException, CruditesExceptionFactory};
-use HexMakina\BlackBox\Database\PreparedQueryInterface;
+use HexMakina\BlackBox\Database\QueryInterface;
 
-abstract class PreparedQuery extends BaseQuery implements PreparedQueryInterface
+abstract class PreparedQuery extends BaseQuery
 {
     protected array $bindings = [];
 
@@ -50,7 +50,7 @@ abstract class PreparedQuery extends BaseQuery implements PreparedQueryInterface
         return $this->binding_names;
     }
 
-    public function addBinding($field, $value, $table_name, $bind_label = null): string
+    public function addBinding($field, $value, $table_name = null, $bind_label = null): string
     {
         $table_label = $this->tableLabel($table_name);
         $bind_label ??= $this->bindLabel($field, $table_name);
@@ -92,10 +92,13 @@ abstract class PreparedQuery extends BaseQuery implements PreparedQueryInterface
 
     public function prepared(): ?\PDOStatement
     {
+        if(is_null($this->prepared))
+            $this->prepare();
+        
         return $this->prepared;
     }
 
-    public function prepare(): PreparedQueryInterface
+    public function prepare(): self
     {
         $res = $this->connection()->prepare($this->statement());
 
