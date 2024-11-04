@@ -2,10 +2,10 @@
 
 namespace HexMakina\Crudites\Queries;
 
+use HexMakina\BlackBox\Database\PreparedQueryInterface;
 use HexMakina\Crudites\{CruditesException, CruditesExceptionFactory};
-use HexMakina\BlackBox\Database\QueryInterface;
 
-abstract class PreparedQuery extends BaseQuery
+abstract class PreparedQuery extends BaseQuery implements PreparedQueryInterface
 {
     protected array $bindings = [];
 
@@ -98,7 +98,7 @@ abstract class PreparedQuery extends BaseQuery
         return $this->prepared;
     }
 
-    public function prepare(): self
+    public function prepare(): PreparedQueryInterface
     {
         $res = $this->connection()->prepare($this->statement());
 

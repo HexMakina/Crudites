@@ -6,7 +6,7 @@ use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\BlackBox\Database\SelectInterface;
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\RowInterface;
-use HexMakina\BlackBox\Database\QueryInterface;
+use HexMakina\BlackBox\Database\PreparedQueryInterface;
 use HexMakina\Crudites\Queries\{Select,Insert,Update,Delete};
 
 class Table extends TableMeta implements TableInterface
@@ -32,7 +32,7 @@ class Table extends TableMeta implements TableInterface
         return $this->produce()->load($dat_ass);
     }
 
-    public function insert(array $dat_ass): QueryInterface
+    public function insert(array $dat_ass): PreparedQueryInterface
     {
         $insert = new Insert($this, $dat_ass);
         $insert->connection($this->connection());
@@ -42,7 +42,7 @@ class Table extends TableMeta implements TableInterface
     /** @param array<string,mixed> $modifications
       * @param array<string,mixed> $conditions
       */
-    public function update(array $modifications = [], array $conditions = []): QueryInterface
+    public function update(array $modifications = [], array $conditions = []): PreparedQueryInterface
     {
         $update = new Update($this, $modifications, $conditions);
         $update->connection($this->connection());
@@ -50,7 +50,7 @@ class Table extends TableMeta implements TableInterface
     }
 
     /** @param array<string,mixed> $conditions */
-    public function delete(array $conditions): QueryInterface
+    public function delete(array $conditions): PreparedQueryInterface
     {
         $delete = new Delete($this, $conditions);
         $delete->connection($this->connection());
