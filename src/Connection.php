@@ -13,12 +13,10 @@
 namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\ConnectionInterface;
+use HexMakina\BlackBox\Database\SchemaInterface;
 
 class Connection implements ConnectionInterface
 {
-
-
-
     /**
      * using \PDO encapsulation
      * 
@@ -33,16 +31,16 @@ class Connection implements ConnectionInterface
      */
     private \PDO $pdo;
     
-    /**
-     * @var string $using_database The name of the database currently in use
-     */
-    private string $using_database;
-
 
     /**
-     * @var Source $source The Source instance used to parse the DSN
+     * @var Source $source used to parse the DSN
      */
     private Source $source;
+
+    /**
+     * @var Schema $schema used to interact with the database schema
+     */
+    private SchemaInterface $schema;
 
     
     /**
@@ -57,14 +55,11 @@ class Connection implements ConnectionInterface
      */
     public function __construct(string $dsn, string $username = '', string $password = '', array $driver_options = [])
     {
-        // Create a new Source instance and parse the DSN to extract the database name
-        $this->source = new Source($dsn);
-
         // Create a new PDO instance with the given options
         $this->pdo = new \PDO($dsn, $username, $password, self::options($driver_options));
-        
-        // Set the using_database property to the extracted database name
-        $this->useDatabase($this->source->database());
+
+        // Create a new Source instance and parse the DSN to extract the database name
+        $this->source = new Source($dsn);
     }
 
     /**
@@ -74,7 +69,7 @@ class Connection implements ConnectionInterface
     public function __call($method, $args)
     {
         if (!method_exists($this->pdo, $method))
-            throw new \BadMethodCallException("Method $method() does not exist against PDO");
+            throw new \BadMethodCallException(__FUNCTION__." method $method() does not exist in PDO class");
     
         return call_user_func_array([$this->pdo, $method], $args);
     }
@@ -109,25 +104,6 @@ class Connection implements ConnectionInterface
             , $provided);
     }
 
-    /**
-     * Set the currently used database
-     * Keeps track of the currently used database in the $using_database property
-     *
-     * @param string $name The name of the database to use
-     */
-    public function useDatabase(string $name): void
-    {
-        $this->pdo->query(sprintf('USE `%s`;', $name));
-        $this->using_database = $name;
-    }
-
-    /**
-     * Resets to the original database after ::useDatabase()
-     */
-    public function restoreDatabase(): void
-    {
-        $this->useDatabase($this->source->database());
-    }
 
     /**
      * Returns the name of the driver used by the PDO instance.
@@ -144,9 +120,27 @@ class Connection implements ConnectionInterface
      */
     public function databaseName(): string
     {
-        return $this->using_database;
+        return $this->source()->database();
     }
 
+
+    /**
+     * Returns the Source instance used to parse the DSN
+     *
+     * @return Source the Source instance
+     */
+    public function source(): Source
+    {
+        return $this->source;
+    }
+
+    public function schema(): Schema
+    {
+        if(!isset($this->schema))
+            $this->schema = new Schema($this->databaseName(), $this);
+
+        return $this->schema;
+    }
 
     /**
      * Prepares an SQL statement for execution and returns a statement object

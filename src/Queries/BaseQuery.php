@@ -3,11 +3,9 @@
 namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\CruditesException;
-use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\QueryInterface;
 use HexMakina\Crudites\CruditesExceptionFactory;
-use HexMakina\Crudites\Errors\CruditesError;
 
 abstract class BaseQuery implements QueryInterface
 {
@@ -17,7 +15,7 @@ abstract class BaseQuery implements QueryInterface
 
     protected $statement;
 
-    protected $table;
+    protected string $table;
     protected $table_alias;
     protected $clauses;
 
@@ -26,13 +24,7 @@ abstract class BaseQuery implements QueryInterface
     //------------------------------------------------------------  DEBUG
     public function __debugInfo(): array
     {
-        $dbg = [];
-        if ($this->table !== null) {
-            $dbg['table_name()'] = $this->table()->name();
-        }
-
-        $dbg = array_merge($dbg, get_object_vars($this));
-        unset($dbg['table']);
+        $dbg = get_object_vars($this);
         unset($dbg['connection']);
 
         foreach (array_keys($dbg) as $k) {
@@ -67,7 +59,7 @@ abstract class BaseQuery implements QueryInterface
         return $this->connection;
     }
 
-    public function table(TableInterface $table = null): TableInterface
+    public function table(string $table = null): string
     {
         return is_null($table) ? $this->table : ($this->table = $table);
     }
@@ -108,9 +100,9 @@ abstract class BaseQuery implements QueryInterface
     }
 
     //------------------------------------------------------------  PREP::FIELDS
-    public function tableLabel($table_name = null)
+    public function tableLabel(string $force = null)
     {
-        return $table_name ?? $this->table()->name();
+        return $force ?? $this->tableAlias();
     }
 
     public function tableAlias($setter = null): string
@@ -119,7 +111,7 @@ abstract class BaseQuery implements QueryInterface
             $this->table_alias = $setter;
         }
 
-        return $this->table_alias ?? $this->table()->name();
+        return $this->table_alias ?? $this->table;
     }
 
     public function backTick($field_name, $table_name = null): string

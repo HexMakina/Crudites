@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\BlackBox\Database\{TableInterface, SelectInterface};
+use HexMakina\BlackBox\Database\SelectInterface;
 use HexMakina\Crudites\CruditesException;
 
 class Select extends PreparedQuery implements SelectInterface
@@ -18,7 +18,7 @@ class Select extends PreparedQuery implements SelectInterface
     protected $limit_offset = 0;
 
 
-    public function __construct($columns = null, TableInterface $table = null, $table_alias = null)
+    public function __construct($columns = null, string $table = null, $table_alias = null)
     {
         $this->table = $table;
         $this->table_alias = $table_alias;
@@ -28,7 +28,7 @@ class Select extends PreparedQuery implements SelectInterface
 
     public function tableLabel($forced_value = null)
     {
-        return $forced_value ?? $this->table_alias ?? $this->table()->name();
+        return $forced_value ?? $this->table_alias ?? $this->table;
     }
 
     public function columns($setter = null): array
@@ -174,8 +174,8 @@ class Select extends PreparedQuery implements SelectInterface
 
         $ret = PHP_EOL . 'SELECT ' . implode(', ' . PHP_EOL, $this->generateSelectColumns());
 
-        $ret .= PHP_EOL . sprintf(' FROM `%s`', $this->table()->name());
-        if ($this->table()->name() !== $this->tableLabel())
+        $ret .= PHP_EOL . sprintf(' FROM `%s`', $this->table);
+        if ($this->table !== $this->tableLabel())
             $ret .= ' ' . $this->tableLabel();
 
         if (!empty($this->clause('join'))) {
@@ -202,6 +202,9 @@ class Select extends PreparedQuery implements SelectInterface
     private function generateSelectColumns()
     {
         $ticked = [];
+
+        if(empty($this->columns()))
+            return ['*'];
 
         foreach ($this->columns() as $table => $columns) {
 

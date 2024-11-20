@@ -3,7 +3,6 @@
 namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\CruditesException;
-use HexMakina\BlackBox\Database\TableInterface;
 
 class Update extends PreparedQuery
 {
@@ -12,13 +11,19 @@ class Update extends PreparedQuery
 
     private array $alterations = [];
 
-    public function __construct(TableInterface $table, $update_data = [], $conditions = [])
+    public function __construct(string $table, $alterations = [], $conditions = [])
     {
-        $this->table = $table;
-        $this->connection = $table->connection();
+        // Check if the given data is a non-empty array, and throw an exception if it is not
+        if (empty($alterations)) {
+            throw new CruditesException(__CLASS__.'_DATA_INVALID_OR_MISSING');
+        }
 
-        if (!empty($update_data)) {
-            $this->makeBindings($update_data);
+        $this->table = $table;
+
+        $binding_names = [];
+        foreach ($alterations as $field_name => $value) {
+            $binding_names[$field_name] = $this->addBinding($field_name, $value, $this->table);
+            $this->alterations[] = $this->backTick($field_name) . ' = ' . $binding_names[$field_name];
         }
 
         if (!empty($conditions)) {
@@ -28,31 +33,6 @@ class Update extends PreparedQuery
                 $this->where($conditions);
             }
         }
-    }
-
-    /**
-     * @return array<int|string, string>
-     */
-    private function makeBindings($update_data): array
-    {
-        $binding_names = [];
-        foreach ($update_data as $field_name => $value) {
-            $column = $this->table->column($field_name);
-            if (is_null($column)) {
-                continue;
-            }
-
-            if ($value === '' && $column->isNullable()) {
-                $value = null;
-            } elseif (empty($value) && $column->type()->isBoolean()) { //empty '', 0, false
-                $value = 0;
-            }
-
-            $binding_names[$field_name] = $this->addBinding($field_name, $value, $this->table->name());
-            $this->alterations [] = $this->backTick($field_name) . ' = ' . $binding_names[$field_name];
-        }
-
-        return $binding_names;
     }
 
     public function statement(): string
@@ -68,6 +48,6 @@ class Update extends PreparedQuery
 
         $set = implode(', ', $this->alterations);
         $where = $this->generateWhere();
-        return sprintf('UPDATE `%s` SET %s %s;', $this->table->name(), $set, $where);
+        return sprintf('UPDATE `%s` SET %s %s;', $this->table, $set, $where);
     }
 }

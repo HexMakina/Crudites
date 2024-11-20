@@ -3,7 +3,7 @@
 
 namespace HexMakina\Crudites;
 
-use HexMakina\BlackBox\Database\{DatabaseInterface, ConnectionInterface, SelectInterface};
+use HexMakina\BlackBox\Database\{ConnectionInterface, SelectInterface};
 use HexMakina\Crudites\CruditesException;
 
 
@@ -17,22 +17,16 @@ use HexMakina\Crudites\CruditesException;
 
 class Crudites
 {
-    /**
-     * @var DatabaseInterface|null $database  Database instance
-     */
-    protected static ?DatabaseInterface $database;
+    protected static ?ConnectionInterface $connection;
 
-    /**
-     * takes a DatabaseInterface object and sets it as the global database object that the other methods will use
-     */
-    public static function setDatabase(DatabaseInterface $database): void
+    public static function setConnection(ConnectionInterface $connection): void
     {
-        self::$database = $database;
+        self::$connection = $connection;
     }
 
-    public static function database(): DatabaseInterface
+    public static function connection(): ConnectionInterface
     {
-        return self::$database;
+        return self::$connection;
     }
 
     /**
@@ -43,11 +37,11 @@ class Crudites
     {
         // no props, assumes connection made, verify and return
         if (!isset($dsn, $user, $pass)) {
-            if (is_null(self::$database)) {
+            if (is_null(self::$connection)) {
                 throw new CruditesException('NO_DATABASE');
             }
 
-            return self::$database->connection();
+            return self::$connection;
         }
         
         return new Connection($dsn, $user, $pass);
@@ -97,11 +91,10 @@ class Crudites
      */
     public static function raw($sql, $dat_ass = []): ?\PDOStatement
     {
-        $conx = self::$database->connection();
         if (empty($dat_ass)) {
-            $res = $conx->query($sql);
+            $res = self::$connection->query($sql);
         } else {
-            $res = $conx->prepare($sql);
+            $res = self::$connection->prepare($sql);
             $res->execute($dat_ass);
         }
         
@@ -181,6 +174,6 @@ class Crudites
 
     private static function tableNameToTable($table)
     {
-        return is_string($table) ? self::database()->table($table) : $table;
+        return is_string($table) ? self::$connection->schema()->table($table) : $table;
     }
 }

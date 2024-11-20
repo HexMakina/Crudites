@@ -3,7 +3,6 @@
 namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\{CruditesException, CruditesExceptionFactory};
-use HexMakina\BlackBox\Database\QueryInterface;
 
 abstract class PreparedQuery extends BaseQuery
 {
@@ -90,11 +89,26 @@ abstract class PreparedQuery extends BaseQuery
         return $this;
     }
 
+    public function isPrepared(): bool
+    {
+        return !is_null($this->prepared);
+    }
+
+    
+    public function addBindings($assoc_data): array
+    {
+        $ret = [];
+        foreach ($assoc_data as $column_name => $value) {
+            $ret[$column_name] = $this->addBinding($column_name, $value, $this->table);
+        }
+        return $ret;
+    }
+
     public function prepared(): ?\PDOStatement
     {
-        if(is_null($this->prepared))
+        if (is_null($this->prepared))
             $this->prepare();
-        
+
         return $this->prepared;
     }
 

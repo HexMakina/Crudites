@@ -2,8 +2,6 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\BlackBox\Database\TableInterface;
-
 trait ClauseWhere
 {
     public static $OP_AND = 'AND';
@@ -34,8 +32,6 @@ trait ClauseWhere
     public static $WHERE_LIKE_BOTH = '%TERM%';
 
     protected $where;
-
-    abstract public function table(TableInterface $table = null): TableInterface;
 
     abstract public function tableLabel($table_name = null);
 
@@ -95,19 +91,6 @@ trait ClauseWhere
     public function whereNotEQ($field, $value, $table_name = null, $bindname = null)
     {
         return $this->whereBindField($table_name, $field, self::$OP_NEQ, $value, $bindname);
-    }
-
-    public function wherePrimary($pk_values)
-    {
-        $pks = $this->table()->primaryKeysMatch($pk_values);
-
-        if (empty($pks)) {
-            $this->where('1=0');
-        } else {
-            $this->whereFieldsEQ($pks);
-        }
-
-        return $this;
     }
 
     public function whereLike($field, $prep_value, $table_name = null, $bindname = null)
