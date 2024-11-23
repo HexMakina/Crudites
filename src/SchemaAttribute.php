@@ -6,20 +6,11 @@ use HexMakina\BlackBox\Database\{SchemaInterface, SchemaAttributeInterface};
 
 class SchemaAttribute implements SchemaAttributeInterface
 {
-    private SchemaInterface $schema;
-    private string $table;
     private array $column;
 
-    public function __construct(SchemaInterface $schema, $table, $column)
+    public function __construct(SchemaInterface $schema, string $table, string $column)
     {
-        if (!$schema->hasColumn($table, $column))
-            throw new \InvalidArgumentException('CANNOT FIND COLUMN ' . $column . ' IN TABLE ' . $table);
-
-        $columns = $schema->columns($table);
-
-        $this->schema = $schema;
-        $this->table = $table;
-        $this->column = $columns[$column];
+        $this->column = $schema->column($table, $column)
     }
 
     /**
@@ -107,10 +98,10 @@ class SchemaAttribute implements SchemaAttributeInterface
         return !empty($this->column['auto_increment']);
     }
 
-    public function validateValue($field_value = null): ?string
+    public function validateValue($value = null): ?string
     {
-        if (!is_null($field_value)) {
-            $error = $this->validateValueWithType($field_value);
+        if (!is_null($value)) {
+            $error = $this->validateValueWithType($value);
             if (!empty($error)) {
                 return $error;
             }

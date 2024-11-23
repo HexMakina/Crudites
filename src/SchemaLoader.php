@@ -3,7 +3,6 @@
 namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\ConnectionInterface;
-use HexMakina\BlackBox\Database\SchemaInterface;
 
 /**
  * SchemaLoader
@@ -63,9 +62,7 @@ class SchemaLoader
 
 
             // store common column information once
-            if (!isset($tables[$table]['columns'][$column])) {
-                $tables[$table]['columns'][$column] = ['SCHEMA' => $res, 'unique' => []];
-            }
+            $tables[$table]['columns'][$column] ??= ['schema' => $res, 'unique' => []];
 
             // store primary keys, foreign keys, and unique keys
             if (!empty($res['constraint_type'])) {
@@ -104,8 +101,7 @@ class SchemaLoader
      */
     private static function informationSchemaQuery(string $database): string
     {
-        return "
-SELECT 
+        return "SELECT 
     `t`.`TABLE_NAME` AS `table`,
     `c`.`COLUMN_NAME` AS `column`,
     `c`.`COLUMN_DEFAULT` AS `default`,
