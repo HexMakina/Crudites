@@ -14,6 +14,7 @@ namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\SchemaInterface;
+use HexMakina\BlackBox\Database\SourceInterface;
 
 class Connection implements ConnectionInterface
 {
@@ -31,7 +32,6 @@ class Connection implements ConnectionInterface
      */
     private \PDO $pdo;
     
-
     /**
      * @var Source $source used to parse the DSN
      */
@@ -129,15 +129,22 @@ class Connection implements ConnectionInterface
      *
      * @return Source the Source instance
      */
-    public function source(): Source
+    public function source(): SourceInterface
     {
         return $this->source;
     }
 
-    public function schema(): Schema
+    /**
+     * Returns the Schema instance used to interact with the database schema
+     * 
+     */
+    public function schema(SchemaInterface $schema=null): SchemaInterface
     {
+        if(!is_null($schema))
+            $this->schema = $schema;
+
         if(!isset($this->schema))
-            $this->schema = new Schema($this->databaseName(), $this);
+            $this->schema = new Schema($this);
 
         return $this->schema;
     }
