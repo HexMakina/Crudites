@@ -109,6 +109,33 @@ class Schema implements SchemaInterface
         return new SchemaAttribute($this, $table, $column);
     }
 
+    public function matchUniqueness(string $table, array $dat_ass): array
+    {
+        return $this->matchPrimaryKeys($table, $dat_ass) ?? $this->matchUniqueKeys($table, $dat_ass) ?? [];
+    }
+
+    public function matchPrimaryKeys(string $table, array $dat_ass): ?array
+    {
+        $primaryKeys = $this->primaryKeys($table);
+        $match = array_intersect_key($dat_ass, array_flip($primaryKeys));
+
+        return count($match) === count($primaryKeys) ? $match : null;
+    }
+
+    public function matchUniqueKeys(string $table, array $dat_ass): ?array
+    {
+        foreach ($this->uniqueKeys($table) as $constraint => $columns) {
+            $match = array_intersect_key($dat_ass, array_flip($columns));
+
+            if (count($match) === count($columns)) {
+                return $match;
+            }
+        }
+
+        return null;
+    }
+
+
     public function insert(string $table, array $dat_ass): QueryInterface
     {
         $insert = new Insert($table, $this->filterData($table, $dat_ass));
@@ -116,7 +143,6 @@ class Schema implements SchemaInterface
 
         return $insert;
     }
-
 
     public function update(string $table, array $alterations = [], array $conditions = []): QueryInterface
     {
@@ -145,31 +171,6 @@ class Schema implements SchemaInterface
         return $select;
     }
 
-    public function matchUniqueness(string $table, array $dat_ass): array
-    {
-        return $this->matchPrimaryKeys($table, $dat_ass) ?? $this->matchUniqueKeys($table, $dat_ass) ?? [];
-    }
-
-    public function matchPrimaryKeys(string $table, array $dat_ass): ?array
-    {
-        $primaryKeys = $this->primaryKeys($table);
-        $match = array_intersect_key($dat_ass, array_flip($primaryKeys));
-
-        return count($match) === count($primaryKeys) ? $match : null;
-    }
-
-    public function matchUniqueKeys(string $table, array $dat_ass): ?array
-    {
-        foreach ($this->uniqueKeys($table) as $constraint => $columns) {
-            $match = array_intersect_key($dat_ass, array_flip($columns));
-
-            if (count($match) === count($columns)) {
-                return $match;
-            }
-        }
-
-        return null;
-    }
 
     /**
      * Filters the given data to only include columns that exist in the specified table.
