@@ -24,13 +24,13 @@ class SchemaLoader
     public static function load(ConnectionInterface $connection): array
     {
         try {
-            $database = $connection->databaseName();
+            $database = $connection->database();
 
             $connection->transact();
 
             $connection->query(sprintf('USE %s;', self::INTROSPECTION_DATABASE_NAME));
 
-            $res = $connection->query(self::informationSchemaQuery($connection->databaseName()));
+            $res = $connection->query(self::informationSchemaQuery($database));
 
             $connection->query(sprintf('USE %s;', $database));
 

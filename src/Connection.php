@@ -3,8 +3,13 @@
 /**
  * Simple PDO connection wrapper for Crudites
  *
- * This class provides a simple PDO connection wrapper for the Crudites library.
- *
+ * Provides a simple PDO connection wrapper for the Crudites library.
+ * 
+ * It encapsulates a PDO instance and provides methods for preparing and executing SQL statements.
+ * All PDO methods are available through the magic __call method.
+ * 
+ * Also provides a Source instance to parse the DSN and a Schema instance to interact with the database schema.
+ * 
  * Sets defaults: ERRMODE_EXCEPTION, CASE_NATURAL, FETCH_ASSOC, required by Crudites
  * Sets preferred fetch mode: associative array.
  *
@@ -32,10 +37,8 @@ class Connection implements ConnectionInterface
      */
     private \PDO $pdo;
     
-    /**
-     * @var Source $source used to parse the DSN
-     */
-    private Source $source;
+    private string $dsn;
+    private string $database;
 
     /**
      * @var Schema $schema used to interact with the database schema
@@ -59,7 +62,7 @@ class Connection implements ConnectionInterface
         $this->pdo = new \PDO($dsn, $username, $password, self::options($driver_options));
 
         // Create a new Source instance and parse the DSN to extract the database name
-        $this->source = new Source($dsn);
+        $this->dsn = $dsn;
     }
 
     /**
@@ -90,48 +93,12 @@ class Connection implements ConnectionInterface
         }
         
         return array_merge(
-            /**
-                * Default options:
-             * - \PDO::ATTR_ERRMODE: Sets the error mode to throw exceptions.
-             * - \PDO::ATTR_CASE: Sets the case mode to natural case.
-             * - \PDO::ATTR_DEFAULT_FETCH_MODE: 
-             */
             [
                 \PDO::ATTR_ERRMODE  => \PDO::ERRMODE_EXCEPTION,
                 \PDO::ATTR_CASE     => \PDO::CASE_NATURAL,
                 \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
             ]
             , $provided);
-    }
-
-
-    /**
-     * Returns the name of the driver used by the PDO instance.
-     */
-    public function driverName()
-    {
-        return $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
-    }
-
-  /**
-     * Returns the name of the currently used database
-     *
-     * @return string the name of the database
-     */
-    public function databaseName(): string
-    {
-        return $this->source()->database();
-    }
-
-
-    /**
-     * Returns the Source instance used to parse the DSN
-     *
-     * @return Source the Source instance
-     */
-    public function source(): SourceInterface
-    {
-        return $this->source;
     }
 
     /**
@@ -147,6 +114,20 @@ class Connection implements ConnectionInterface
             $this->schema = new Schema($this);
 
         return $this->schema;
+    }
+
+    public function database(): string
+    {
+        if (is_null($this->database)) {
+            $matches = [];
+
+            if (1 !== preg_match('/dbname=(.+);/', $this->name(), $matches) || !isset($matches[1])) {
+                throw new CruditesException('DSN_DATABASE_NOT_FOUND');
+            }
+
+            $this->database = $matches[1];
+        }
+        return $this->database;
     }
 
     /**
@@ -195,17 +176,12 @@ class Connection implements ConnectionInterface
     public function alter(string $sql_statement): ?int
     {
         $res = $this->pdo->exec($sql_statement);
-        return $res === false ? null : $res;
+
+        return $res !== false ? $res : null;
     }
 
-
-
     /**
-     * makes the errorInfo array associative 'state', 'message', 'details'
-     * url: https://www.php.net/manual/en/pdo.errorinfo.php
-
-     * 
-     * SQLSTATE is a five characters alphanumeric identifier defined in the ANSI SQL standard
+     * makes the PDO errorInfo array associative using 'state', 'code' and 'message' keys
      */
     public function error(): array
     {
@@ -213,6 +189,7 @@ class Connection implements ConnectionInterface
         $info = $this->pdo->errorInfo();
 
         // 0: the SQLSTATE associated with the last operation on the database handle
+        //    SQLSTATE is a five characters alphanumeric identifier defined in the ANSI SQL standard
         $info['state'] = $info[0] ?? null;
 
         // 1: driver-specific error code.
@@ -223,7 +200,6 @@ class Connection implements ConnectionInterface
         
         return $info;
     }
-
 
     /**
      * Initiates a transaction, alias for beginTransaction()
@@ -253,36 +229,5 @@ class Connection implements ConnectionInterface
     public function rollback(): bool
     {
         return $this->pdo->rollback();
-    }
-
-    /**
-     * Returns the ID of the last inserted row or sequence value
-     *
-     * @param string|null $name Name of the sequence object from which the ID should be returned (optional)
-     * @return string The ID of the last inserted row or sequence value
-     */
-    public function lastInsertId($name = null)
-    {
-        return $this->pdo->lastInsertId($name);
-    }
-
-    /**
-     * Retrieves the SQLSTATE associated with the last operation on the database handle
-     *
-     * @return string The SQLSTATE code
-     */
-    public function errorCode(): string
-    {
-        return $this->pdo->errorCode();
-    }
-
-    /**
-     * Retrieves extended error information associated with the last operation on the database handle
-     *
-     * @return array An array of error information
-     */
-    public function errorInfo(): array
-    {
-        return $this->pdo->errorInfo();
     }
 }
