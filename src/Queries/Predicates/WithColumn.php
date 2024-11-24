@@ -4,10 +4,8 @@ namespace HexMakina\Crudites\Queries\Predicates;
 
 /**
  * Represents a predicate that compares two columns in a SQL query.
- *
- * @package HexMakina\Crudites\Queries
  */
-class PredicateColumn extends Predicate
+class WithColumn extends Predicate
 {
     /**
      * @var string|array The right column to be compared.

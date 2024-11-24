@@ -2,7 +2,10 @@
 
 namespace HexMakina\Crudites\Queries\Predicates;
 
-class PredicateValues extends Predicate
+/**
+ * Represents a predicate with multiple values for use in SQL queries.
+ */
+class WithValues extends Predicate
 {
     public function __construct($column, $operator, array $values, string $binding_prefix)
     {
@@ -17,10 +20,5 @@ class PredicateValues extends Predicate
     {
         $binding_names = array_keys($this->getBindings());
         return '(:'.implode(',:', $binding_names).')';
-    }
-
-    public function getBindings(): array
-    {
-        return $this->bindings ?? [];
     }
 }

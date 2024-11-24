@@ -4,11 +4,9 @@ namespace HexMakina\Crudites\Queries\Predicates;
 
 /**
  * Represents a predicate with a value for use in SQL queries.
- *
- * @package HexMakina\Crudites\Queries
  */
 
-class PredicateValue extends Predicate
+class WithValue extends Predicate
 {
     private $value;
 
