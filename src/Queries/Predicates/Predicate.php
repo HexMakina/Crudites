@@ -8,7 +8,7 @@ namespace HexMakina\Crudites\Queries\Predicates;
  *
  * @package HexMakina\Crudites\Queries
  */
-abstract class Predicate
+class Predicate
 {
     /**
      * @var mixed The column involved in the predicate.
@@ -21,12 +21,12 @@ abstract class Predicate
     protected $operator = null;
 
     /**
-     * @var string|null The label used for binding parameters.
+     * @var string|null The label used for binding parameters. 
      */
     protected $binding_label = null;
 
     /**
-     * @var array The bindings for the predicate.
+     * @var array The bindings for the predicate
      */
     protected $bindings = [];
 
@@ -36,7 +36,7 @@ abstract class Predicate
      * @param mixed $column The column involved in the predicate.
      * @param string $operator The operator used in the predicate.
      */
-    public function __construct($column, string $operator)
+    public function __construct($column, string $operator = null)
     {
         $this->column = $column;
         $this->operator = $operator;
@@ -47,9 +47,9 @@ abstract class Predicate
      *
      * @return string The string representation of the predicate.
      */
-    final public function __toString()
+    public function __toString()
     {
-        return sprintf('%s %s %s', $this->left(), $this->operator, $this->right());
+        return sprintf('%s %s %s', $this->left(), $this->operator ?? '', $this->right());
     }
 
     /**
@@ -64,10 +64,15 @@ abstract class Predicate
 
     /**
      * Gets the right-hand side of the predicate.
+     * By default, this is the binding label.
      *
      * @return string The right-hand side of the predicate.
      */
-    abstract protected function right(): string;
+    
+    protected function right(): string
+    {
+        return $this->bindingLabel();
+    }
 
     /**
      * Gets the bindings for the predicate.
