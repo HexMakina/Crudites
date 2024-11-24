@@ -1,6 +1,6 @@
 <?php
 
-namespace HexMakina\Crudites\Queries;
+namespace HexMakina\Crudites\Queries\Predicates;
 
 /**
  * Represents a predicate that compares two columns in a SQL query.

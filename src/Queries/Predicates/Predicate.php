@@ -1,6 +1,6 @@
 <?php
 
-namespace HexMakina\Crudites\Queries;
+namespace HexMakina\Crudites\Queries\Predicates;
 
 /**
  * An abstract class representing a SQL predicate.

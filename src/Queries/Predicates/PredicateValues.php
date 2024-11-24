@@ -1,6 +1,6 @@
 <?php
 
-namespace HexMakina\Crudites\Queries;
+namespace HexMakina\Crudites\Queries\Predicates;
 
 class PredicateValues extends Predicate
 {
