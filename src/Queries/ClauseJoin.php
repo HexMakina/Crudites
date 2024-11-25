@@ -62,7 +62,7 @@ trait ClauseJoin
             $table = array_shift($join_field);
             $field = array_shift($join_field);
             
-            if(is_null($table) || is_null($field) || !isset($join_field[0])){
+            if (!isset($table, $field, $join_field[0])) {
                 throw new \InvalidArgumentException('INVALID_JOIN_FIELDS');
             }
 
