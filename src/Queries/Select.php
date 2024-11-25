@@ -5,7 +5,7 @@ namespace HexMakina\Crudites\Queries;
 use HexMakina\BlackBox\Database\SelectInterface;
 use HexMakina\Crudites\CruditesException;
 
-class Select extends PreparedQuery implements SelectInterface
+class Select extends Query implements SelectInterface
 {
     use ClauseJoin;
     use ClauseWhere;
@@ -234,38 +234,4 @@ class Select extends PreparedQuery implements SelectInterface
         return $ticked;
     }
     
-    //------------------------------------------------------------ SELECT:FETCHING RESULT
-
-    public function retObj($c = null)
-    {
-        return $c === null ? $this->ret(\PDO::FETCH_OBJ) : $this->ret(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, $c);
-    }
-
-    public function retNum()
-    {
-        return $this->ret(\PDO::FETCH_NUM);
-    }
-
-    //ret:
-    public function retAss()
-    {
-        return $this->ret(\PDO::FETCH_ASSOC);
-    }
-
-    //ret: array indexed by column name
-    public function retCol()
-    {
-        return $this->ret(\PDO::FETCH_COLUMN);
-    }
-
-    //ret: all values of a single column from the result set
-    public function retPar()
-    {
-        return $this->ret(\PDO::FETCH_KEY_PAIR);
-    }
-
-    public function retKey()
-    {
-        return $this->ret(\PDO::FETCH_UNIQUE);
-    }
 }

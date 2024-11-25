@@ -4,7 +4,7 @@ namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\CruditesException;
 
-class Insert extends PreparedQuery
+class Insert extends Query
 {
     use ClauseJoin;
 

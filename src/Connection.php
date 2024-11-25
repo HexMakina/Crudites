@@ -19,7 +19,6 @@ namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\SchemaInterface;
-use HexMakina\BlackBox\Database\SourceInterface;
 
 class Connection implements ConnectionInterface
 {
@@ -36,33 +35,27 @@ class Connection implements ConnectionInterface
      * 
      */
     private \PDO $pdo;
-    
+
     private string $dsn;
     private string $database;
-
-    /**
-     * @var Schema $schema used to interact with the database schema
-     */
     private SchemaInterface $schema;
 
-    
     /**
-     * Constructor.
+     * Constructor. Same as PDO constructor
      *
-     * @param string $dsn The Data Source Name for the connection
-     * @param string $username The username to use for the connection (optional)
-     * @param string $password The password to use for the connection (optional)
-     * @param array $driver_options Additional driver options for the PDO instance (optional)
-     *
-     * @throws \PDOException When the DSN is invalid
+     * @throws \PDOException if the attempt to connect to the requested database fails
      */
     public function __construct(string $dsn, string $username = '', string $password = '', array $driver_options = [])
     {
-        // Create a new PDO instance with the given options
-        $this->pdo = new \PDO($dsn, $username, $password, self::options($driver_options));
+        try{
+            $this->dsn = $dsn;
 
-        // Create a new Source instance and parse the DSN to extract the database name
-        $this->dsn = $dsn;
+            // Create a new PDO instance with the given options
+            $this->pdo = new \PDO($dsn, $username, $password, self::options($driver_options));
+        }
+        catch(\PDOException $e){
+            throw new CruditesException($e->getMessage(), $e->getCode());
+        }
     }
 
     /**
@@ -121,63 +114,13 @@ class Connection implements ConnectionInterface
         if ($this->database === null) {
             $matches = [];
 
-            if (1 !== preg_match('/dbname=(.+);/', $this->name(), $matches) || !isset($matches[1])) {
+            if (1 !== preg_match('/dbname=(.+);/', $this->dsn, $matches) || !isset($matches[1])) {
                 throw new CruditesException('DSN_DATABASE_NOT_FOUND');
             }
 
             $this->database = $matches[1];
         }
         return $this->database;
-    }
-
-    /**
-     * Prepares an SQL statement for execution and returns a statement object
-     *
-     * @param string $sql_statement the SQL statement to prepare
-     * @param array $options options for the prepared statement
-     * @return \PDOStatement|null a PDOStatement object or null on failure
-     */
-    public function prepare(string $sql_statement, $options = []): ?\PDOStatement
-    {
-        $res = $this->pdo->prepare($sql_statement, $options);
-
-        return $res instanceof \PDOStatement ? $res : null;
-    }
-
-    /**
-     * Executes an SQL statement and returns a statement object or null on failure
-     *
-     * @param string $sql_statement the SQL statement to execute
-     * @param mixed $fetch_mode the fetch mode to use, or null to use the default mode
-     * @param mixed $fetch_col_num a fetch argument used by some fetch modes
-     * @return \PDOStatement|null a PDOStatement object or null on failure
-     */
-    public function query(string $sql_statement, $fetch_mode = null, $fetch_col_num = null): ?\PDOStatement
-    {
-        try{
-            if ($fetch_mode === null) {
-                $res = $this->pdo->query($sql_statement);
-            } else {
-                $res = $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);
-            }
-        }catch(\PDOException $e){
-            throw new CruditesException($e->getMessage(), $e->getCode());   
-        }
-
-        return $res instanceof \PDOStatement ? $res : null;
-    }
-
-    /**
-     * Executes an SQL statement and returns the number of affected rows or null on failure
-     *
-     * @param string $sql_statement the SQL statement to execute
-     * @return int|null the number of affected rows or null on failure
-     */
-    public function alter(string $sql_statement): ?int
-    {
-        $res = $this->pdo->exec($sql_statement);
-
-        return $res !== false ? $res : null;
     }
 
     /**

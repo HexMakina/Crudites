@@ -4,7 +4,7 @@ namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\CruditesException;
 
-class Delete extends PreparedQuery
+class Delete extends Query
 {
     use ClauseJoin;
     use ClauseWhere;

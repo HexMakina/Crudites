@@ -4,7 +4,7 @@ namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\CruditesException;
 
-class Update extends PreparedQuery
+class Update extends Query
 {
     use ClauseJoin;
     use ClauseWhere;
