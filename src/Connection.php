@@ -93,7 +93,7 @@ class Connection implements ConnectionInterface
         }
         
         return array_merge(
-            [
+            arrays: [
                 \PDO::ATTR_ERRMODE  => \PDO::ERRMODE_EXCEPTION,
                 \PDO::ATTR_CASE     => \PDO::CASE_NATURAL,
                 \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
@@ -107,7 +107,7 @@ class Connection implements ConnectionInterface
      */
     public function schema(SchemaInterface $schema=null): SchemaInterface
     {
-        if(!is_null($schema))
+        if($schema !== null)
             $this->schema = $schema;
 
         if(!isset($this->schema))
@@ -118,7 +118,7 @@ class Connection implements ConnectionInterface
 
     public function database(): string
     {
-        if (is_null($this->database)) {
+        if ($this->database === null) {
             $matches = [];
 
             if (1 !== preg_match('/dbname=(.+);/', $this->name(), $matches) || !isset($matches[1])) {
@@ -155,7 +155,7 @@ class Connection implements ConnectionInterface
     public function query(string $sql_statement, $fetch_mode = null, $fetch_col_num = null): ?\PDOStatement
     {
         try{
-            if (is_null($fetch_mode)) {
+            if ($fetch_mode === null) {
                 $res = $this->pdo->query($sql_statement);
             } else {
                 $res = $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);

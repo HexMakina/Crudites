@@ -8,6 +8,13 @@ class SchemaAttribute implements SchemaAttributeInterface
 {
     private array $column;
 
+    /** 
+     * @param SchemaInterface $schema The schema to which the column belongs.
+     * @param string $table The table to which the column belongs.
+     * @param string $column The column name.
+     * 
+     * @throws \InvalidArgumentException If the column does not exist.
+     */
     public function __construct(SchemaInterface $schema, string $table, string $column)
     {
         $this->column = $schema->column($table, $column);
@@ -100,12 +107,12 @@ class SchemaAttribute implements SchemaAttributeInterface
 
     public function validateValue($value = null): ?string
     {
-        if (!is_null($value)) {
+        if ($value !== null) {
             $error = $this->validateValueWithType($value);
             if (!empty($error)) {
                 return $error;
             }
-        } else if (!$this->nullable() && is_null($this->default())) {
+        } else if (!$this->nullable() && $this->default() === null) {
             return 'ERR_REQUIRED_VALUE';
         }
 

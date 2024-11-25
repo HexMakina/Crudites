@@ -22,7 +22,7 @@ class CruditesExceptionFactory
 
         if (!$query->isSuccess())
             $errorInfo = $query->errorInfo();
-        elseif (!is_null($exception))
+        elseif ($exception !== null)
             $errorInfo = $exception->errorInfo;
 
         if (!is_array($errorInfo))

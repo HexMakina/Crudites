@@ -50,9 +50,9 @@ abstract class BaseQuery implements QueryInterface
     //------------------------------------------------------------  GET/SETTERS
     public function connection(ConnectionInterface $connection = null): ConnectionInterface
     {
-        if (!is_null($connection)) {
+        if ($connection !== null) {
             $this->connection = $connection;
-        } elseif (is_null($this->connection)) {
+        } elseif ($this->connection === null) {
             throw new CruditesException('BASEQUERY_HAS_NO_CONNECTION');
         }
 
@@ -61,14 +61,7 @@ abstract class BaseQuery implements QueryInterface
 
     public function table(string $table = null): string
     {
-        return is_null($table) ? $this->table : ($this->table = $table);
-    }
-
-    public function addPart($group, $part): self
-    {
-        $this->{$group} ??= [];
-        $this->{$group}[] = $part;
-        return $this;
+        return $table === null ? $this->table : ($this->table = $table);
     }
 
     public function addClause(string $clause, $argument): self
@@ -84,7 +77,7 @@ abstract class BaseQuery implements QueryInterface
 
     public function setClause($clause, $argument = null): self
     {
-        if (is_null($argument)) {
+        if ($argument === null) {
             unset($this->clauses[$clause]);
         } else {
             $this->clauses[$clause] = [];
@@ -107,7 +100,7 @@ abstract class BaseQuery implements QueryInterface
 
     public function tableAlias($setter = null): string
     {
-        if (!is_null($setter)) {
+        if ($setter !== null) {
             $this->table_alias = $setter;
         }
 
@@ -135,18 +128,18 @@ abstract class BaseQuery implements QueryInterface
     }
 
     //------------------------------------------------------------  Return
-    
+
     public function ret($mode = null, $option = null)
     {
-        if(!$this->isExecuted()){
+        if (!$this->isExecuted()) {
             $this->run();
         }
 
         if (!$this->isSuccess()) {
             return false;
         }
-        
-        if (is_null($option)) {
+
+        if ($option === null) {
             return $this->executed()->fetchAll($mode);
         }
 

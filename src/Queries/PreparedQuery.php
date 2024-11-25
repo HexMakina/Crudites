@@ -73,7 +73,7 @@ abstract class PreparedQuery extends BaseQuery
     {
 
         try {
-            if (is_null($this->prepared()))
+            if ($this->prepared() === null)
                 throw new CruditesException('QUERY_NOT_PREPARED');
 
             // https://www.php.net/manual/en/pdostatement.execute.php
@@ -91,7 +91,7 @@ abstract class PreparedQuery extends BaseQuery
 
     public function isPrepared(): bool
     {
-        return !is_null($this->prepared);
+        return $this-> prepared !== null;
     }
 
     
@@ -106,7 +106,7 @@ abstract class PreparedQuery extends BaseQuery
 
     public function prepared(): ?\PDOStatement
     {
-        if (is_null($this->prepared))
+        if ($this->prepared === null)
             $this->prepare();
 
         return $this->prepared;
@@ -116,7 +116,7 @@ abstract class PreparedQuery extends BaseQuery
     {
         $res = $this->connection()->prepare($this->statement());
 
-        if (is_null($res)) {
+        if ($res === null) {
             throw new CruditesException('QUERY_PREPARATION_FAILED');
         }
 
@@ -129,7 +129,7 @@ abstract class PreparedQuery extends BaseQuery
         if ($this->isExecuted())
             return $this->executed()->errorInfo();
 
-        if (!is_null($this->prepared()))
+        if ($this->prepared() !== null)
             return $this->prepared()->errorInfo();
 
         return parent::errorInfo();

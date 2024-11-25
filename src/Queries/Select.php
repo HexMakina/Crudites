@@ -33,7 +33,7 @@ class Select extends PreparedQuery implements SelectInterface
 
     public function columns($setter = null): array
     {
-        if (!is_null($setter))
+        if ($setter !== null)
         {
             $this->columns = [];
             $this->selectAlso($setter);
@@ -166,7 +166,7 @@ class Select extends PreparedQuery implements SelectInterface
 
     public function statement(): string
     {
-        if (is_null($this->table)) {
+        if ($this->table === null) {
             throw new CruditesException('NO_TABLE');
         }
 
@@ -238,7 +238,7 @@ class Select extends PreparedQuery implements SelectInterface
 
     public function retObj($c = null)
     {
-        return is_null($c) ? $this->ret(\PDO::FETCH_OBJ) : $this->ret(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, $c);
+        return $c === null ? $this->ret(\PDO::FETCH_OBJ) : $this->ret(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, $c);
     }
 
     public function retNum()
