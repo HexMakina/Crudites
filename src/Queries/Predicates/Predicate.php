@@ -23,7 +23,7 @@ class Predicate
     /**
      * @var string|null The label used for binding parameters. 
      */
-    protected $binding_label = null;
+    protected $bind_label = null;
 
     /**
      * @var array The bindings for the predicate
@@ -71,7 +71,7 @@ class Predicate
     
     protected function right(): string
     {
-        return $this->bindingLabel();
+        return $this->bindLabel();
     }
 
     /**
@@ -89,9 +89,9 @@ class Predicate
      *
      * @return string The binding label for the predicate.
      */
-    public function bindingLabel(): string
+    public function bindLabel(): string
     {
-        return $this->binding_label ?? is_array($this->column) ? implode('_', $this->column) : $this->column;
+        return $this->bind_label ?? is_array($this->column) ? implode('_', $this->column) : $this->column;
     }
 
     /**

@@ -15,8 +15,8 @@ class WithValue extends Predicate
         parent::__construct($column, $operator);
         $this->value = $value;
         
-        $this->binding_label = $label;
-        $this->bindings = [$this->bindingLabel() => $this->value];
+        $this->bind_label = $label;
+        $this->bindings = [$this->bindLabel() => $this->value];
     }
 
     /**
@@ -26,6 +26,6 @@ class WithValue extends Predicate
      */
     protected function right(): string
     {
-        return sprintf(':%s', $this->bindingLabel());
+        return sprintf(':%s', $this->bindLabel());
     }
 }
