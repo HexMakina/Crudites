@@ -2,28 +2,12 @@
 
 namespace HexMakina\Crudites\Queries;
 
+use HexMakina\Crudites\Queries\Predicates\{Predicate, IsNotEmpty, IsEmpty, WithValue, WithValues};
 trait ClauseWhere
 {
     public static $OP_AND = 'AND';
 
     public static $OP_OR = 'OR';
-
-    public static $OP_GT = '>';
-
-    public static $OP_LT = '<';
-
-    public static $OP_EQ = '=';
-
-    public static $OP_GTE = '>=';
-
-    public static $OP_LTE = '<=';
-
-    public static $OP_NEQ = '<>';
-
-    public static $OP_LIKE = 'LIKE';
-
-    public static $OP_NLIKE = 'NOT LIKE';
-
 
     public static $WHERE_LIKE_PRE = '%TERM';
 
@@ -39,13 +23,21 @@ trait ClauseWhere
 
     abstract public function addBinding($field, $value, $table_name, $bind_label = null): string;
 
-    public function where($where_condition)
+    public function where($where_condition, $bindings = [])
     {
         $this->where ??= [];
-
         $this->where[] = sprintf('(%s)', $where_condition);
 
+        if(!empty($bindings)){
+            $this->bindings = array_merge($this->bindings, $bindings);
+        }
+
         return $this;
+    }
+
+    private function wherePredicate(Predicate $predicate)
+    {
+        return $this->where($predicate->__toString(), $predicate->getBindings());
     }
 
     public function whereWithBind($where)
@@ -54,140 +46,109 @@ trait ClauseWhere
         $this->where[] = sprintf('(%s)', $where);
         return $this;
     }
-
-    public function whereEqualOrNull($field, $value, $table_name = null, $bindname = null)
-    {
-        $bind_name = $this->addBinding($field, $value, $table_name, $bindname);
-        $field_name = $this->backTick($field, $table_name);
-
-        return $this->where(sprintf('(%s = %s OR %s IS NULL)', $field_name, $bind_name, $field_name));
-    }
-
-    public function whereEQ($field, $value, $table_name = null, $bindname = null)
-    {
-        return $this->whereBindField($table_name, $field, self::$OP_EQ, $value, $bindname);
-    }
-
-    public function whereGT($field, $value, $table_name = null, $bindname = null)
-    {
-        return $this->whereBindField($table_name, $field, self::$OP_GT, $value, $bindname);
-    }
-
-    public function whereLT($field, $value, $table_name = null, $bindname = null)
-    {
-        return $this->whereBindField($table_name, $field, self::$OP_LT, $value, $bindname);
-    }
-
-    public function whereGTE($field, $value, $table_name = null, $bindname = null)
-    {
-        return $this->whereBindField($table_name, $field, self::$OP_GTE, $value, $bindname);
-    }
-
-    public function whereLTE($field, $value, $table_name = null, $bindname = null)
-    {
-        return $this->whereBindField($table_name, $field, self::$OP_LTE, $value, $bindname);
-    }
-
-    public function whereNotEQ($field, $value, $table_name = null, $bindname = null)
-    {
-        return $this->whereBindField($table_name, $field, self::$OP_NEQ, $value, $bindname);
-    }
-
-    public function whereLike($field, $prep_value, $table_name = null, $bindname = null)
-    {
-        return $this->whereBindField($table_name, $field, self::$OP_LIKE, $prep_value, $bindname);
-    }
-
-    public function whereNotLike($field, $prep_value, $table_name = null, $bindname = null)
-    {
-        return $this->whereBindField($table_name, $field, self::$OP_NLIKE, $prep_value, $bindname);
-    }
-
-
-    public function whereFieldsEQ($assoc_data, $table_name = null)
-    {
-        $table_name = $this->tableLabel($table_name);
-        foreach ($assoc_data as $field => $value) {
-            $this->whereBindField($table_name, $field, self::$OP_EQ, $value);
-        }
-
-        return $this;
-    }
-
     public function whereBindField($table_name, $field, $operator, $value, $bind_name = null)
     {
         $bind_name = $this->addBinding($field, $value, $table_name, $bind_name);
         return $this->whereField($field, sprintf('%s %s', $operator, $bind_name), $table_name);
     }
 
-    public function whereNumericIn($field, $values, $table_name = null)
+
+    public function whereEqualOrNull($field, $value, $table_name = null, $bindname = null)
     {
-        if(!is_array($values) || empty($values)){
-            throw new \InvalidArgumentException('IN_VALUES_ARE_EMPTY');
-        }
-        return $this->whereField($field, sprintf(' IN (%s)', implode(',', $values)), $table_name);
+        $bind_name = $this->addBinding($field, $value, $table_name, $bindname);
+        $field_name = $this->backTick($field, $table_name);
+
+        return $this->where(sprintf('%s = %s OR %s IS NULL', $field_name, $bind_name, $field_name));
     }
 
-    public function whereStringIn($field, $values, $table_name = null)
+    public function whereIn($field, $values, $table_name = null)
     {
-        if (is_array($values) && !empty($values)) {
-            $count_values = count($values);
-            $in = '';
-            foreach ($values as $i => $v) {
-                // TODO dirty patching. mathematical certainty of uniqueness needed
-                $placeholder_name = ':' . $table_name . '_' . $field . '_awS_in_' . $count_values . '_' . $i;
-                $this->addBinding($field, $v, $table_name, $placeholder_name);
-                $in .= sprintf('%s,', $placeholder_name);
-            }
-
-            // $this->whereField($field, sprintf(" IN ('%s')", implode("','", $values)), $table_name);
-            $this->whereField($field, sprintf(" IN (%s)", rtrim($in, ',')), $table_name);
-        }
-
-        return $this;
+        return $this->wherePredicate(new WithValues([$this->tableLabel($table_name), $field], 'IN', $values, 'AWIN'));
     }
 
-    // public function whereIn($field, $values, $table_name = null)
-    // {
-    //     if (!is_array($values) || empty($values)) {
-    //         throw new \InvalidArgumentException('IN_VALUES_ARE_EMPTY');
-    //     }
-
-    //     $placeholders = implode(',', array_fill(0, count($values), '?'));
-
-    //     $table_field = $this->backTick($field, $table_name);
-    //     $condition = sprintf('%s IN (%s)', $table_field, $placeholders);
-
-    //     $this->where($condition);
-
-    //     foreach ($values as $value) {
-    //         $this->addBinding($field, $value, $table_name); // this won't work.. gotta change everything
-    //     }
-
-    //     return $this;
-    // }
-
-    public function whereIsNull($field, $table_name = null)
-    {
-        return $this->whereField($field, 'IS NULL', $table_name);
-    }
-
+    
     public function whereField($field, $condition, $table_name = null)
     {
         $table_field = $this->backTick($field, $table_name);
         return $this->where(sprintf('%s %s', $table_field, $condition));
     }
 
+    public function whereIsNull($field, $table_name = null)
+    {
+        return $this->where(new Predicate($this->predicateColumn($field, $table_name), 'IS NULL'));
+    }
+
     public function whereNotEmpty($field, $table_name = null)
     {
-        $table_field = $this->backTick($field, $table_name);
-        return $this->where(sprintf('(%s IS NOT NULL AND %s <> \'\') ', $table_field, $table_field));
+        return $this->where(new IsNotEmpty($this->predicateColumn($field, $table_name)));
     }
 
     public function whereEmpty($field, $table_name = null)
     {
-        $table_field = $this->backTick($field, $table_name);
-        return $this->where(sprintf('(%s IS NULL OR %s = \'\')', $table_field, $table_field));
+        return $this->where(new IsEmpty($this->predicateColumn($field, $table_name)));
+    }
+
+    public function whereFieldsEQ($assoc_data, $table_name = null)
+    {
+        $table_name = $this->tableLabel($table_name);
+        foreach ($assoc_data as $field => $value) {
+            $p = new WithValue([$table_name, $field], '=', $value);
+            $this->wherePredicate($p);
+        }
+
+        return $this;
+    }
+
+    public function whereEQ($field, $value, $table_name = null, $bindname = null)
+    {
+        $p = new WithValue($this->predicateColumn($field, $table_name), '=', $value, $bindname);
+        return $this->wherePredicate($p);
+    }
+
+    public function whereGT($field, $value, $table_name = null, $bindname = null)
+    {
+        $p = new WithValue($this->predicateColumn($field, $table_name), '>', $value, $bindname);
+        return $this->wherePredicate($p);
+    }
+
+    public function whereLT($field, $value, $table_name = null, $bindname = null)
+    {
+        $p = new WithValue($this->predicateColumn($field, $table_name), '<', $value, $bindname);
+        return $this->wherePredicate($p);
+    }
+
+    private function predicateColumn($column, $table=null): array
+    {
+        return [$this->tableLabel($table), $column];
+    }
+    public function whereGTE($field, $value, $table_name = null, $bindname = null)
+    {
+        $p = new WithValue($this->predicateColumn($field, $table_name), '>=', $value, $bindname);
+        return $this->wherePredicate($p);
+    }
+
+    public function whereLTE($field, $value, $table_name = null, $bindname = null)
+    {
+        $p = new WithValue($this->predicateColumn($field, $table_name), '<=', $value, $bindname);
+        return $this->wherePredicate($p);
+    }
+
+    public function whereNotEQ($field, $value, $table_name = null, $bindname = null)
+    {
+        $p = new WithValue($this->predicateColumn($field, $table_name), '<>', $value, $bindname);
+        return $this->wherePredicate($p);
+    }
+
+    public function whereLike($field, $prep_value, $table_name = null, $bindname = null)
+    {
+        $p = new WithValue($this->predicateColumn($field, $table_name), 'LIKE', $prep_value, $bindname);
+        return $this->wherePredicate($p);
+    }
+
+    public function whereNotLike($field, $prep_value, $table_name = null, $bindname = null)
+    {
+        $p = new WithValue($this->predicateColumn($field, $table_name), 'NOT LIKE', $prep_value, $bindname);
+        return $this->wherePredicate($p);
     }
 
     /**
@@ -205,7 +166,7 @@ trait ClauseWhere
         if (!isset($filters_content['fields'])) {
             return $this;
         }
-        if (is_null($search_table)) {
+        if ($search_table === null) {
             $search_table = $this->tableLabel();
         }
 
