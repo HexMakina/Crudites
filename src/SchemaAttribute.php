@@ -10,7 +10,7 @@ class SchemaAttribute implements SchemaAttributeInterface
 
     public function __construct(SchemaInterface $schema, string $table, string $column)
     {
-        $this->column = $schema->column($table, $column)
+        $this->column = $schema->column($table, $column);
     }
 
     /**
