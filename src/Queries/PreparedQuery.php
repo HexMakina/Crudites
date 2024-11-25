@@ -4,7 +4,7 @@ namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\{CruditesException, CruditesExceptionFactory};
 
-abstract class PreparedQuery extends BaseQuery
+abstract class PreparedQuery extends BaseQuery 
 {
     protected array $bindings = [];
 

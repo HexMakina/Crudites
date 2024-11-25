@@ -114,9 +114,13 @@ class Row implements RowInterface
     }
 
     /**
-     * records changes vis-à-vis loaded data
+     * loops the associative data and records changes vis-à-vis loaded data
+     * 
+     * 1. skips non existing field name and A_I column
+     * 2. replaces empty strings with null or default value
+     * 3. checks for changes with loaded data. using == instead of === is risky but needed
+     * 4. pushes the changes in the alterations tracker
      *
-     * loops through the $datass params
      *
      * @param  array<int|string,mixed> $datass an associative array containing the new data
      */
@@ -167,7 +171,7 @@ class Row implements RowInterface
                 $this->update();
             }
             $this->last_query = $this->lastAlterQuery();
-            if(is_null($this->lastQuery()) || !$this->lastQuery()->isSuccess()){
+            if($this->lastQuery() === null || !$this->lastQuery()->isSuccess()){
                 $res = CruditesExceptionFactory::make($this->last_query);
                 throw $res;
             }
@@ -190,7 +194,7 @@ class Row implements RowInterface
         // recovering auto_incremented value and pushing it in alterations tracker
         if ($this->lastAlterQuery()->isSuccess()) {
             $aipk = $this->schema->autoIncrementedPrimaryKey($this->table);
-            if (!is_null($aipk)) {
+            if ($aipk !== null) {
                 $this->alterations[$aipk] = $this->lastAlterQuery()->connection()->lastInsertId();
             }
         }
@@ -198,6 +202,7 @@ class Row implements RowInterface
 
     private function update(): void
     {
+        
         $unique_match = $this->schema->matchUniqueness($this->table, $this->load);
 
         if(empty($unique_match)){
