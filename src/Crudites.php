@@ -1,9 +1,8 @@
 <?php
 
-
 namespace HexMakina\Crudites;
 
-use HexMakina\BlackBox\Database\{ConnectionInterface, SelectInterface};
+use HexMakina\BlackBox\Database\{ConnectionInterface, SchemaAttributeInterface, SelectInterface};
 use HexMakina\Crudites\CruditesException;
 
 
@@ -13,8 +12,6 @@ use HexMakina\Crudites\CruditesException;
  * Create - Retrieve - Update - Delete
  * Library for writing and running SQL queries
  */
-
-
 class Crudites
 {
     protected static ?ConnectionInterface $connection;
@@ -37,7 +34,7 @@ class Crudites
     {
         // no props, assumes connection made, verify and return
         if (!isset($dsn, $user, $pass)) {
-            if (is_null(self::$connection)) {
+            if (self::$connection === null) {
                 throw new CruditesException('NO_DATABASE');
             }
 
@@ -72,7 +69,8 @@ class Crudites
      */
     public static function retrieve(SelectInterface $select): array
     {
-        $pk_name = implode('_', array_keys($select->table()->primaryKeys()));
+        $primary_keys = self::$connection->schema()->primaryKeys($select->table());
+        $pk_name = implode('_', $primary_keys);
 
         $ret = [];
 
@@ -101,39 +99,25 @@ class Crudites
         return $res instanceof \PDOStatement? $res : null;
     }
 
-    public static function distinctFor($table, $column_name, $filter_by_value = null)
+    public static function distinctFor(string $table, string $column_name, string $filter_by_value = null)
     {
-        $table = self::tableNameToTable($table);
+        $query = self::$connection->schema()->select($table, [sprintf('DISTINCT `%s`', $column_name)]);
+        $query->whereNotEmpty($column_name);
+        $query->orderBy([$column_name, 'ASC']);
 
-        if (is_null($table->column($column_name))) {
-            throw new CruditesException('TABLE_REQUIRES_COLUMN');
+        if ($filter_by_value !== null) {
+            $query->whereLike($column_name, sprintf('%%%s%%', $filter_by_value));
         }
 
-        $Query = $table->select([sprintf('DISTINCT `%s`', $column_name)])
-          ->whereNotEmpty($column_name)
-          ->orderBy([$column_name, 'ASC', $table->name()]);
-
-        if (!is_null($filter_by_value)) {
-            $Query->whereLike($column_name, sprintf('%%%s%%', $filter_by_value));
-        }
-
-        $Query->orderBy([$column_name, 'DESC']);
-        // ddt($Query);
-        return $Query->retCol();
+        return $query->retCol();
     }
 
-    public static function distinctForWithId($table, $column_name, $filter_by_value = null)
+    public static function distinctForWithId(string $table, string $column_name, string $filter_by_value = null)
     {
-        $table = self::tableNameToTable($table);
+        $Query = self::$connection->schema()->select($table [sprintf('DISTINCT `id`,`%s`', $column_name)])
+          ->whereNotEmpty($column_name)->orderBy([$column_name, 'ASC', $table]);
 
-        if (is_null($table->column($column_name))) {
-            throw new CruditesException('TABLE_REQUIRES_COLUMN');
-        }
-
-        $Query = $table->select([sprintf('DISTINCT `id`,`%s`', $column_name)])
-          ->whereNotEmpty($column_name)->orderBy([$column_name, 'ASC', $table->name()]);
-
-        if (!is_null($filter_by_value)) {
+        if ($filter_by_value !== null) {
             $Query->whereLike($column_name, sprintf('%%%s%%', $filter_by_value));
         }
 
@@ -143,37 +127,31 @@ class Crudites
     //------------------------------------------------------------  DataManipulation Helpers
     // returns true on success, false on failure or throws an exception
     // throws Exception on failure
-    public static function toggleBoolean($table, $boolean_column_name, $id): bool
+    public static function toggleBoolean(string $table, string $boolean_column, array $unique_match): bool
     {
-
-        $table = self::tableNameToTable($table);
-        if (is_null($column = $table->column($boolean_column_name))) {
-            throw new \InvalidArgumentException('TOGGLE_REQUIRES_EXISTING_COLUMN');
-        }
-        if (!$column->type()->isBoolean()) {
-            throw new \InvalidArgumentException('TOGGLE_REQUIRES_BOOLEAN_COLUMN');
+        $attribute = self::$connection->schema()->attributes($table, $boolean_column);
+        if (!$attribute->type() === SchemaAttributeInterface::TYPE_BOOLEAN) {
+            throw new CruditesException('TOGGLE_REQUIRES_BOOLEAN_COLUMN');
         }
 
-        // TODO: still using 'id' instead of table->primaries
+        // throws exception if the table or column does not exist
+        $unique_match = self::$connection->schema()->matchUniqueness($table, $unique_match);
+        if (empty($unique_match)) {
+            throw new CruditesException('NO_MATCH_TO_UNIQUE_RECORD');
+        }
+
+
         // TODO: not using the QueryInterface Way of binding stuff
-        $Query = $table->update();
-        $statement = sprintf(
-            "UPDATE %s SET %s = COALESCE(!%s, 1) WHERE id=:id",
-            $table->name(),
-            $boolean_column_name,
-            $boolean_column_name,
-            $boolean_column_name
-        );
-        $Query->statement($statement);
-        $Query->setBindings([':id' => $id]);
-        $query->prepare();
-        $Query->run();
+        $where = [];
+        $bindings = [];
+        foreach ($unique_match as $column_name => $value) {
+            $binding_label = sprintf(':%s', $column_name);
+            $where[] = sprintf('`%s` = %s', $column_name, $binding_label);
+            $bindings[$binding_label] = $value;
+        }
 
-        return $Query->isSuccess();
-    }
-
-    private static function tableNameToTable($table)
-    {
-        return is_string($table) ? self::$connection->schema()->table($table) : $table;
+        $where = implode(' AND ', $where);
+        $Query = self::raw("UPDATE $table SET $boolean_column = COALESCE(!$boolean_column, 1) WHERE $where", $bindings);
+        return $Query->errorCode() === '00000';
     }
 }
