@@ -64,9 +64,6 @@ class Connection implements ConnectionInterface
      */
     public function __call($method, $args)
     {
-        if (!method_exists($this->pdo, $method))
-            throw new \BadMethodCallException(__FUNCTION__." method $method() does not exist in PDO class");
-    
         return call_user_func_array([$this->pdo, $method], $args);
     }
 
@@ -86,7 +83,7 @@ class Connection implements ConnectionInterface
         }
         
         return array_merge(
-            arrays: [
+            [
                 \PDO::ATTR_ERRMODE  => \PDO::ERRMODE_EXCEPTION,
                 \PDO::ATTR_CASE     => \PDO::CASE_NATURAL,
                 \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
@@ -95,16 +92,15 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * Returns the Schema instance used to interact with the database schema
-     * 
+     * Returns a representation the database schema
+     * @throws \HexMakina\Crudites\CruditesException if the schema cannot be loaded
      */
-    public function schema(SchemaInterface $schema=null): SchemaInterface
+    public function schema(): SchemaInterface
     {
-        if($schema !== null)
-            $this->schema = $schema;
-
-        if(!isset($this->schema))
-            $this->schema = new Schema($this);
+        $database = $this->database();
+        if(!isset($this->schema)){
+            $this->schema = SchemaLoader::cache($database) ?? SchemaLoader::load($database, $this->pdo);
+        }
 
         return $this->schema;
     }
@@ -120,57 +116,7 @@ class Connection implements ConnectionInterface
 
             $this->database = $matches[1];
         }
-        return $this->database;
-    }
-
-    /**
-     * makes the PDO errorInfo array associative using 'state', 'code' and 'message' keys
-     */
-    public function error(): array
-    {
-        //url: https://www.php.net/manual/en/pdo.errorinfo.php
-        $info = $this->pdo->errorInfo();
-
-        // 0: the SQLSTATE associated with the last operation on the database handle
-        //    SQLSTATE is a five characters alphanumeric identifier defined in the ANSI SQL standard
-        $info['state'] = $info[0] ?? null;
-
-        // 1: driver-specific error code.
-        $info['code'] = $info[1] ?? null;
-
-        // 2: driver-specific error message
-        $info['message'] = $info[2] ?? null;
         
-        return $info;
-    }
-
-    /**
-     * Initiates a transaction, alias for beginTransaction()
-     *
-     * @return bool true on success or false on failure
-     */
-    public function transact(): bool
-    {
-        return $this->pdo->beginTransaction();
-    }
-
-    /**
-     * Commits the current transaction
-     *
-     * @return bool True on success, false on failure
-     */
-    public function commit(): bool
-    {
-        return $this->pdo->commit();
-    }
-
-    /**
-     * Rolls back the current transaction
-     *
-     * @return bool True on success, false on failure
-     */
-    public function rollback(): bool
-    {
-        return $this->pdo->rollback();
+        return $this->database;
     }
 }
