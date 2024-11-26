@@ -3,9 +3,7 @@
 namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\{QueryInterface, SelectInterface};
-use HexMakina\BlackBox\Database\{ConnectionInterface, SchemaInterface, SchemaAttributeInterface};
-
-use HexMakina\Crudites\SchemaLoader;
+use HexMakina\BlackBox\Database\{SchemaInterface, SchemaAttributeInterface};
 use HexMakina\Crudites\Queries\{Select, Insert, Update, Delete};
 
 /**
@@ -14,18 +12,19 @@ use HexMakina\Crudites\Queries\{Select, Insert, Update, Delete};
  */
 class Schema implements SchemaInterface
 {
-    private ConnectionInterface $connection;
+    private string $database;
     private array $tables = [];
 
-    public function __construct(ConnectionInterface $connection)
+    // use a SchemaLoader to get the proper table structure
+    public function __construct(string $database, array $tables = [])
     {
-        $this->connection = $connection;
-        $this->tables = SchemaLoader::load($connection);
+        $this->database = $database;
+        $this->tables = $tables;
     }
 
-    public function connection(): ConnectionInterface
+    public function database(): string
     {
-        return $this->connection;
+        return $this->database;
     }
 
     public function hasTable(string $table): bool
@@ -36,6 +35,30 @@ class Schema implements SchemaInterface
     public function tables(): array
     {
         return array_keys($this->tables);
+    }
+
+    public function hasColumn(string $table, string $column): bool
+    {
+        return $this->hasTable($table) && !empty($this->tables[$table]['columns'][$column]);
+    }
+
+    public function columns(string $table): array
+    {
+        return $this->hasTable($table) ? array_keys($this->tables[$table]['columns']) : [];
+    }
+
+    public function column(string $table, string $column): array
+    {
+        if (!$this->hasColumn($table, $column)) {
+            throw new \InvalidArgumentException('CANNOT FIND COLUMN ' . $column . ' IN TABLE ' . $table);
+        }
+
+        return $this->tables[$table]['columns'][$column]['schema'] ?? throw new \InvalidArgumentException("ERR_MISSING_COLUMN_SCHEMA");
+    }
+
+    public function attributes(string $table, string $column): SchemaAttributeInterface
+    {
+        return new SchemaAttribute($this, $table, $column);
     }
 
     public function autoIncrementedPrimaryKey(string $table): ?string
@@ -85,30 +108,7 @@ class Schema implements SchemaInterface
         return $ret;
     }
 
-    public function hasColumn(string $table, string $column): bool
-    {
-        return $this->hasTable($table) && !empty($this->tables[$table]['columns'][$column]);
-    }
-
-    public function columns(string $table): array
-    {
-        return $this->hasTable($table) ? array_keys($this->tables[$table]['columns']) : [];
-    }
-
-    public function column(string $table, string $column): array
-    {
-        if(!$this->hasColumn($table, $column)){
-            throw new \InvalidArgumentException('CANNOT FIND COLUMN ' . $column . ' IN TABLE ' . $table);
-        }
-
-        return $this->tables[$table]['columns'][$column]['schema'] ?? throw new \InvalidArgumentException("ERR_MISSING_COLUMN_SCHEMA");
-    }
-
-    public function attributes(string $table, string $column): SchemaAttributeInterface
-    {
-        return new SchemaAttribute($this, $table, $column);
-    }
-
+  
     public function matchUniqueness(string $table, array $dat_ass): array
     {
         return $this->matchPrimaryKeys($table, $dat_ass) ?? $this->matchUniqueKeys($table, $dat_ass) ?? [];
@@ -138,37 +138,23 @@ class Schema implements SchemaInterface
 
     public function insert(string $table, array $dat_ass): QueryInterface
     {
-        $insert = new Insert($table, $this->filterData($table, $dat_ass));
-        $insert->connection($this->connection);
-
-        return $insert;
+        return new Insert($table, $this->filterData($table, $dat_ass));
     }
 
     public function update(string $table, array $alterations = [], array $conditions = []): QueryInterface
     {
-        $update = new Update($table, $this->filterData($table, $alterations), $this->filterData($table, $conditions));
-        $update->connection($this->connection);
-
-        return $update;
+        return new Update($table, $this->filterData($table, $alterations), $this->filterData($table, $conditions));
     }
 
     public function delete(string $table, array $conditions): QueryInterface
     {
-        $delete = new Delete($table, $this->filterData($table, $conditions));
-        $delete->connection($this->connection);
-
-        return $delete;
+        return new Delete($table, $this->filterData($table, $conditions));
     }
-
 
     public function select(string $table, array $columns = null, string $table_alias = null): SelectInterface
     {
-        $table_alias ??= $table;
-
-        $select = new Select($columns, $table, $table_alias);
-        $select->connection($this->connection);
-
-        return $select;
+        $filtered_columns = array_intersect($columns, $this->columns($table));
+        return new Select($filtered_columns, $table, $table_alias);
     }
 
 
