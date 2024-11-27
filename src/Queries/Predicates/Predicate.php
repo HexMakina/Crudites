@@ -20,6 +20,9 @@ class Predicate
      */
     protected $operator = null;
 
+    protected $right = null;
+
+
     /**
      * @var string|null The label used for binding parameters. 
      */
@@ -71,7 +74,7 @@ class Predicate
     
     protected function right(): string
     {
-        return $this->bindLabel();
+        return $right ?? $this->bindLabel();
     }
 
     /**
@@ -92,6 +95,38 @@ class Predicate
     public function bindLabel(): string
     {
         return $this->bind_label ?? is_array($this->column) ? implode('_', $this->column) : $this->column;
+    }
+
+    public function withValue($value, $bind_label = null): self
+    {
+        $bind_label ??= $this->bindLabel();
+
+        $this->right = sprintf(':%s', $bind_label);
+        $this->bindings[$bind_label] = $value;
+        
+        return $this;
+    }
+
+    public function withValues(array $values, string $bind_prefix)
+    {
+        if (empty($values)) {
+            throw new \InvalidArgumentException('PREDICATE_VALUES_ARE_EMPTY');
+        }
+
+        $bind_label = $this->bindLabel();
+        foreach ($values as $index => $val) {
+            $this->bindings[sprintf('%s_%s_%d', $bind_prefix, $bind_label, $index)] = $val;
+        }
+
+        $this->right = '(:'.implode(',:', array_keys($this->bindings)).')';
+
+        return $this;
+    }
+
+    public function withColumn($column): self
+    {
+        $this->right = self::backtick($column);
+        return $this;
     }
 
     /**
