@@ -4,6 +4,9 @@ namespace HexMakina\Crudites\Queries;
 
 use HexMakina\BlackBox\Database\QueryInterface;
 
+use HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\Queries\Clauses\Join;
+
 abstract class Query implements QueryInterface
 {
     protected array $bindings = [];
@@ -11,6 +14,8 @@ abstract class Query implements QueryInterface
 
     protected string $table;
     protected $table_alias = null;
+
+    protected array $joined_tables = [];
     protected $clauses;
 
     //------------------------------------------------------------  DEBUG
@@ -42,6 +47,20 @@ abstract class Query implements QueryInterface
         return $this->statement();
     }
 
+
+    public function join(Join $join): self
+    {
+        if (isset($this->joined_tables[$join->alias()]) && $this->joined_tables[$join->alias()] !== $join->table()) {
+            throw new CruditesException(sprintf(__FUNCTION__ . '(): ALIAS `%s` ALREADY ALLOCATED FOR TABLE  `%s`', $join->alias(), $join->table()));
+        }
+
+        $this->joined_tables[$join->alias()] = $join->table();
+
+        $this->addClause('join', $join);
+
+        return $this;
+    }
+    
     public function table(string $table = null): string
     {
         return $table === null ? $this->table : ($this->table = $table);
@@ -153,4 +172,5 @@ abstract class Query implements QueryInterface
 
         return true;
     }
+
 }
