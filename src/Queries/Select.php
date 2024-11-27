@@ -172,7 +172,7 @@ class Select extends Query implements SelectInterface
 
         $this->table_alias ??= '';
 
-        $ret = PHP_EOL . 'SELECT ' . implode(', ' . PHP_EOL, $this->generateSelectColumns());
+        $ret = PHP_EOL . 'SELECT ' .  $this->generateSelectColumns();
 
         $ret .= PHP_EOL . sprintf(' FROM `%s`', $this->table);
         if ($this->table !== $this->tableLabel())
@@ -199,7 +199,7 @@ class Select extends Query implements SelectInterface
         return $ret;
     }
 
-    private function generateSelectColumns()
+    private function generateSelectColumns(): string
     {
         $ticked = [];
 
@@ -231,7 +231,7 @@ class Select extends Query implements SelectInterface
             }
         }
 
-        return $ticked;
+        return implode(',' . PHP_EOL, $ticked);
     }
     
 }
