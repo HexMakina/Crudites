@@ -16,15 +16,19 @@ class Result
     private \PDOStatement $prepared;
     private \PDOStatement $executed;
 
-    private $statement;
+    private $statement; // string or PDOStatement
+    private array $bindings;
+
 
     public const STATE_SUCCESS = '00000'; //PDO "error" code for "all is fine"
     
     
-    public function __construct(\PDO $pdo)
+    public function __construct(\PDO $pdo, $statement, array $bindings = [])
     {
         $this->pdo = $pdo;
-        $this->statement = null;
+        $this->statement = $statement;
+    
+        $this->run($bindings);
     }
 
     /**
@@ -43,35 +47,35 @@ class Result
         return call_user_func_array([$this->executed, $method], $args);
     }
 
-    public function run($statement, $bindings = [])
+    public function run($bindings = [])
     {
-        $this->statement = $statement;
+        $this->bindings = $bindings; // keep it for debugging
 
         // PDO::query the SQL statement or PDO::prepare it for later execution
-        if (is_string($statement)) {
+        if (is_string($this->statement)) {
 
             if (empty($bindings)) {
 
-                $res = $this->pdo->query($statement);
+                $res = $this->pdo->query($this->statement);
 
                 if ($res === false) {
-                    throw new CruditesException('STATEMENT_QUERY_WITH_STRING');
+                    throw new CruditesException('PDO_QUERY_STRING');
                 }
 
                 $this->executed = $res;
 
             } else if ($this->prepared === null) {
-                $res = $this->pdo->prepare($statement);
+                $res = $this->pdo->prepare($this->statement);
 
                 if ($res === false) {
-                    throw new CruditesException('STATEMENT_PREPARE_STRING');
+                    throw new CruditesException('PDO_PREPARE_STRING');
                 }
 
                 $this->prepared = $res;
             }
         }
-        else if($statement instanceof \PDOStatement){
-            $this->prepared = $statement;
+        else if($this->statement instanceof \PDOStatement){
+            $this->prepared = $this->statement;
         }
         else{
             throw new CruditesException('STATEMENT_TYPE_STRING_OR_PDOSTATEMENT');
@@ -80,7 +84,7 @@ class Result
 
         if($this->executed === null){
             if ($this->prepared->execute($bindings) === false) {
-                throw new CruditesException('PDOSTATEMENT_EXECUTION');
+                throw new CruditesException('PDOSTATEMENT_EXECUTE');
             }
 
             $this->executed = $this->prepared;
@@ -91,7 +95,7 @@ class Result
 
     public function isSuccess(): bool
     {
-        return $this->executed !== null && $this->executed->errorCode() === '00000';
+        return $this->executed !== null && $this->executed->errorCode() === \PDO::ERR_NONE;
     }
 
     public function count(): int
