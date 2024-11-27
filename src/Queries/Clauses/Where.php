@@ -6,7 +6,7 @@ use HexMakina\Crudites\Queries\Predicates\{Predicate};
 
 class Where
 {
-    protected string $default_table
+    protected string $default_table;
     protected array $and = [];
     protected array $bindings = [];
 
@@ -68,8 +68,6 @@ class Where
     public function andIn($field, $values, $table_name = null)
     {
         return $this->andPredicate(
-            new WithValues(
-                $table_name === null ? $field : [$table_name, $field], 
-                'IN', $values, 'AWIN'));
+            (new Predicate($table_name === null ? $field : [$table_name, $field]))->withValues($values, __FUNCTION__));
     }
 }

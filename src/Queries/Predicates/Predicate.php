@@ -117,7 +117,8 @@ class Predicate
         foreach ($values as $index => $val) {
             $this->bindings[sprintf('%s_%s_%d', $bind_prefix, $bind_label, $index)] = $val;
         }
-
+        
+        $this->operator = 'IN';
         $this->right = '(:'.implode(',:', array_keys($this->bindings)).')';
 
         return $this;
