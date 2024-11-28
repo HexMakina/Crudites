@@ -7,28 +7,27 @@ use HexMakina\Crudites\Queries\Grammar;
 
 class OrderBy extends Grammar
 {
-    private $columns;
+    private string $columns;
 
-    public function __construct($column, string $direction = null)
+    public function __construct(string|array $selected, string $direction)
     {
 
-        $this->columns = [];
-        $this->add($column, $direction);
+        $this->columns = $this->format($selected, $direction);
     }
 
-    public function add($column, string $direction = null): self
+    public function add(string|array $selected, string $direction): self
     {
-        return $this->addRaw(self::backtick($column) . ' ' . $direction);
-    }
-
-    public function addRaw(string $clause): self
-    {
-        $this->columns[] = $clause;
+        $this->columns .= ', ' . $this->format($selected, $direction);
         return $this;
     }
 
     public function __toString()
     {
-        return empty($this->columns) ? '' : 'ORDER BY ' . implode(', ', $this->columns);
+        return empty($this->columns) ? '' : 'ORDER BY ' . $this->columns;
+    }
+
+    private function format(string|array $selected, string $direction): string
+    {
+        return Grammar::selected($selected) . ' ' . $direction;
     }
 }

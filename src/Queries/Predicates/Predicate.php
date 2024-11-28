@@ -85,7 +85,7 @@ class Predicate extends Grammar
      *
      * @return array The bindings for the predicate.
      */
-    public function getBindings(): array
+    public function bindings(): array
     {
         return $this->bindings ?? [];
     }
@@ -95,15 +95,22 @@ class Predicate extends Grammar
      *
      * @return string The binding label for the predicate.
      */
-    public function bindLabel(): string
+    public function bindLabel(string $prefix = ''): string
     {
-        return $this->bind_label ?? is_array($this->column) ? implode('_', $this->column) : $this->column;
+        if($this->bind_label === null){
+            $label = is_array($this->column) ? $this->column : [$this->column];
+            array_unshift($label, $prefix);
+            $this->bind_label = implode('_', $label);
+
+        }
+            
+        return $this->bind_label;
     }
 
-    public function withValue($value, $bind_label = null): self
+    public function withValue($value, string $bind_prefix = null): self
     {
-        $bind_label ??= $this->bindLabel();
-
+        $bind_label = $this->bindLabel($bind_prefix);
+        
         $this->right = sprintf(':%s', $bind_label);
         $this->bindings[$bind_label] = $value;
         

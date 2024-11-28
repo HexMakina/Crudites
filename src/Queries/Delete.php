@@ -3,11 +3,12 @@
 namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\Queries\Clauses\Where;
 
 class Delete extends Query
 {
-    use ClauseJoin;
-    use ClauseWhere;
+    protected $table;
+    protected $where;
 
     public function __construct(string $table, array $strict_conditions)
     {
@@ -16,11 +17,16 @@ class Delete extends Query
         }
 
         $this->table = $table;
-        $this->whereFieldsEQ($strict_conditions);
+        $this->where = (new Where($table))->andFields($strict_conditions, $table, '=');
     }
 
     public function statement(): string
     {
-        return sprintf('DELETE FROM `%s` %s ', $this->table, $this->generateWhere());
+        return sprintf('DELETE FROM `%s` %s ', $this->table, $this->where);
+    }
+
+    public function bindings(): array
+    {
+        return $this->where->bindings();
     }
 }

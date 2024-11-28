@@ -6,13 +6,11 @@ use HexMakina\Crudites\CruditesException;
 
 class Insert extends Query
 {
-    use ClauseJoin;
-
     public function __construct(string $table, array $dat_ass)
     {
         // Check if the given data is a non-empty array, and throw an exception if it is not
         if (empty($dat_ass)) {
-            throw new CruditesException(__CLASS__ . '_DATA_INVALID_OR_MISSING');
+            throw new CruditesException('EMPTY INSERT');
         }
         
         $this->table = $table;
@@ -32,7 +30,7 @@ class Insert extends Query
         $fields = array_keys($fields[$this->table]);
         
         $fields = '`' . implode('`, `', $fields) . '`';
-        $bindings = implode(', ', array_keys($this->getBindings()));
+        $bindings = implode(', ', array_keys($this->bindings()));
 
         return sprintf('INSERT INTO `%s` (%s) VALUES (%s)', $this->table, $fields, $bindings);
     }

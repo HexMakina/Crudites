@@ -27,12 +27,13 @@ class SelectFrom extends Grammar
     {
         return $this->alias;
     }
-    
 
-    public function add(string $selected, string $alias = null): self
+    public function add($selected, string $alias = null): self
     {
+        $selected = Grammar::selected($selected);
+
         if (!empty($alias)) {
-            $selected .= ' AS ' . $alias;
+            $selected .= ' AS ' . Grammar::backtick($alias);
         }
 
         $this->columns[] = $selected;
@@ -45,27 +46,20 @@ class SelectFrom extends Grammar
         return $this;
     }
 
-    public function addColumn($column, string $alias = null): self
-    {
-        return $this->add(self::backtick($column), $alias);
-    }
-
-    public function addFunction(string $aggregate, string $alias = null): self
-    {
-        return $this->add($aggregate, $alias);
-    }
-
-
     public function __toString()
     {
-        $columns = empty($this->columns) ? '*' : implode(',', $this->columns);
-        
-        $schema = self::backtick($this->table);
-        if(!empty($this->alias))
-        {
-            $schema .= ' AS ' . self::backtick($this->alias);
+        if(empty($this->columns)){
+            $this->all();
         }
 
+        $schema = Grammar::backtick($this->table);
+        if(!empty($this->alias))
+        {
+            $schema .= ' AS ' . Grammar::backtick($this->alias);
+        }
+
+        $columns = implode(',', $this->columns);
+        
         return sprintf('SELECT %s FROM %s', $columns, $schema);
     }
 }

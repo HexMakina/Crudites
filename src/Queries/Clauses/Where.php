@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Queries\Clauses;
 
-use HexMakina\Crudites\Queries\Predicates\{Predicate};
+use HexMakina\Crudites\Queries\Predicates\Predicate;
 
 class Where
 {
@@ -17,9 +17,8 @@ class Where
             $this->andPredicate($predicate);
         }
     }
-    public function and(string $condition, $bindings = [])
+    public function andRaw(string $condition, $bindings = [])
     {
-        $this->and ??= [];
         $this->and[] = $condition;
 
         if (!empty($bindings)) {
@@ -31,7 +30,7 @@ class Where
 
     public function andPredicate(Predicate $predicate)
     {
-        return $this->and($predicate->__toString(), $predicate->getBindings());
+        return $this->andRaw($predicate->__toString(), $predicate->bindings());
     }
 
     public function bindings(): array
@@ -41,23 +40,24 @@ class Where
 
     public function __toString(): string
     {
-        if (!empty($this->and)) {
-            return PHP_EOL . ' WHERE ' . implode(PHP_EOL . ' AND ', $this->and);
+        if (empty($this->and)) {
+            return '';
         }
 
-        return '';
+        return PHP_EOL . ' WHERE ' . implode(PHP_EOL . ' AND ', $this->and);
     }
 
-    public function andIsNull($field, $table_name = null)
+    public function andIsNull(string $field, $table_name = null)
     {
-        return $this->andPredicate(new Predicate([$table_name ?? $this->default_table, $field], 'IS NULL'));
+        $table = $table_name ?: $this->default_table;
+        return $this->andRaw(new Predicate([$table, $field], 'IS NULL'));
     }
 
-    public function andFields($assoc_data, $table_name = null, $operator = '=')
+    public function andFields(array $assoc_data, $table_name = null, $operator = '=')
     {
         foreach ($assoc_data as $field => $value) {
             $column = $table_name === null ? $field : [$table_name, $field];
-            $predicate = (new Predicate($column,$operator))->withValue($value);
+            $predicate = (new Predicate($column,$operator))->withValue($value, __FUNCTION__);
 
             $this->andPredicate($predicate);
         }
@@ -65,9 +65,11 @@ class Where
         return $this;
     }
 
-    public function andIn($field, $values, $table_name = null)
+    public function andIn(string $field, array $values, $table_name = null)
     {
         return $this->andPredicate(
-            (new Predicate($table_name === null ? $field : [$table_name, $field]))->withValues($values, __FUNCTION__));
+            (new Predicate($table_name === null ? $field : [$table_name, $field]))
+            ->withValues($values, __FUNCTION__)
+        );
     }
 }
