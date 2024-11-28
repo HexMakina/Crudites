@@ -2,13 +2,15 @@
 
 namespace HexMakina\Crudites\Queries\Predicates;
 
+use HexMakina\Crudites\Queries\Grammar;
+
 /**
  * An abstract class representing a SQL predicate.
  * Instantiate and __toString().
  *
  * @package HexMakina\Crudites\Queries
  */
-class Predicate
+class Predicate extends Grammar
 {
     /**
      * @var mixed The column involved in the predicate.
@@ -39,10 +41,11 @@ class Predicate
      * @param mixed $column The column involved in the predicate.
      * @param string $operator The operator used in the predicate.
      */
-    public function __construct($column, string $operator = null)
+    public function __construct($column, string $operator = null, string $right = null)
     {
         $this->column = $column;
         $this->operator = $operator;
+        $this->right = $right;
     }
 
     /**
@@ -74,7 +77,7 @@ class Predicate
     
     protected function right(): string
     {
-        return $right ?? $this->bindLabel();
+        return $this->right ?? $this->bindLabel();
     }
 
     /**
@@ -129,20 +132,5 @@ class Predicate
         $this->right = self::backtick($column);
         return $this;
     }
-
-    /**
-     * Adds backticks to a reference.
-     *
-     * @param mixed $reference The reference to add backticks to.
-     * @return string The reference with backticks added.
-     */
-    protected static function backtick($reference): string
-    {
-        if (is_array($reference)) {
-            return sprintf('`%s`.`%s`', array_shift($reference), array_shift($reference));
-        }
-        return sprintf('`%s`', $reference);
-    }
-
 
 }
