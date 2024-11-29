@@ -2,9 +2,7 @@
 
 namespace HexMakina\Crudites\Queries\Clauses;
 
-use HexMakina\Crudites\Queries\Grammar;
-
-class SelectFrom extends Grammar
+class SelectFrom extends Clause
 {
     protected $columns;
 
@@ -16,6 +14,11 @@ class SelectFrom extends Grammar
         $this->columns = [];
         $this->table = $table;
         $this->alias = $alias;
+    }
+
+    public function name(): string
+    {
+        return self::SELECT;
     }
 
     public function table(): string
@@ -30,10 +33,10 @@ class SelectFrom extends Grammar
 
     public function add($selected, string $alias = null): self
     {
-        $selected = Grammar::selected($selected);
+        $selected = self::selected($selected);
 
         if (!empty($alias)) {
-            $selected .= ' AS ' . Grammar::backtick($alias);
+            $selected .= ' AS ' . self::backtick($alias);
         }
 
         $this->columns[] = $selected;
@@ -52,10 +55,10 @@ class SelectFrom extends Grammar
             $this->all();
         }
 
-        $schema = Grammar::backtick($this->table);
+        $schema = self::backtick($this->table);
         if(!empty($this->alias))
         {
-            $schema .= ' AS ' . Grammar::backtick($this->alias);
+            $schema .= ' AS ' . self::backtick($this->alias);
         }
 
         $columns = implode(',', $this->columns);

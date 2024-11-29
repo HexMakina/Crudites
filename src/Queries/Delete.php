@@ -8,7 +8,7 @@ use HexMakina\Crudites\Queries\Clauses\Where;
 class Delete extends Query
 {
     protected $table;
-    protected $where;
+    
 
     public function __construct(string $table, array $strict_conditions)
     {
@@ -17,16 +17,16 @@ class Delete extends Query
         }
 
         $this->table = $table;
-        $this->where = (new Where($table))->andFields($strict_conditions, $table, '=');
+        $this->add((new Where($table))->andFields($strict_conditions, $table, '='));
     }
 
     public function statement(): string
     {
-        return sprintf('DELETE FROM `%s` %s ', $this->table, $this->where);
+        return sprintf('DELETE FROM `%s` %s ', $this->table, $this->clause(Where::WHERE));
     }
 
     public function bindings(): array
     {
-        return $this->where->bindings();
+        return $this->clause(Where::WHERE)->bindings();
     }
 }

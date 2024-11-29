@@ -2,15 +2,13 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\Crudites\CruditesException;
-
 class Insert extends Query
 {
     public function __construct(string $table, array $dat_ass)
     {
         // Check if the given data is a non-empty array, and throw an exception if it is not
         if (empty($dat_ass)) {
-            throw new CruditesException('EMPTY INSERT');
+            throw new \InvalidArgumentException('EMPTY_DATA');
         }
         
         $this->table = $table;
@@ -20,7 +18,6 @@ class Insert extends Query
     /**
      * Generates the SQL INSERT statement
      *
-     * @throws CruditesException - Thrown if there are no bindings or if the number of bindings does not match the number of binding names
      * @return string - The generated SQL INSERT statement
      */
     public function statement(): string

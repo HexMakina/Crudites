@@ -2,52 +2,29 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\Crudites\CruditesException;
+use HexMakina\Crudites\Queries\Clauses\Where;
+use HexMakina\Crudites\Queries\Clauses\Set;
+
 
 class Update extends Query
 {
-    use ClauseJoin;
-    use ClauseWhere;
-
-    private array $alterations = [];
-
-    public function __construct(string $table, $alterations = [], $conditions = [])
+    public function __construct(string $table, array $alterations, array $conditions)
     {
-        // Check if the given data is a non-empty array, and throw an exception if it is not
-        if (empty($alterations)) {
-            throw new CruditesException(__CLASS__.'_DATA_INVALID_OR_MISSING');
+        if (empty($alterations) || empty($conditions)) {
+            throw new \InvalidArgumentException('EMPTY_ALTERATIONS_OR_CONDITIONS');
         }
 
         $this->table = $table;
+        
+        $this->add(new Set($alterations));
 
-        $binding_names = [];
-        foreach ($alterations as $field_name => $value) {
-            $binding_names[$field_name] = $this->addBinding($field_name, $value, $this->table);
-            $this->alterations[] = $this->backTick($field_name) . ' = ' . $binding_names[$field_name];
-        }
-
-        if (!empty($conditions)) {
-            if (is_array($conditions)) {
-                $this->whereFieldsEQ($conditions);
-            } elseif (is_string($conditions)) {
-                $this->where($conditions);
-            }
-        }
+        $clause = new Where($table);
+        $clause->andFields($conditions, $table, '=');
+        $this->add($clause);
     }
 
     public function statement(): string
     {
-        if (empty($this->alterations)) {
-            throw new CruditesException('UPDATE_NO_ALTERATIONS');
-        }
-
-        // prevents haphazrdous generation of massive update query, must use statement setter for such jobs
-        if (empty($this->where)) {
-            throw new CruditesException('UPDATE_NO_CONDITIONS');
-        }
-
-        $set = implode(', ', $this->alterations);
-        $where = $this->generateWhere();
-        return sprintf('UPDATE `%s` SET %s %s;', $this->table, $set, $where);
+        return sprintf('UPDATE `%s` %s %s;', $this->table, $this->clause(Set::SET), $this->clause(Where::WHERE));
     }
 }

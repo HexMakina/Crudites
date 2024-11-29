@@ -3,9 +3,7 @@
 namespace HexMakina\Crudites\Queries;
 
 use HexMakina\BlackBox\Database\QueryInterface;
-
-use HexMakina\Crudites\CruditesException;
-use HexMakina\Crudites\Queries\Clauses\Join;
+use HexMakina\Crudites\Queries\Clauses\Clause;
 
 abstract class Query implements QueryInterface
 {
@@ -13,9 +11,10 @@ abstract class Query implements QueryInterface
     protected array $binding_names = [];
 
     protected string $table;
+    protected string $alias = null;
+
     protected $table_alias = null;
 
-    protected array $joined_tables = [];
     protected $clauses;
 
     //------------------------------------------------------------  DEBUG
@@ -47,51 +46,31 @@ abstract class Query implements QueryInterface
         return $this->statement();
     }
 
-
-    public function join(Join $join): self
+    public function table(): string
     {
-        if (isset($this->joined_tables[$join->alias()]) && $this->joined_tables[$join->alias()] !== $join->table()) {
-            throw new CruditesException(sprintf(__FUNCTION__ . '(): ALIAS `%s` ALREADY ALLOCATED FOR TABLE  `%s`', $join->alias(), $join->table()));
-        }
-
-        $this->joined_tables[$join->alias()] = $join->table();
-
-        $this->addClause('join', $join);
-
-        return $this;
-    }
-    
-    public function table(string $table = null): string
-    {
-        return $table === null ? $this->table : ($this->table = $table);
+        return $this->table;
     }
 
-    public function addClause(string $clause, $argument): self
+    public function alias(): string
     {
-        if (!is_array($argument))
-            $argument = [$argument];
+        return $this->alias ?? $this->table;
+    }
 
-        $this->clauses[$clause] ??= [];
-        $this->clauses[$clause] = array_unique(array_merge($this->clauses[$clause], $argument), SORT_REGULAR);
+    public function clause(string $name): ?Clause
+    {
+        return $this->clauses[$name] ?? null;
+    }
 
+    public function add(Clause $clause): self
+    {
+        $this->clauses[$clause->name()] = $clause;
         return $this;
     }
 
-    public function setClause($clause, $argument = null): self
+    public function set(Clause $clause): self
     {
-        if ($argument === null) {
-            unset($this->clauses[$clause]);
-        } else {
-            $this->clauses[$clause] = [];
-            $this->addClause($clause, $argument);
-        }
-
-        return $this;
-    }
-
-    public function clause($clause): array
-    {
-        return $this->clauses[$clause] ?? [];
+        unset($this->clauses[$clause->name()]);
+        return $this->add($clause);
     }
 
     //------------------------------------------------------------  PREP::FIELDS
@@ -114,14 +93,8 @@ abstract class Query implements QueryInterface
         return sprintf('`%s`.`%s`', $this->tableLabel($table_name), $field_name);
     }
 
- 
 
-    public function setBindings($dat_ass): void
-    {
-        $this->bindings = $dat_ass;
-    }
-
-    public function getBindings(): array
+    public function bindings(): array
     {
         return $this->bindings;
     }
