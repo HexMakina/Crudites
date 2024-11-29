@@ -3,7 +3,7 @@
 namespace HexMakina\Crudites\Queries;
 
 use HexMakina\BlackBox\Database\QueryInterface;
-use HexMakina\Crudites\Queries\Clauses\Clause;
+use HexMakina\Crudites\Grammar\Clause\Clause;
 
 abstract class Query implements QueryInterface
 {

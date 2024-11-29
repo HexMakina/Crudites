@@ -1,11 +1,10 @@
 <?php
 
-namespace HexMakina\Crudites\Queries\Clauses;
+namespace HexMakina\Crudites\Grammar\Clause;
 
-use HexMakina\Crudites\Queries\Grammar;
-use HexMakina\Crudites\Queries\Predicates\Predicate;
+use HexMakina\Crudites\Grammar\Predicate\Predicate;
 
-class Having extends Grammar
+class Having extends Clause
 {
     private string $conditions;
     private array $bindings = [];
@@ -25,6 +24,11 @@ class Having extends Grammar
     public function __toString()
     {
         return empty($this->conditions) ? '' : 'HAVING ' . $this->conditions;
+    }
+
+    public function name(): string
+    {
+        return self::HAVING;
     }
 
     private function process($column, string $operator, $value): string

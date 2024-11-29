@@ -2,8 +2,7 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\Crudites\CruditesException;
-use HexMakina\Crudites\Queries\Clauses\Where;
+use HexMakina\Crudites\Grammar\Clause\Where;
 
 class Delete extends Query
 {
@@ -13,7 +12,7 @@ class Delete extends Query
     public function __construct(string $table, array $strict_conditions)
     {
         if (empty($strict_conditions)) {
-            throw new CruditesException('DELETE_USED_AS_TRUNCATE');
+            throw new \InvalidArgumentException('DELETE_USED_AS_TRUNCATE');
         }
 
         $this->table = $table;

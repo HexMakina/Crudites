@@ -1,9 +1,9 @@
 <?php
 
-namespace HexMakina\Crudites\Queries\Clauses;
+namespace HexMakina\Crudites\Grammar\Clause;
 
-use HexMakina\Crudites\Queries\Grammar;
-use HexMakina\Crudites\Queries\Predicates\Predicate;
+use HexMakina\Crudites\Grammar\Grammar;
+use HexMakina\Crudites\Grammar\Predicate\Predicate;
 
 /**
  * LEFT JOIN, two ways

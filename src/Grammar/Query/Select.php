@@ -5,8 +5,8 @@ namespace HexMakina\Crudites\Queries;
 
 use HexMakina\Crudites\CruditesException;
 
-use HexMakina\Crudites\Queries\Clauses\SelectFrom;
-use HexMakina\Crudites\Queries\Clauses\Clause;
+use HexMakina\Crudites\Grammar\Clause\SelectFrom;
+use HexMakina\Crudites\Grammar\Clause\Clause;
 
 class Select extends Query
 {

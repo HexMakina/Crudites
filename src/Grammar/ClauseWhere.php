@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\Crudites\Queries\Predicates\{Predicate, IsNotEmpty, IsEmpty, WithValue, WithValues};
+use HexMakina\Crudites\Grammar\Predicate\{Predicate, IsNotEmpty, IsEmpty, WithValue, WithValues};
 trait ClauseWhere
 {
     public static $OP_AND = 'AND';

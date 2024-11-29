@@ -1,13 +1,12 @@
 <?php
 
-namespace HexMakina\Crudites\Queries\Predicates;
+namespace HexMakina\Crudites\Grammar\Predicate;
 
 /**
  * Class IsEmpty
  * 
  * Allows to check if a column is empty, meaning it is either NULL or an empty string.
  * 
- * @package HexMakina\Crudites\Queries\Predicates
  */
 class IsEmpty extends Predicate
 {

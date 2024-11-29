@@ -1,8 +1,8 @@
 <?php
 
-namespace HexMakina\Crudites\Queries\Clauses;
+namespace HexMakina\Crudites\Grammar\Clause;
 
-use HexMakina\Crudites\Queries\Predicates\Predicate;
+use HexMakina\Crudites\Grammar\Predicate\Predicate;
 
 class Where extends Clause
 {

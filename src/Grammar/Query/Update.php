@@ -2,8 +2,8 @@
 
 namespace HexMakina\Crudites\Queries;
 
-use HexMakina\Crudites\Queries\Clauses\Where;
-use HexMakina\Crudites\Queries\Clauses\Set;
+use HexMakina\Crudites\Grammar\Clause\Where;
+use HexMakina\Crudites\Grammar\Clause\Set;
 
 
 class Update extends Query

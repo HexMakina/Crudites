@@ -1,6 +1,6 @@
 <?php
 
-namespace HexMakina\Crudites\Queries\Clauses;
+namespace HexMakina\Crudites\Grammar\Clause;
 
 class SelectFrom extends Clause
 {

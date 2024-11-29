@@ -1,8 +1,8 @@
 <?php
 
-namespace HexMakina\Crudites\Queries\Clauses;
+namespace HexMakina\Crudites\Grammar\Clause;
 
-class Limit
+class Limit extends Clause
 {
     private string $clause;
     
@@ -14,5 +14,10 @@ class Limit
     public function __toString()
     {
         return $this->clause;
+    }
+
+    public function name(): string
+    {
+        return self::LIMIT;
     }
 }

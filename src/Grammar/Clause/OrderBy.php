@@ -1,11 +1,8 @@
 <?php
 
-namespace HexMakina\Crudites\Queries\Clauses;
+namespace HexMakina\Crudites\Grammar\Clause;
 
-use HexMakina\Crudites\Queries\Grammar;
-
-
-class OrderBy extends Grammar
+class OrderBy extends Clause
 {
     private string $columns;
 
@@ -29,5 +26,10 @@ class OrderBy extends Grammar
     private function format(string|array $selected, string $direction): string
     {
         return Grammar::selected($selected) . ' ' . $direction;
+    }
+
+    public function name(): string
+    {
+        return self::ORDER;
     }
 }
