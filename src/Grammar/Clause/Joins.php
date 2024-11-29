@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Grammar\Clause;
 
-class Joins
+class Joins extends Clause
 {
     protected array $joins = [];
     protected array $joined_tables = [];
@@ -30,6 +30,11 @@ class Joins
     public function __toString(): string
     {
         return implode(PHP_EOL, $this->joins);
+    }
+
+    public function name(): string
+    {
+        return self::JOINS;
     }
 
 }

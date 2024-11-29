@@ -2,7 +2,6 @@
 
 namespace HexMakina\Crudites\Grammar\Clause;
 
-use HexMakina\Crudites\Grammar\Grammar;
 use HexMakina\Crudites\Grammar\Predicate\Predicate;
 
 /**
@@ -13,8 +12,8 @@ use HexMakina\Crudites\Grammar\Predicate\Predicate;
  * INNER JOIN, with helper, before on
  * (new Join('cbx_order', 'Orders'))->inner()->on('user_id', 'User', 'id');
  */
-²
-class Join extends Grammar
+
+class Join extends Clause
 {
     protected string $type;
 
