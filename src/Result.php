@@ -16,8 +16,10 @@ class Result
     private \PDOStatement $prepared;
     private \PDOStatement $executed;
 
-    private $statement; // string or PDOStatement
-    private $bindings = [];
+    // string or PDOStatement
+    private $statement;
+
+    private array $bindings;
 
 
     public const STATE_SUCCESS = '00000'; //PDO "error" code for "all is fine"
@@ -27,8 +29,9 @@ class Result
     {
         $this->pdo = $pdo;
         $this->statement = $statement;
-        
-        if($statement instanceof \PDOStatement)
+        $this->bindings = $bindings;
+
+        if ($statement instanceof \PDOStatement)
             $this->prepared = $statement;
 
         $this->run($bindings);
@@ -41,13 +44,16 @@ class Result
 
     public function __call($method, $args)
     {
-        if ($this->executed === null)
-            throw new CruditesException('RUN_QUERY_BEFORE_CALLING_METHOD');
+        $pdo_statement = $this->executed ?? $this->prepared;
 
-        if (!method_exists($this->executed, $method))
+        if ($pdo_statement === null)
+            throw new CruditesException('RUN_OR_PREPARE_QUERY_BEFORE_CALLING_METHOD');
+
+        if (!method_exists($pdo_statement, $method))
             throw new \BadMethodCallException(__FUNCTION__ . " method $method() does not exist in PDOStatement class");
 
-        return call_user_func_array([$this->executed, $method], $args);
+
+        return call_user_func_array([$pdo_statement, $method], $args);
     }
 
     /**
@@ -66,27 +72,35 @@ class Result
         $this->bindings = $bindings;
 
         try {
+
+            // is prepared, execute it with bindings
             if ($this->prepared !== null) {
-                if ($this->prepared->execute($bindings) === false) {
-                    throw new CruditesException('PDOSTATEMENT_EXECUTE');
+                if ($this->prepared->execute($bindings) !== false) {
+                    $this->executed = $this->prepared;
+                    return $this;
                 }
-                $this->executed = $this->prepared;
-            } 
-            // PDO::query the SQL statement or PDO::prepare it and recursively call run() with bindings
-            else if (is_string($this->statement)) {
-                if (empty($bindings)) {
-                    if (($res = $this->pdo->query($this->statement)) === false) {
-                        throw new CruditesException('PDO_QUERY_STRING');
-                    }
-                    $this->executed = $res;
-                } else {
-                    if (($res = $this->pdo->prepare($this->statement)) === false) {
-                        throw new CruditesException('PDO_PREPARE_STRING');
-                    }
-                    $this->prepared = $res;
-                    return $this->run($bindings);
-                }
+
+                throw new CruditesException('PDOSTATEMENT_EXECUTE');
             }
+
+            // not prepared, no bindings, PDO::query the statement
+            if (empty($bindings)) {
+                if (($res = $this->pdo->query($this->statement)) !== false) {
+                    $this->executed = $res;
+                    return $this;
+                }
+
+                throw new CruditesException('PDO_QUERY_STRING');
+            }
+
+            // PDO::prepare it and recursively call run() with bindings
+            if (($res = $this->pdo->prepare($this->statement)) !== false) {
+                $this->prepared = $res;
+                return $this->run($bindings);
+            }
+
+            throw new CruditesException('PDO_PREPARE_STRING');
+            
         } catch (\PDOException $e) {
             throw new CruditesException('PDO_EXCEPTION: ' . $e->getMessage(), $e->getCode(), $e);
         }
@@ -94,29 +108,69 @@ class Result
         return $this;
     }
 
+    /**
+     * Returns true if the statement has been executed without error
+     * @return bool
+     */
     public function ran(): bool
     {
         return $this->executed !== null && $this->executed->errorCode() !== \PDO::ERR_NONE;
     }
 
+    /**
+     * Returns the result set (by default as an array of associative arrays) 
+     * A wrapper for PDOStatement::fetchAll()
+     * 
+     */
     public function ret($mode = \PDO::FETCH_ASSOC, $fetch_argument = null, $ctor_args = null)
     {
         return $this->executed->fetchAll($mode, $fetch_argument, $ctor_args);
     }
 
+    /**
+     * Returns the first row of the result set
+     * A wrapper for PDOStatement::fetch()
+     * 
+     * @param int $mode 
+     * @param mixed $orientation
+     * @param mixed $offset 
+     * @return mixed
+     * 
+     */
+    public function retOne($mode = \PDO::FETCH_ASSOC, $orientation = null, $offset = null)
+    {
+        return $this->executed->fetch($mode, $orientation, $offset);
+    }
 
-
-
+    /**
+     * Returns the number of rows affected by the last SQL statement
+     * A wrapper for PDOStatement::rowCount()
+     * 
+     * @return int
+     */
     public function count(): int
     {
         return $this->ran() ? $this->executed->rowCount() : -1;
     }
 
+    /**
+     * Returns the last inserted ID
+     * A wrapper for PDO::lastInsertId()
+     * 
+     * @param string $name
+     * @return string
+     */
     public function lastInsertId($name = null)
     {
-        return $this->pdo->lastInsertId($name);
+        $id = $this->pdo->lastInsertId($name);
     }
 
+    /** 
+     * Returns the error info of the last operation (execution, preparation or query)
+     * A wrapper for PDOStatement::errorInfo() and PDO::errorInfo()
+     * 
+     * @return array
+     */
     public function errorInfo(): array
     {
         if ($this->executed !== null)
@@ -128,6 +182,12 @@ class Result
         return $this->pdo->errorInfo();
     }
 
+    /**
+     * Returns a formatted error message of the last operation (execution, preparation or query)
+     * Format is: "message (state: code)"
+     * 
+     * @return string
+     */
     public function errorMessageWithCodes(): string
     {
         list($state, $code, $message) = $this->errorInfo();
@@ -135,12 +195,7 @@ class Result
     }
 
 
-
-    public function retOne($mode = \PDO::FETCH_ASSOC, $orientation = null, $offset = null)
-    {
-        return $this->executed->fetch($mode, $orientation, $offset);
-    }
-
+    // a few shorthands for ret() parameters
 
     public function retObj($c = null)
     {
