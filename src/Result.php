@@ -27,6 +27,9 @@ class Result
     {
         $this->pdo = $pdo;
         $this->statement = $statement;
+        
+        if($statement instanceof \PDOStatement)
+            $this->prepared = $statement;
 
         $this->run($bindings);
     }
@@ -47,37 +50,46 @@ class Result
         return call_user_func_array([$this->executed, $method], $args);
     }
 
+    /**
+     * Runs the statement with the given bindings (optional)
+     * Without bindings, the string statement is executed with PDO::query()
+     * 
+     * 
+     * @param array $bindings
+     * @return self
+     * @throws CruditesException if the statement could not be queried, executed or prepared or if a PDOException is thrown
+     */
     public function run(array $bindings = [])
     {
         // (re)set the executed PDOStatement instance
         $this->executed = null;
         $this->bindings = $bindings;
 
-        if($this->prepared !== null){
-            if ($this->prepared->execute($bindings) === false) {
-                throw new CruditesException('PDOSTATEMENT_EXECUTE');
+        try {
+            if ($this->prepared !== null) {
+                if ($this->prepared->execute($bindings) === false) {
+                    throw new CruditesException('PDOSTATEMENT_EXECUTE');
+                }
+                $this->executed = $this->prepared;
+            } 
+            // PDO::query the SQL statement or PDO::prepare it and recursively call run() with bindings
+            else if (is_string($this->statement)) {
+                if (empty($bindings)) {
+                    if (($res = $this->pdo->query($this->statement)) === false) {
+                        throw new CruditesException('PDO_QUERY_STRING');
+                    }
+                    $this->executed = $res;
+                } else {
+                    if (($res = $this->pdo->prepare($this->statement)) === false) {
+                        throw new CruditesException('PDO_PREPARE_STRING');
+                    }
+                    $this->prepared = $res;
+                    return $this->run($bindings);
+                }
             }
-
-            $this->executed = $this->prepared;
+        } catch (\PDOException $e) {
+            throw new CruditesException('PDO_EXCEPTION: ' . $e->getMessage(), $e->getCode(), $e);
         }
-        // PDO::query the SQL statement or PDO::prepare it and recursively call run() with bindings
-        else if (is_string($this->statement)) {
-
-            if (empty($bindings)) {
-                if (($res = $this->pdo->query($this->statement)) === false) {
-                    throw new CruditesException('PDO_QUERY_STRING');
-                }
-                $this->executed = $res;
-
-            } else {
-                if (($res = $this->pdo->prepare($this->statement)) === false) {
-                    throw new CruditesException('PDO_PREPARE_STRING');
-                }
-                $this->prepared = $res;
-
-                return $this->run($bindings);
-            }
-        } 
 
         return $this;
     }
@@ -128,7 +140,7 @@ class Result
     {
         return $this->executed->fetch($mode, $orientation, $offset);
     }
-    
+
 
     public function retObj($c = null)
     {
