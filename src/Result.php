@@ -17,17 +17,17 @@ class Result
     private \PDOStatement $executed;
 
     private $statement; // string or PDOStatement
-    private array $bindings;
+    private $bindings = [];
 
 
     public const STATE_SUCCESS = '00000'; //PDO "error" code for "all is fine"
-    
-    
+
+
     public function __construct(\PDO $pdo, $statement, array $bindings = [])
     {
         $this->pdo = $pdo;
         $this->statement = $statement;
-    
+
         $this->run($bindings);
     }
 
@@ -47,60 +47,57 @@ class Result
         return call_user_func_array([$this->executed, $method], $args);
     }
 
-    public function run($bindings = [])
+    public function run(array $bindings = [])
     {
-        $this->bindings = $bindings; // keep it for debugging
+        // (re)set the executed PDOStatement instance
+        $this->executed = null;
+        $this->bindings = $bindings;
 
-        // PDO::query the SQL statement or PDO::prepare it for later execution
-        if (is_string($this->statement)) {
-
-            if (empty($bindings)) {
-
-                $res = $this->pdo->query($this->statement);
-
-                if ($res === false) {
-                    throw new CruditesException('PDO_QUERY_STRING');
-                }
-
-                $this->executed = $res;
-
-            } else if ($this->prepared === null) {
-                $res = $this->pdo->prepare($this->statement);
-
-                if ($res === false) {
-                    throw new CruditesException('PDO_PREPARE_STRING');
-                }
-
-                $this->prepared = $res;
-            }
-        }
-        else if($this->statement instanceof \PDOStatement){
-            $this->prepared = $this->statement;
-        }
-        else{
-            throw new CruditesException('STATEMENT_TYPE_STRING_OR_PDOSTATEMENT');
-        }
-
-
-        if($this->executed === null){
+        if($this->prepared !== null){
             if ($this->prepared->execute($bindings) === false) {
                 throw new CruditesException('PDOSTATEMENT_EXECUTE');
             }
 
             $this->executed = $this->prepared;
         }
+        // PDO::query the SQL statement or PDO::prepare it and recursively call run() with bindings
+        else if (is_string($this->statement)) {
+
+            if (empty($bindings)) {
+                if (($res = $this->pdo->query($this->statement)) === false) {
+                    throw new CruditesException('PDO_QUERY_STRING');
+                }
+                $this->executed = $res;
+
+            } else {
+                if (($res = $this->pdo->prepare($this->statement)) === false) {
+                    throw new CruditesException('PDO_PREPARE_STRING');
+                }
+                $this->prepared = $res;
+
+                return $this->run($bindings);
+            }
+        } 
 
         return $this;
     }
 
-    public function isSuccess(): bool
+    public function ran(): bool
     {
-        return $this->executed !== null && $this->executed->errorCode() === \PDO::ERR_NONE;
+        return $this->executed !== null && $this->executed->errorCode() !== \PDO::ERR_NONE;
     }
+
+    public function ret($mode = \PDO::FETCH_ASSOC, $fetch_argument = null, $ctor_args = null)
+    {
+        return $this->executed->fetchAll($mode, $fetch_argument, $ctor_args);
+    }
+
+
+
 
     public function count(): int
     {
-        return $this->isSuccess() ? $this->executed->rowCount() : -1;
+        return $this->ran() ? $this->executed->rowCount() : -1;
     }
 
     public function lastInsertId($name = null)
@@ -126,15 +123,12 @@ class Result
     }
 
 
-    public function ret($mode = \PDO::FETCH_ASSOC, $fetch_argument = null, $ctor_args = null)
-    {
-        return $this->executed->fetchAll($mode, $fetch_argument, $ctor_args);
-    }
 
     public function retOne($mode = \PDO::FETCH_ASSOC, $orientation = null, $offset = null)
     {
         return $this->executed->fetch($mode, $orientation, $offset);
     }
+    
 
     public function retObj($c = null)
     {
