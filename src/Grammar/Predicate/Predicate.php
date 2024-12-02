@@ -8,7 +8,7 @@ use HexMakina\Crudites\Grammar\Grammar;
  * An abstract class representing a SQL predicate.
  * Instantiate and __toString().
  *
- * @package HexMakina\Crudites\Queries
+ * @package HexMakina\Crudites\Grammar\Query
  */
 class Predicate extends Grammar
 {

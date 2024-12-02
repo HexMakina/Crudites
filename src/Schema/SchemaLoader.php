@@ -68,8 +68,7 @@ class SchemaLoader
             throw new CruditesException('SCHEMA_LOAD_FETCHED_EMPTY_RESULTS');
         }
 
-        var_dump($res);
-        die;        
+
         return new Schema($database, self::parseInformationSchema($res));
     }
     
@@ -97,10 +96,10 @@ class SchemaLoader
             if (!empty($res['constraint_type'])) {
 
                 $constraint_name = $res['constraint'];
-
-                switch ($res['CONSTRAINT_TYPE']) {
+                switch ($res['constraint_type']) {
 
                     case 'PRIMARY KEY':
+                        
                         $tables[$table]['primary'][] = $column;
                         break;
 

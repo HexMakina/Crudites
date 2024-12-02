@@ -1,6 +1,6 @@
 <?php
 
-namespace HexMakina\Crudites\Queries;
+namespace HexMakina\Crudites\Grammar\Query;
 
 use HexMakina\BlackBox\Database\QueryInterface;
 use HexMakina\Crudites\Grammar\Clause\Clause;
@@ -11,7 +11,7 @@ abstract class Query implements QueryInterface
     protected array $binding_names = [];
 
     protected string $table;
-    protected string $alias = null;
+    protected ?string $alias = null;
 
     protected $table_alias = null;
 
@@ -59,8 +59,6 @@ abstract class Query implements QueryInterface
     public function clause(string $name): ?Clause
     {
         return $this->clauses[$name] ?? null;
-
-
     }
 
     public function add(Clause $clause): self

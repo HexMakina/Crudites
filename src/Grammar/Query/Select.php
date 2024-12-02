@@ -1,6 +1,6 @@
 <?php
 
-namespace HexMakina\Crudites\Queries;
+namespace HexMakina\Crudites\Grammar\Query;
 
 
 use HexMakina\Crudites\CruditesException;

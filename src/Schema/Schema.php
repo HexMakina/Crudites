@@ -4,7 +4,10 @@ namespace HexMakina\Crudites\Schema;
 
 use HexMakina\BlackBox\Database\QueryInterface;
 use HexMakina\BlackBox\Database\{SchemaInterface, SchemaAttributeInterface};
-use HexMakina\Crudites\Queries\{Select, Insert, Update, Delete};
+use HexMakina\Crudites\Grammar\Query\Select;
+use HexMakina\Crudites\Grammar\Query\Insert;
+use HexMakina\Crudites\Grammar\Query\Update;
+use HexMakina\Crudites\Grammar\Query\Delete;
 
 /**
  * The class provides an abstraction for database schema information.
@@ -20,18 +23,15 @@ class Schema implements SchemaInterface
     {
         $this->database = $database;
         $this->tables = $tables;
-        
-        
-    }
-
-    public function database(): string
-    {
-        return $this->database;
     }
 
     public function hasTable(string $table): bool
     {
         return isset($this->tables[$table]);
+    }
+    public function database(): string
+    {
+        return $this->database;
     }
 
     public function tables(): array
@@ -55,7 +55,11 @@ class Schema implements SchemaInterface
             throw new \InvalidArgumentException('CANNOT FIND COLUMN ' . $column . ' IN TABLE ' . $table);
         }
 
-        return $this->tables[$table]['columns'][$column]['schema'] ?? throw new \InvalidArgumentException("ERR_MISSING_COLUMN_SCHEMA");
+        if(!isset($this->tables[$table]['columns'][$column]['schema'])){
+            throw new \InvalidArgumentException("ERR_MISSING_COLUMN_SCHEMA");
+        }
+
+        return $this->tables[$table]['columns'][$column]['schema'];
     }
 
     public function attributes(string $table, string $column): SchemaAttributeInterface
@@ -71,7 +75,6 @@ class Schema implements SchemaInterface
 
         return null;
     }
-
     public function primaryKeys(string $table): array
     {
         return $this->hasTable($table) ? $this->tables[$table]['primary'] : [];
@@ -100,7 +103,7 @@ class Schema implements SchemaInterface
     public function uniqueColumnsFor(string $table, string $column): array
     {
         $ret = [];
-        
+
         if ($this->hasColumn($table, $column)) {
             foreach ($this->tables[$table]['columns'][$column]['unique'] as $constraint_name) {
                 $ret[$constraint_name] = $this->uniqueColumnsByName($table, $constraint_name);
@@ -110,7 +113,7 @@ class Schema implements SchemaInterface
         return $ret;
     }
 
-  
+
     public function matchUniqueness(string $table, array $dat_ass): array
     {
         return $this->matchPrimaryKeys($table, $dat_ass) ?? $this->matchUniqueKeys($table, $dat_ass) ?? [];
@@ -158,7 +161,6 @@ class Schema implements SchemaInterface
         $filtered_columns = array_intersect($columns, $this->columns($table));
         return new Select($filtered_columns, $table, $table_alias);
     }
-
 
     /**
      * Filters the given data to only include columns that exist in the specified table.
