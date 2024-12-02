@@ -1,6 +1,6 @@
 <?php
 
-namespace HexMakina\Crudites;
+namespace HexMakina\Crudites\Schema;
 
 use HexMakina\BlackBox\Database\{SchemaInterface, SchemaAttributeInterface};
 

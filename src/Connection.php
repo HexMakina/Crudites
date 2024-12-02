@@ -20,6 +20,7 @@ namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\SchemaInterface;
+use HexMakina\Crudites\Schema\SchemaLoader;
 
 class Connection extends \PDO implements ConnectionInterface
 {
@@ -72,7 +73,6 @@ class Connection extends \PDO implements ConnectionInterface
         if (!isset($this->schema)) {
             $this->schema = SchemaLoader::cache($database) ?? SchemaLoader::load($database, $this->pdo());
         }
-
         return $this->schema;
     }
 

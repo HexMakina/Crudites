@@ -1,6 +1,6 @@
 <?php
 
-namespace HexMakina\Crudites;
+namespace HexMakina\Crudites\Schema;
 
 use HexMakina\BlackBox\Database\SchemaInterface;
 
@@ -19,51 +19,60 @@ use HexMakina\BlackBox\Database\SchemaInterface;
 class SchemaLoader
 {
 
-    public static function cache($database): ?SchemaInterface
+    public static function cache(string $database): ?SchemaInterface
     {
         $cache_file = __DIR__ . '/cache/' . $database . '.php';
         if(!file_exists($cache_file)){
             return null;
         }
+
         return new Schema($database, require $cache_file);
     }
 
     public static function load(string $database, \PDO $pdo, string $schema_database = 'information_schema'): SchemaInterface
     {
+        
         try {
             $pdo->beginTransaction();
-
+            
             // switch to the INFORMATION_SCHEMA database
-            $pdo->query(sprintf('USE %s;', $schema_database));
-
+            if(false === $pdo->query(sprintf('USE %s;', $schema_database))){
+                throw new CruditesException('SWICTH_TO_INFORMATION_SCHEMA');
+            }
+            
             // get the schema information
             $res = $pdo->query(self::informationSchemaQuery($database));
-            if($res === false){
-                throw new CruditesException('SCHEMA_LOAD_QUERY');
+            if(false === $res){
+                throw new CruditesException('LOAD_INFORMATION_SCHEMA');
             }
+            
             // switch back to the original database
-            $pdo->query(sprintf('USE %s;', $database));
+            if(false === $pdo->query(sprintf('USE %s;', $database))){
+                throw new CruditesException('SWICTH_BACK_TO_USER_DATABASE');
+            }
 
             $pdo->commit();
+            
         } catch (\Exception $e) {
-
+            
             $pdo->rollBack();
             throw $e;
         }
 
         $res = $res->fetchAll();
-
         if($res === false){
             throw new CruditesException('SCHEMA_LOAD_FETCHALL');
         }
-
+        
         if(empty($res)){
             throw new CruditesException('SCHEMA_LOAD_FETCHED_EMPTY_RESULTS');
         }
 
+        var_dump($res);
+        die;        
         return new Schema($database, self::parseInformationSchema($res));
     }
-
+    
     /**
      * Parses the result of the INFORMATION_SCHEMA query and stores the information in arrays.
      *

@@ -1,8 +1,8 @@
 <?php
 
-namespace HexMakina\Crudites;
+namespace HexMakina\Crudites\Schema;
 
-use HexMakina\BlackBox\Database\{QueryInterface, SelectInterface};
+use HexMakina\BlackBox\Database\QueryInterface;
 use HexMakina\BlackBox\Database\{SchemaInterface, SchemaAttributeInterface};
 use HexMakina\Crudites\Queries\{Select, Insert, Update, Delete};
 
@@ -20,6 +20,8 @@ class Schema implements SchemaInterface
     {
         $this->database = $database;
         $this->tables = $tables;
+        
+        
     }
 
     public function database(): string
@@ -124,7 +126,7 @@ class Schema implements SchemaInterface
 
     public function matchUniqueKeys(string $table, array $dat_ass): ?array
     {
-        foreach ($this->uniqueKeys($table) as $constraint => $columns) {
+        foreach ($this->uniqueKeys($table) as $columns) {
             $match = array_intersect_key($dat_ass, array_flip($columns));
 
             if (count($match) === count($columns)) {
@@ -151,7 +153,7 @@ class Schema implements SchemaInterface
         return new Delete($table, $this->filterData($table, $conditions));
     }
 
-    public function select(string $table, array $columns = null, string $table_alias = null): SelectInterface
+    public function select(string $table, array $columns = null, string $table_alias = null): QueryInterface
     {
         $filtered_columns = array_intersect($columns, $this->columns($table));
         return new Select($filtered_columns, $table, $table_alias);
