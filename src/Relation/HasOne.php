@@ -2,18 +2,15 @@
 
 namespace HexMakina\Crudites\Relation;
 
-use HexMakina\BlackBox\Database\DatabaseInterface;
-use HexMakina\BlackBox\Database\TableInterface;
-use HexMakina\Crudites\Crudites;
-use HexMakina\Crudites\Table\Table;
+use HexMakina\BlackBox\Database\ConnectionInterface;
 
 class HasOne extends AbstractRelation
 {
     public const NAME = 'hasOne';
 
-    public function __construct($table, $join, DatabaseInterface $db)
+    public function __construct($table, $join, ConnectionInterface $c)
     {
-        $this->setDatabase($db);
+        $this->setConnection($c);
 
         $this->primary_table = $table;
 
@@ -27,12 +24,12 @@ class HasOne extends AbstractRelation
     }
 
     public function link(int $primary_id, $secondary_id){
-        $table = $this->db->table($this->primary_table);
+        $table =$this->connection->schema()->table($this->primary_table);
         $table->insert($this->primary_table, [$this->primary_col => $primary_id, $this->secondary_col => $secondary_id]);
     }
 
     public function unlink(int $primary_id, $secondary_id){
-        $table = $this->db->table($this->primary_table);
+        $table =$this->connection->schema()->table($this->primary_table);
         $table->delete($this->primary_table, [$this->primary_col => $primary_id, $this->secondary_col => $secondary_id]);
 
     }
