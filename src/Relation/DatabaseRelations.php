@@ -2,24 +2,23 @@
 
 namespace HexMakina\Crudites\Relation;
 
-use HexMakina\BlackBox\Database\DatabaseInterface;
-use HexMakina\Crudites\Schema;
+use HexMakina\BlackBox\Database\ConnectionInterface;
 
 class DatabaseRelations
 {
-    private $db;
+    private $connection;
     private $relations;
 
-    public function __construct(DatabaseInterface $db)
+    public function __construct(ConnectionInterface $c)
     {
-        $this->db = $db;
+        $this->connection = $c;
         $this->relations = $this->listRelations();
     }
 
     public function __debugInfo()
     {
         return [
-            'database' => $this->db->name(), 
+            'database' => $this->connection->databaseName(), 
             'list' => array_keys($this->relations),
             'relations' => $this->relations
             ];
@@ -28,24 +27,24 @@ class DatabaseRelations
     public function listRelations(): array
     {
         $relations = [];
-        foreach($this->db->schema()->foreignKeysFor() as $table => $join){
+        foreach($this->connection->schema()->foreignKeysFor() as $table => $join){
 
             if(count($join) == 1){
-                $res = new HasOne($table, $join, $this->db);
+                $res = new HasOne($table, $join,$this->connection);
                 $relations["$res"] = $res;
             }
             else if(count($join) == 2){
-                $res = new OneToMany($table, $join, $this->db);
+                $res = new OneToMany($table, $join,$this->connection);
                 $relations["$res"] = $res;
 
-                $res = new OneToMany($table, array_reverse($join), $this->db);
+                $res = new OneToMany($table, array_reverse($join),$this->connection);
                 $relations["$res"] = $res;
             }
             else if(count($join) == 3){
-                $res = new OneToManyQualified($table, $join, $this->db);
+                $res = new OneToManyQualified($table, $join,$this->connection);
                 $relations["$res"] = $res;
 
-                $res = new OneToManyQualified($table, array_reverse($join), $this->db);
+                $res = new OneToManyQualified($table, array_reverse($join),$this->connection);
                 $relations["$res"] = $res;
             }
             else

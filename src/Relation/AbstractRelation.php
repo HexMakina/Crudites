@@ -3,14 +3,13 @@
 namespace HexMakina\Crudites\Relation;
 
 use HexMakina\BlackBox\Database\ConnectionInterface;
-use HexMakina\BlackBox\Database\DatabaseInterface;
 use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\Crudites\Crudites;
 use HexMakina\Crudites\Table\Table;
 
 abstract class AbstractRelation
 {
-    protected DatabaseInterface $db;
+    protected ConnectionInterface $connection;
 
     protected $primary_table;
     protected $primary_col;
@@ -42,9 +41,9 @@ abstract class AbstractRelation
         return sprintf('%s-%s-%s', $this->primary_table, static::NAME, $this->secondary_table);
     }
 
-    public function setDatabase(DatabaseInterface $db)
+    public function setConnection(ConnectionInterface $c)
     {
-        $this->db = $db;
+        $this->connection = $c;
     }
 
     public function source(){
