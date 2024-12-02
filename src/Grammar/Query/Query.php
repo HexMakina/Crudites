@@ -59,6 +59,8 @@ abstract class Query implements QueryInterface
     public function clause(string $name): ?Clause
     {
         return $this->clauses[$name] ?? null;
+
+
     }
 
     public function add(Clause $clause): self
@@ -87,12 +89,6 @@ abstract class Query implements QueryInterface
 
         return $this->table_alias ?? $this->table;
     }
-
-    public function backTick($field_name, $table_name = null): string
-    {
-        return sprintf('`%s`.`%s`', $this->tableLabel($table_name), $field_name);
-    }
-
 
     public function bindings(): array
     {
@@ -136,10 +132,10 @@ abstract class Query implements QueryInterface
             return 'statement';
         }
 
-        if (!empty(array_diff($this->getBindings(), $query->getBindings()))) {
+        if (!empty(array_diff($this->bindings(), $query->bindings()))) {
             return 'bindings';
         }
-        if (!empty(array_diff($query->getBindings(), $this->getBindings()))) {
+        if (!empty(array_diff($query->bindings(), $this->bindings()))) {
             return 'bindings';
         }
 

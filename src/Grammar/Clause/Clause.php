@@ -6,7 +6,7 @@ use HexMakina\Crudites\Grammar\Grammar;
 
 abstract class Clause extends Grammar
 {
-    public const SELECT = 'SELECT';
+    public const SELECT = 'SELECT FROM';
     public const JOIN = 'JOIN';
     public const JOINS = 'JOINS';
     public const WHERE = 'WHERE';
@@ -14,7 +14,6 @@ abstract class Clause extends Grammar
     public const GROUP = 'GROUP BY';
     public const HAVING = 'HAVING';
     public const LIMIT = 'LIMIT';
-    public const OFFSET = 'OFFSET';
 
     public const UPDATE = 'UPDATE';
     public const SET = 'SET';
@@ -33,5 +32,4 @@ abstract class Clause extends Grammar
     {
         return $this->bindings;
     }
-
 }
