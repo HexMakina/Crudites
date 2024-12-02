@@ -2,17 +2,19 @@
 
 namespace HexMakina\Crudites\Table;
 
+use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\RowInterface;
 use HexMakina\BlackBox\Database\QueryInterface;
 use HexMakina\BlackBox\Database\SchemaInterface;
 
 use HexMakina\Crudites\CruditesException;
-use HexMakina\Crudites\CruditesExceptionFactory;
+use HexMakina\Crudites\Result;
 
 class Row implements RowInterface
 {
     private string $table;
 
+    private ConnectionInterface $connection;
     private SchemaInterface $schema;
 
     /** @var array<int|string,mixed>|null $load from database */
@@ -27,17 +29,22 @@ class Row implements RowInterface
     private ?QueryInterface $last_query = null;
     private ?QueryInterface $last_alter_query = null;
 
+    private ?Result $last_result = null;
+    private ?Result $last_alter_result = null;
+
 
     /** @param array<string,mixed> $datass */
     /**
      * Represents a row in a table.
      *
-     * @param TableInterface $table The table to which the row belongs.
+     * @param SchemaInterface $schema The schema of the database.
+     * @param string $table The table name.
      * @param array $fresh The fresh data for the row.
      */
-    public function __construct(SchemaInterface $schema, string $table, array $fresh = [])
+    public function __construct(ConnectionInterface $connection, string $table, array $fresh = [])
     {
-        $this->schema = $schema;
+        $this->connection = $connection;
+        $this->schema = $connection->schema();
         $this->table = $table;
         $this->fresh = $fresh;
     }
@@ -107,7 +114,10 @@ class Row implements RowInterface
         }
 
         $this->last_query = $this->schema->select($this->table)->whereFieldsEQ($unique_match);
-        $res = $this->last_query->prepare()->run()->ret(\PDO::FETCH_ASSOC);
+        $this->last_result = new Result($this->connection->pdo(), $this->last_query);
+        $this->last_result->run();
+
+        $res = $this->last_result->ret(\PDO::FETCH_ASSOC);
         $this->load = (is_array($res) && count($res) === 1) ? current($res) : null;
 
         return $this;
@@ -171,11 +181,7 @@ class Row implements RowInterface
                 $this->update();
             }
             $this->last_query = $this->lastAlterQuery();
-            if($this->lastQuery() === null || !$this->lastQuery()->isSuccess()){
-                $res = CruditesExceptionFactory::make($this->last_query);
-                throw $res;
-            }
-            
+
         } catch (CruditesException $cruditesException) {
             return [$this->table => $cruditesException->getMessage()];
         }
@@ -186,17 +192,13 @@ class Row implements RowInterface
     private function create(): void
     {
         $this->last_alter_query = $this->schema->insert($this->table, $this->export());
-        $this->lastAlterQuery()->connection($this->schema->connection());
-        $this->lastAlterQuery()->prepare();
-        $this->lastAlterQuery()->run();
+        $this->last_alter_result = new Result($this->connection->pdo(), $this->last_alter_query);
 
         // creation might lead to auto_incremented changes
         // recovering auto_incremented value and pushing it in alterations tracker
-        if ($this->lastAlterQuery()->isSuccess()) {
-            $aipk = $this->schema->autoIncrementedPrimaryKey($this->table);
-            if ($aipk !== null) {
-                $this->alterations[$aipk] = $this->lastAlterQuery()->connection()->lastInsertId();
-            }
+        $aipk = $this->schema->autoIncrementedPrimaryKey($this->table);
+        if ($aipk !== null) {
+            $this->alterations[$aipk] = $this->connection->lastInsertId();
         }
     }
 
@@ -210,9 +212,7 @@ class Row implements RowInterface
         }
 
         $this->last_alter_query = $this->schema->update($this->table, $this->alterations, $unique_match);
-        $this->lastAlterQuery()->connection($this->schema->connection());
-        $this->lastAlterQuery()->prepare();
-        $this->lastAlterQuery()->run();
+        $this->last_alter_result = new Result($this->connection->pdo(), $this->last_alter_query);
     }
 
     public function wipe(): bool
@@ -222,20 +222,17 @@ class Row implements RowInterface
         // need The Primary key, then you can wipe at ease
         if (!empty($pk_match = $this->schema->matchPrimaryKeys($this->table, $datass))) {
             $this->last_alter_query = $this->schema->delete($this->table, $pk_match);
-            $this->lastAlterQuery()->connection($this->schema->connection());
-
+            
             try {
-
-                $this->lastAlterQuery()->prepare();
-                $this->lastAlterQuery()->run();
-
+                
+                $this->last_alter_result = new Result($this->connection->pdo(), $this->last_alter_query);
                 $this->last_query = $this->lastAlterQuery();
 
             } catch (CruditesException $cruditesException) {
                 return false;
             }
 
-            return $this->lastAlterQuery()->isSuccess();
+            return $this->last_alter_result->isSuccess();
         }
 
         return false;
