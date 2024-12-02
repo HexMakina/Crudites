@@ -2,23 +2,27 @@
 
 namespace HexMakina\Crudites\Grammar\Clause;
 
+
 class SelectFrom extends Clause
 {
-    protected $columns;
 
+    /**
+     * he problem is that the class SelectFrom is missing the SELECT constant and the selected and backtick methods. To fix this, you need to add these missing elements.
+     */
+
+    protected $columns;
     protected $table;
     protected $alias;
 
     public function __construct(string $table, string $alias = null)
     {
-        $this->columns = [];
         $this->table = $table;
         $this->alias = $alias;
     }
 
     public function name(): string
     {
-        return self::SELECT;
+        return Clause::SELECT;
     }
 
     public function table(): string
@@ -31,22 +35,22 @@ class SelectFrom extends Clause
         return $this->alias;
     }
 
-    public function add($selected, string $alias = null): self
-    {
-        $selected = self::selected($selected);
+    // public function add($selected, string $alias = null): self
+    // {
+    //     $selected = self::selected($selected);
 
-        if ($alias !== null) {
-            $selected .= ' AS ' . self::backtick($alias);
-        }
+    //     if ($alias !== null) {
+    //         $selected .= ' AS ' . self::backtick($alias);
+    //     }
 
-        return $this->addRaw($selected);
-    }
+    //     return $this->addRaw($selected);
+    // }
 
-    public function addRaw(string $raw): self
-    {
-        $this->columns[] = $raw;
-        return $this;
-    }
+    // public function addRaw(string $raw): self
+    // {
+    //     $this->columns[] = $raw;
+    //     return $this;
+    // }
 
     public function all(string $alias = null): self
     {

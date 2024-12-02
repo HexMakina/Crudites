@@ -5,20 +5,23 @@ namespace HexMakina\Crudites\Grammar\Query;
 
 use HexMakina\Crudites\CruditesException;
 
-use HexMakina\Crudites\Grammar\Clause\SelectFrom;
+// use HexMakina\Crudites\Grammar\Clause\SelectFrom;
+use HexMakina\Crudites\Grammar\Deck;
 use HexMakina\Crudites\Grammar\Clause\Clause;
+use HexMakina\Crudites\Grammar\Grammar;
 
 class Select extends Query
 {
-    protected $columns;
-    protected SelectFrom $selectFrom;
-
+    private ?Deck $deck = null;
     public function __construct(array $columns, string $table, $table_alias = null)
     {
+        
         $this->table = $table;
         $this->table_alias = $table_alias;
-        $this->add(new SelectFrom($table, $table_alias));
-        $this->columns($columns);
+        // die('vefore selftform');
+        // $this->add(new SelectFrom($table, $table_alias));
+        // die('SELECT');
+        $this->selectAlso($columns);
     }
 
     public function statement(): string
@@ -27,10 +30,15 @@ class Select extends Query
             throw new CruditesException('NO_TABLE');
         }
 
-        $ret = '';
+        $schema = Grammar::backtick($this->table);
+        if (!empty($this->alias)) {
+            $schema .= ' AS ' . Grammar::backtick($this->alias);
+        }
+
+        $ret = sprintf('SELECT %s FROM %s', $this->deck, $schema);
+
         foreach (
             [
-                Clause::SELECT,
                 Clause::JOINS,
                 Clause::WHERE,
                 Clause::GROUP,
@@ -39,6 +47,8 @@ class Select extends Query
                 Clause::LIMIT
             ] as $clause
         ) {
+            if($this->clause($clause) === null)
+                continue;
 
             $ret .= PHP_EOL . $this->clause($clause);
         }
@@ -49,16 +59,6 @@ class Select extends Query
     public function tableLabel($forced_value = null)
     {
         return $forced_value ?? $this->table_alias ?? $this->table;
-    }
-
-    public function columns($setter = null): array
-    {
-        if ($setter !== null) {
-            $this->columns = [];
-            $this->selectAlso($setter);
-        }
-
-        return $this->columns ?? [];
     }
 
     /**
@@ -87,8 +87,11 @@ class Select extends Query
             if (is_int($alias)) {
                 $alias = null;
             }
-
-            $this->selectFrom->add($column, $alias);
+            if(!isset($this->deck)){
+                $this->deck = new Deck($column, $alias);
+            } else {
+                $this->deck->add($column, $alias);
+            }
         }
 
         return $this;

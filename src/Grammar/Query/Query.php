@@ -7,17 +7,25 @@ use HexMakina\Crudites\Grammar\Clause\Clause;
 
 abstract class Query implements QueryInterface
 {
+
+    
     protected array $bindings = [];
     protected array $binding_names = [];
-
+    
     protected string $table;
     protected ?string $alias = null;
-
+    
     protected $table_alias = null;
-
-    protected $clauses;
-
-    //------------------------------------------------------------  DEBUG
+    
+    protected array $clauses = [];
+    
+    abstract public function statement(): string;
+    
+    /**
+     * Provides debugging information about the object.
+     * This method returns an array of object properties and their values,
+     * excluding properties that are not set.
+     */
     public function __debugInfo(): array
     {
         $dbg = get_object_vars($this);
@@ -139,5 +147,4 @@ abstract class Query implements QueryInterface
 
         return true;
     }
-
 }

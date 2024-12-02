@@ -158,7 +158,13 @@ class Schema implements SchemaInterface
 
     public function select(string $table, array $columns = null, string $table_alias = null): QueryInterface
     {
-        $filtered_columns = array_intersect($columns, $this->columns($table));
+        if(in_array('*', $columns)){
+            $filtered_columns = ['*'];
+        }
+        else{
+            $filtered_columns = array_intersect($columns, $this->columns($table));
+        } 
+        
         return new Select($filtered_columns, $table, $table_alias);
     }
 

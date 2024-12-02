@@ -8,12 +8,12 @@ class GroupBy extends Clause
 {
     private Deck $deck;
 
-    public function __construct(string|array $selected)
+    public function __construct($selected)
     {
         $this->deck = new Deck($selected);
     }
 
-    public function add(string|array $selected): self
+    public function add($selected): self
     {
         $this->deck->add($selected);
         return $this;

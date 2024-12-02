@@ -12,16 +12,16 @@ class Deck extends Grammar
      * If the aggregate is an array, 
      *  - [column], will be backticked as `column`
      *  - [table, column], will be backticked as `table`.`column`
-     * @param string|array $aggregate, 
+     * @param $aggregate, 
      * @param string $alias, if set, will be backticked
      * 
      */
-    public function __construct(string|array $aggregate, string $alias = null)
+    public function __construct($aggregate, string $alias = null)
     {
         $this->aggregates = $this->format($aggregate, $alias);
     }
 
-    public function add(string|array $aggregate, string $alias = null): self
+    public function add($aggregate, string $alias = null): self
     {
         return $this->addRaw($this->format($aggregate, $alias));
     }
@@ -38,7 +38,7 @@ class Deck extends Grammar
     }
 
 
-    protected function format(string|array $aggregate, string $alias = null): string
+    protected function format($aggregate, string $alias = null): string
     {
         $ret = is_string($aggregate) ? $aggregate : self::backtick($aggregate);
 

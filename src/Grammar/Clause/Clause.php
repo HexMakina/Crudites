@@ -27,7 +27,7 @@ abstract class Clause extends Grammar
 
     abstract public function __toString(): string;
     abstract public function name(): string;
-    
+
     public function bindings(): array
     {
         return $this->bindings;
