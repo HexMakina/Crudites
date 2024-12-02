@@ -24,7 +24,7 @@ use HexMakina\BlackBox\Database\SchemaInterface;
 class Connection extends \PDO implements ConnectionInterface
 {
     private string $dsn;
-    private string $database;
+    private ?string $database = null;
     private SchemaInterface $schema;
 
     /**
@@ -70,7 +70,7 @@ class Connection extends \PDO implements ConnectionInterface
     {
         $database = $this->database();
         if (!isset($this->schema)) {
-            $this->schema = SchemaLoader::cache($database) ?? SchemaLoader::load($database, $this->pdo);
+            $this->schema = SchemaLoader::cache($database) ?? SchemaLoader::load($database, $this->pdo());
         }
 
         return $this->schema;
