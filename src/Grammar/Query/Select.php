@@ -13,7 +13,7 @@ class Select extends Query
     protected $columns;
     protected SelectFrom $selectFrom;
 
-    public function __construct($columns = null, string $table = null, $table_alias = null)
+    public function __construct(array $columns, string $table, $table_alias = null)
     {
         $this->table = $table;
         $this->table_alias = $table_alias;
@@ -93,6 +93,4 @@ class Select extends Query
 
         return $this;
     }
-
-
 }
