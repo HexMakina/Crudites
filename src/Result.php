@@ -25,6 +25,11 @@ class Result
     public const STATE_SUCCESS = '00000'; //PDO "error" code for "all is fine"
 
 
+    /**
+     * @param \PDO $pdo
+     * @param string|\PDOStatement $statement, the SQL statement to run, raw or prepared
+     * @param array $bindings, optional bindings for the prepared statement's execution
+     */
     public function __construct(\PDO $pdo, $statement, array $bindings = [])
     {
         $this->pdo = $pdo;
