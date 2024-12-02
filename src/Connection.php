@@ -15,27 +15,14 @@
  *
  * @package HexMakina\Crudites
  */
+
 namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\SchemaInterface;
 
-class Connection implements ConnectionInterface
+class Connection extends \PDO implements ConnectionInterface
 {
-    /**
-     * using \PDO encapsulation
-     * 
-     * the PDO instance is created on instantiation
-     * the $pdo property is private, so it can only be accessed from within the class
-     * 
-     * the PDO instance is created with the following options:
-     *      ERRMODE_EXCEPTION: throws exceptions on errors (mandatory)
-     *      CASE_NATURAL: column names are returned in their natural case
-     *      FETCH_ASSOC: returns rows as associative arrays
-     * 
-     */
-    private \PDO $pdo;
-
     private string $dsn;
     private string $database;
     private SchemaInterface $schema;
@@ -47,25 +34,72 @@ class Connection implements ConnectionInterface
      */
     public function __construct(string $dsn, string $username = '', string $password = '', array $driver_options = [])
     {
-        try{
+        try {
             $this->dsn = $dsn;
-
-            // Create a new PDO instance with the given options
-            $this->pdo = new \PDO($dsn, $username, $password, self::options($driver_options));
-        }
-        catch(\PDOException $e){
+            $options = self::options($driver_options);
+            parent::__construct($dsn, $username, $password, $options);
+        } catch (\PDOException $e) {
             throw new CruditesException($e->getMessage(), $e->getCode());
         }
     }
+    
+    public function __toString()
+    {
+        return $this->dsn;
+    }
+
 
     /**
-     * Magic method, transfers calls to the PDO instance
-     * but ConnectionInterface requires: commit(), rollback(), lastInserId(), errorInfo(), errorCode()
+     * Returns the name of the database
+     * @throws \HexMakina\Crudites\CruditesException if the database name cannot be extracted from the DSN
      */
-    public function __call($method, $args)
+    public function database(): string
     {
-        return call_user_func_array([$this->pdo, $method], $args);
+        if ($this->database === null) {
+            $this->database = $this->extractDatabaseNameFromDsn();
+        }
+        return $this->database;
     }
+
+
+    /**
+     * Returns a representation the database schema
+     * @throws \HexMakina\Crudites\CruditesException if the schema cannot be loaded
+     */
+    public function schema(): SchemaInterface
+    {
+        $database = $this->database();
+        if (!isset($this->schema)) {
+            $this->schema = SchemaLoader::cache($database) ?? SchemaLoader::load($database, $this->pdo);
+        }
+
+        return $this->schema;
+    }
+
+    public function result($statement, $bindings = []): Result
+    {
+        return new Result($this, $statement, $bindings);
+    }
+
+    public function pdo(): \PDO
+    {
+        return $this;
+    }
+
+    
+    /**
+     * Extracts the database name from the DSN
+     * @throws \HexMakina\Crudites\CruditesException if the database name cannot be extracted from the DSN
+     */
+    private function extractDatabaseNameFromDsn(): string
+    {
+        $matches = [];
+        if (1 === preg_match('/dbname=(.+);/', $this->dsn, $matches) && isset($matches[1])) {
+            return $matches[1];
+        }
+        throw new CruditesException('PARSING_DSN_FOR_DATABASE');
+    }
+
 
     /**
      * Returns an array of PDO options for database connection.
@@ -81,42 +115,14 @@ class Connection implements ConnectionInterface
         if (isset($provided[\PDO::ATTR_ERRMODE])) {
             unset($provided[\PDO::ATTR_ERRMODE]);          // the one option you cannot change
         }
-        
+
         return array_merge(
             [
                 \PDO::ATTR_ERRMODE  => \PDO::ERRMODE_EXCEPTION,
                 \PDO::ATTR_CASE     => \PDO::CASE_NATURAL,
                 \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
-            ]
-            , $provided);
-    }
-
-    /**
-     * Returns a representation the database schema
-     * @throws \HexMakina\Crudites\CruditesException if the schema cannot be loaded
-     */
-    public function schema(): SchemaInterface
-    {
-        $database = $this->database();
-        if(!isset($this->schema)){
-            $this->schema = SchemaLoader::cache($database) ?? SchemaLoader::load($database, $this->pdo);
-        }
-
-        return $this->schema;
-    }
-
-    public function database(): string
-    {
-        if ($this->database === null) {
-            $matches = [];
-
-            if (1 !== preg_match('/dbname=(.+);/', $this->dsn, $matches) || !isset($matches[1])) {
-                throw new CruditesException('DSN_DATABASE_NOT_FOUND');
-            }
-
-            $this->database = $matches[1];
-        }
-        
-        return $this->database;
+            ],
+            $provided
+        );
     }
 }
