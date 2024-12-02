@@ -35,34 +35,37 @@ class SelectFrom extends Clause
     {
         $selected = self::selected($selected);
 
-        if (!empty($alias)) {
+        if ($alias !== null) {
             $selected .= ' AS ' . self::backtick($alias);
         }
 
-        $this->columns[] = $selected;
+        return $this->addRaw($selected);
+    }
+
+    public function addRaw(string $raw): self
+    {
+        $this->columns[] = $raw;
         return $this;
     }
 
     public function all(string $alias = null): self
     {
-        $this->columns[] = sprintf('`%s`.*', $alias ?? $this->alias ?? $this->table);
-        return $this;
+        return $this->addRaw(sprintf('`%s`.*', $alias ?? $this->alias ?? $this->table));
     }
 
     public function __toString()
     {
-        if(empty($this->columns)){
+        if (empty($this->columns)) {
             $this->all();
         }
 
         $schema = self::backtick($this->table);
-        if(!empty($this->alias))
-        {
+        if (!empty($this->alias)) {
             $schema .= ' AS ' . self::backtick($this->alias);
         }
 
         $columns = implode(',', $this->columns);
-        
+
         return sprintf('SELECT %s FROM %s', $columns, $schema);
     }
 }

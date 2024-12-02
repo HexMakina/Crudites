@@ -2,31 +2,29 @@
 
 namespace HexMakina\Crudites\Grammar\Clause;
 
+use HexMakina\Crudites\Grammar\DeckOrderBy;
+use HexMakina\Crudites\Grammar\Grammar;
+
 class OrderBy extends Clause
 {
-    private string $columns;
+    private Deck $deck;
 
     public function __construct(string|array $selected, string $direction)
     {
-
-        $this->columns = $this->format($selected, $direction);
+        $this->deck = new DeckOrderBy($selected, $direction);
     }
 
     public function add(string|array $selected, string $direction): self
     {
-        $this->columns .= ', ' . $this->format($selected, $direction);
+        $this->deck->add($selected, $direction);
         return $this;
     }
 
     public function __toString()
     {
-        return empty($this->columns) ? '' : 'ORDER BY ' . $this->columns;
+        return 'ORDER BY ' . $this->deck;
     }
 
-    private function format(string|array $selected, string $direction): string
-    {
-        return Grammar::selected($selected) . ' ' . $direction;
-    }
 
     public function name(): string
     {

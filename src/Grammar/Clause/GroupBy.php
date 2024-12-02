@@ -2,25 +2,26 @@
 
 namespace HexMakina\Crudites\Grammar\Clause;
 
+use HexMakina\Crudites\Grammar\Deck;
 
 class GroupBy extends Clause
 {
-    private string $columns;
+    private Deck $deck;
 
     public function __construct(string|array $selected)
     {
-        $this->columns = self::selected($selected);
+        $this->deck = new Deck($selected);
     }
 
     public function add(string|array $selected): self
     {
-        $this->columns .= ', ' . self::selected($selected);
+        $this->deck->add($selected);
         return $this;
     }
 
     public function __toString()
     {
-        return empty($this->columns) ? '' : 'GROUP BY ' . $this->columns;
+        return 'GROUP BY ' . $this->deck;
     }
 
     public function name(): string
