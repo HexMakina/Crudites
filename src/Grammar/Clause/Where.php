@@ -8,7 +8,6 @@ class Where extends Clause
 {
     protected string $default_table;
     protected array $and = [];
-    protected array $bindings = [];
 
     public function __construct(string $default_table, array $predicates = [])
     {
