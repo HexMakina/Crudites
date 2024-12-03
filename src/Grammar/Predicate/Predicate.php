@@ -95,7 +95,7 @@ class Predicate extends Grammar
      *
      * @return string The binding label for the predicate.
      */
-    public function bindLabel(string $prefix = ''): string
+    public function bindLabel(string $prefix = null): string
     {
         if($this->bind_label === null){
             $label = is_array($this->column) ? $this->column : [$this->column];

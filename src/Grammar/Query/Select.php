@@ -5,7 +5,6 @@ namespace HexMakina\Crudites\Grammar\Query;
 
 use HexMakina\Crudites\CruditesException;
 
-// use HexMakina\Crudites\Grammar\Clause\SelectFrom;
 use HexMakina\Crudites\Grammar\Deck;
 use HexMakina\Crudites\Grammar\Clause\Clause;
 use HexMakina\Crudites\Grammar\Grammar;
@@ -15,12 +14,8 @@ class Select extends Query
     private ?Deck $deck = null;
     public function __construct(array $columns, string $table, $table_alias = null)
     {
-        
         $this->table = $table;
         $this->table_alias = $table_alias;
-        // die('vefore selftform');
-        // $this->add(new SelectFrom($table, $table_alias));
-        // die('SELECT');
         $this->selectAlso($columns);
     }
 

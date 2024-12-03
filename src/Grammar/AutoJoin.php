@@ -3,12 +3,11 @@
 namespace HexMakina\Crudites\Grammar\Query;
 
 use HexMakina\Crudites\Crudites;
-use HexMakina\Crudites\CruditesException;
-use HexMakina\BlackBox\Database\SelectInterface;
+use HexMakina\BlackBox\Database\QueryInterface;
 
 class AutoJoin
 {
-    public static function join(SelectInterface $select, $other_table, $select_also = [], $relation_type = null): string
+    public static function join(QueryInterface $select, $other_table, $select_also = [], $relation_type = null): string
     {
         $other_table_alias = null;
 
@@ -87,7 +86,7 @@ class AutoJoin
     /**
      * @return mixed[]
      */
-    private static function joinableTables(SelectInterface $select): array
+    private static function joinableTables(QueryInterface $select): array
     {
         $joinable_tables = $select->table()->foreignKeysByTable();
         foreach ($select->joinedTables() as $join_table) {
@@ -97,7 +96,7 @@ class AutoJoin
         return $joinable_tables;
     }
 
-    public static function eager(SelectInterface $select, $table_aliases = []): void
+    public static function eager(QueryInterface $select, $table_aliases = []): void
     {
         
         if (isset($table_aliases[$select->table()->name()])) {

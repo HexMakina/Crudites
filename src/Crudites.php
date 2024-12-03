@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites;
 
-use HexMakina\BlackBox\Database\{ConnectionInterface, SchemaAttributeInterface, SelectInterface};
+use HexMakina\BlackBox\Database\{ConnectionInterface, SchemaAttributeInterface};
 use HexMakina\Crudites\CruditesException;
 
 
@@ -47,10 +47,10 @@ class Crudites
     //------------------------------------------------------------  DataRetrieval
 
     /**
-     * @param SelectInterface $select  Select instance
+     * @param QueryInterface $select  Select instance
      * @return int|null  Number of records
      */
-    public static function count(SelectInterface $select): ?int
+    public static function count(QueryInterface $select): ?int
     {
         $select->selectAlso(['count' => ['COUNT(*)']]);
         $res = $select->retCol();
@@ -67,7 +67,7 @@ class Crudites
      * 
      * @return array<int|string, mixed>
      */
-    public static function retrieve(SelectInterface $select): array
+    public static function retrieve(QueryInterface $select): array
     {
         $primary_keys = self::$connection->schema()->primaryKeys($select->table());
         $pk_name = implode('_', $primary_keys);
