@@ -40,7 +40,7 @@ class SelectFrom extends Clause
     //     $selected = self::selected($selected);
 
     //     if ($alias !== null) {
-    //         $selected .= ' AS ' . self::backtick($alias);
+    //         $selected .= ' AS ' . self::identifier($alias);
     //     }
 
     //     return $this->addRaw($selected);
@@ -63,9 +63,9 @@ class SelectFrom extends Clause
             $this->all();
         }
 
-        $schema = self::backtick($this->table);
+        $schema = self::identifier($this->table);
         if (!empty($this->alias)) {
-            $schema .= ' AS ' . self::backtick($this->alias);
+            $schema .= ' AS ' . self::identifier($this->alias);
         }
 
         $columns = implode(',', $this->columns);
