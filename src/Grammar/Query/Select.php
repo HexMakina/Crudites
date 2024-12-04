@@ -25,9 +25,9 @@ class Select extends Query
             throw new CruditesException('NO_TABLE');
         }
 
-        $schema = Grammar::backtick($this->table);
+        $schema = Grammar::identifier($this->table);
         if (!empty($this->alias)) {
-            $schema .= ' AS ' . Grammar::backtick($this->alias);
+            $schema .= ' AS ' . Grammar::identifier($this->alias);
         }
 
         $ret = sprintf('SELECT %s FROM %s', $this->deck, $schema);

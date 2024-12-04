@@ -40,10 +40,10 @@ class Deck extends Grammar
 
     protected function format($aggregate, string $alias = null): string
     {
-        $ret = is_string($aggregate) ? $aggregate : self::backtick($aggregate);
+        $ret = is_string($aggregate) ? $aggregate : self::identifier($aggregate);
 
         if ($alias !== null) {
-            $ret .= ' AS ' . self::backtick($alias);
+            $ret .= ' AS ' . self::identifier($alias);
         }
 
         return $ret;

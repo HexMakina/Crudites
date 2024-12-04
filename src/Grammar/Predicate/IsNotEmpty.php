@@ -12,7 +12,7 @@ class IsNotEmpty extends Predicate
 {
     public function __toString()
     {
-        $res = self::backtick($this->column);
+        $res = self::identifier($this->column);
         return sprintf("(%s IS NOT NULL AND %s <> '')", $res, $res);
     }
 }
