@@ -12,22 +12,18 @@ use HexMakina\Crudites\Grammar\Grammar;
 class Select extends Query
 {
     private ?Deck $deck = null;
-    public function __construct(array $columns, string $table, $table_alias = null)
+    public function __construct(array $selection, string $table, $table_alias = null)
     {
         $this->table = $table;
-        $this->table_alias = $table_alias;
-        $this->selectAlso($columns);
+        $this->alias = $table_alias;
+        $this->selectAlso($selection);
     }
 
     public function statement(): string
     {
-        if ($this->table === null) {
-            throw new CruditesException('NO_TABLE');
-        }
-
         $schema = Grammar::identifier($this->table);
         if (!empty($this->alias)) {
-            $schema .= ' AS ' . Grammar::identifier($this->alias);
+            $schema .= ' ' . Grammar::identifier($this->alias);
         }
 
         $ret = sprintf('SELECT %s FROM %s', $this->deck, $schema);
@@ -45,7 +41,7 @@ class Select extends Query
             if($this->clause($clause) === null)
                 continue;
 
-            $ret .= PHP_EOL . $this->clause($clause);
+            $ret .= ' ' . $this->clause($clause);
         }
 
         return $ret;

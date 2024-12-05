@@ -1,16 +1,15 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
+
 use HexMakina\Crudites\Grammar\Query\Select;
-use HexMakina\Crudites\CruditesException;
-
-
+use HexMakina\Crudites\Grammar\Clause\Where;
+use HexMakina\Crudites\Grammar\Predicate;
 
 class SelectTest extends TestCase
 {
     public function testConstructor()
     {
-        
         $columns = ['id', 'contact' => 'email', 'person' => ['name']];
         $table = 'users';
         $table_alias = 'u';
@@ -20,7 +19,7 @@ class SelectTest extends TestCase
         $this->assertEquals($table, $select->table());
         $this->assertEquals($table_alias, $select->alias());
         $this->assertEquals($table_alias, $select->base());
-        $this->assertEquals('SELECT id,email AS `contact`,`name` AS `person` FROM `users`', (string)$select);
+        $this->assertEquals('SELECT id,email AS `contact`,`name` AS `person` FROM `users` `u`', (string)$select);
     }
 
     public function testStatementWithTable()
@@ -31,19 +30,6 @@ class SelectTest extends TestCase
 
         $expected = 'SELECT id,name FROM `users`';
         $this->assertEquals($expected, $select->statement());
-    }
-
-    public function testTableLabel()
-    {
-        $columns = ['id', 'name'];
-        $table = 'users';
-        $table_alias = 'u';
-
-        $select = new Select($columns, $table, $table_alias);
-
-        $this->assertEquals($table_alias, $select->tableLabel());
-        $this->assertEquals($table_alias, $select->tableLabel(null));
-        $this->assertEquals('forced_value', $select->tableLabel('forced_value'));
     }
 
     public function testSelectAlso()
@@ -67,7 +53,23 @@ class SelectTest extends TestCase
         $columns = ['id', 'name'];
         $table = 'users';
         $select = new Select($columns, $table);
-
         $select->selectAlso([]);
+    }
+
+    public function testSelectWhere()
+    {
+        $columns = ['id', 'name'];
+        $table = 'users';
+        $select = new Select($columns, $table);
+        $predicate = new Predicate('id', '=', 1);
+        $where = new Where($select->base(), [$predicate]);
+        $select->add($where);
+
+        $expected = 'SELECT id,name FROM `users` WHERE id = 1';
+        $this->assertEquals($expected, (string)$select);
+
+        $where->andPredicate((new Predicate('name', 'LIKE'))->withValue('John%'));
+        $expected = 'SELECT id,name FROM `users` WHERE id = 1 AND name LIKE :name';
+        $this->assertEquals($expected, (string)$select);
     }
 }
