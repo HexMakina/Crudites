@@ -2,9 +2,6 @@
 
 use PHPUnit\Framework\TestCase;
 use HexMakina\Crudites\Grammar\Clause\OrderBy;
-use HexMakina\Crudites\Grammar\DeckOrderBy;
-
-
 
 class OrderByTest extends TestCase
 {

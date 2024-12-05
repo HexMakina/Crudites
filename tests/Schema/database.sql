@@ -67,10 +67,6 @@ INSERT INTO `data_types_table` (
 );
 
 
--- Create a test database
-CREATE DATABASE IF NOT EXISTS `crudites`;
-USE `crudites`;
-
 -- Create `users` table with some columns
 CREATE TABLE `users` (
     `id` INT NOT NULL AUTO_INCREMENT,

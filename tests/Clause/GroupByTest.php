@@ -1,4 +1,5 @@
 <?php
+
 use PHPUnit\Framework\TestCase;
 use HexMakina\Crudites\Grammar\Clause\GroupBy;
 
@@ -48,5 +49,4 @@ class GroupByTest extends TestCase
         $groupBy->add(['table', 'column2']);
         $this->assertEquals('GROUP BY column,`table`.`column2`', (string)$groupBy);
     }
-
 }

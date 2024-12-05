@@ -1,8 +1,6 @@
-²<?php
+<?php
 use PHPUnit\Framework\TestCase;
 use HexMakina\Crudites\Grammar\Clause\SelectFrom;
-
-
 
 class SelectFromTest extends TestCase
 {
