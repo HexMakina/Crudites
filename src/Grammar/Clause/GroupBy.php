@@ -19,7 +19,7 @@ class GroupBy extends Clause
         return $this;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return 'GROUP BY ' . $this->deck;
     }
