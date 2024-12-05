@@ -16,11 +16,10 @@ use HexMakina\Crudites\Grammar\Predicate;
 class Join extends Clause
 {
     protected string $type;
-
     protected string $table;
     protected string $alias;
 
-    protected string $on = null;
+    protected ?string $on = null;
     
     public function __construct(string $table, string $alias = null)
     {
@@ -55,7 +54,7 @@ class Join extends Clause
 
     public function __toString(): string
     {
-        return sprintf('%s JOIN `%s` %s ON %s', $this->type, $this->table, $this->alias, $this->on);
+        return trim(sprintf('%s JOIN `%s` %s ON %s', $this->type, $this->table, $this->alias, $this->on));
     }
 
     public function name(): string
