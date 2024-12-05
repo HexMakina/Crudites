@@ -2,15 +2,11 @@
 
 namespace HexMakina\Crudites\Grammar\Clause;
 
+use HexMakina\Crudites\Grammar\Deck;
 
 class SelectFrom extends Clause
 {
-
-    /**
-     * he problem is that the class SelectFrom is missing the SELECT constant and the selected and backtick methods. To fix this, you need to add these missing elements.
-     */
-
-    protected $columns;
+    private Deck $deck;
     protected $table;
     protected $alias;
 
@@ -35,41 +31,44 @@ class SelectFrom extends Clause
         return $this->alias;
     }
 
-    // public function add($selected, string $alias = null): self
-    // {
-    //     $selected = self::selected($selected);
+    public function add($selected, string $alias = null): self
+    {
+        $selected = is_array($selected) ? self::identifier($selected) : $selected;
 
-    //     if ($alias !== null) {
-    //         $selected .= ' AS ' . self::identifier($alias);
-    //     }
+        if ($alias !== null) {
+            $selected .= ' AS ' . self::identifier($alias);
+        }
 
-    //     return $this->addRaw($selected);
-    // }
+        return $this->addRaw($selected);
+    }
 
     public function addRaw(string $raw): self
     {
-        $this->columns[] = $raw;
-        return $this;
+        if (!isset($this->deck))
+            $this->deck = new Deck($raw);
+        else
+            $this->deck->addRaw($raw);
+        
+            return $this;
     }
 
-    public function all(string $alias = null): self
+    public function all(): self
     {
-        return $this->addRaw(sprintf('`%s`.*', $alias ?? $this->alias ?? $this->table));
+        $this->addRaw('*');
+        return $this;
     }
 
     public function __toString(): string
     {
-        if (empty($this->columns)) {
+        if (!isset($this->deck) || $this->deck->empty()) {
             $this->all();
         }
 
         $schema = self::identifier($this->table);
         if (!empty($this->alias)) {
-            $schema .= ' AS ' . self::identifier($this->alias);
+            $schema .= ' ' . self::identifier($this->alias);
         }
 
-        $columns = implode(',', $this->columns);
-
-        return sprintf('SELECT %s FROM %s', $columns, $schema);
+        return sprintf('SELECT %s FROM %s', $this->deck ?? '*', $schema);
     }
 }
