@@ -57,4 +57,9 @@ class Join extends Clause
     {
         return sprintf('%s JOIN `%s` %s ON %s', $this->type, $this->table, $this->alias, $this->on);
     }
+
+    public function name(): string
+    {
+        return self::JOIN;
+    }
 }
