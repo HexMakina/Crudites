@@ -10,13 +10,17 @@ class SelectTest extends TestCase
 {
     public function testConstructor()
     {
-        $columns = ['id', 'person' => 'name'];
+        
+        $columns = ['id', 'contact' => 'email', 'person' => ['name']];
         $table = 'users';
         $table_alias = 'u';
 
         $select = new Select($columns, $table, $table_alias);
 
-        $this->assertEquals('SELECT id,name AS `person` FROM `users`', (string)$select);
+        $this->assertEquals($table, $select->table());
+        $this->assertEquals($table_alias, $select->alias());
+        $this->assertEquals($table_alias, $select->base());
+        $this->assertEquals('SELECT id,email AS `contact`,`name` AS `person` FROM `users`', (string)$select);
     }
 
     public function testStatementWithTable()
