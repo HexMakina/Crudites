@@ -25,13 +25,14 @@ class Schema implements SchemaInterface
         $this->tables = $tables;
     }
 
-    public function hasTable(string $table): bool
-    {
-        return isset($this->tables[$table]);
-    }
     public function database(): string
     {
         return $this->database;
+    }
+
+    public function hasTable(string $table): bool
+    {
+        return isset($this->tables[$table]);
     }
 
     public function tables(): array
@@ -55,7 +56,7 @@ class Schema implements SchemaInterface
             throw new \InvalidArgumentException('CANNOT FIND COLUMN ' . $column . ' IN TABLE ' . $table);
         }
 
-        if(!isset($this->tables[$table]['columns'][$column]['schema'])){
+        if (!isset($this->tables[$table]['columns'][$column]['schema'])) {
             throw new \InvalidArgumentException("ERR_MISSING_COLUMN_SCHEMA");
         }
 
@@ -158,13 +159,15 @@ class Schema implements SchemaInterface
 
     public function select(string $table, array $columns = null, string $table_alias = null): QueryInterface
     {
-        if(in_array('*', $columns)){
+        $filtered_columns = [];
+        // if $columns is an empty array or null or an array containing *
+        if (empty($columns) || in_array('*', $columns)) {
             $filtered_columns = ['*'];
-        }
-        else{
+        } else {
+            var_dump($columns, $this->columns($table));
             $filtered_columns = array_intersect($columns, $this->columns($table));
-        } 
-        
+        }
+
         return new Select($filtered_columns, $table, $table_alias);
     }
 
