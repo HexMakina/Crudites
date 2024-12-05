@@ -46,18 +46,18 @@ class SelectFrom extends Clause
     //     return $this->addRaw($selected);
     // }
 
-    // public function addRaw(string $raw): self
-    // {
-    //     $this->columns[] = $raw;
-    //     return $this;
-    // }
+    public function addRaw(string $raw): self
+    {
+        $this->columns[] = $raw;
+        return $this;
+    }
 
     public function all(string $alias = null): self
     {
         return $this->addRaw(sprintf('`%s`.*', $alias ?? $this->alias ?? $this->table));
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         if (empty($this->columns)) {
             $this->all();
