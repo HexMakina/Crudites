@@ -37,7 +37,11 @@ class Deck extends Grammar
         return $this->aggregates;
     }
 
-
+    public function empty(): bool
+    {
+        return empty($this->aggregates);
+    }
+    
     protected function format($aggregate, string $alias = null): string
     {
         $ret = is_string($aggregate) ? $aggregate : self::identifier($aggregate);
