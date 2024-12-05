@@ -7,8 +7,6 @@ use HexMakina\Crudites\Grammar\Clause\Clause;
 
 abstract class Query implements QueryInterface
 {
-
-    
     protected array $bindings = [];
     protected array $binding_names = [];
     
@@ -59,7 +57,12 @@ abstract class Query implements QueryInterface
         return $this->table;
     }
 
-    public function alias(): string
+    public function alias(): ?string
+    {
+        return $this->alias ?? $this->table;
+    }
+
+    public function base(): string
     {
         return $this->alias ?? $this->table;
     }
