@@ -4,6 +4,8 @@ namespace HexMakina\Crudites\Grammar\Query;
 
 class Insert extends Query
 {
+    private array $binding_names;
+    
     public function __construct(string $table, array $dat_ass)
     {
         // Check if the given data is a non-empty array, and throw an exception if it is not
@@ -12,7 +14,7 @@ class Insert extends Query
         }
         
         $this->table = $table;
-        $this->addBindings($dat_ass);
+        $this->binding_names = $this->addBindings($dat_ass);
     }
 
     /**
@@ -23,9 +25,7 @@ class Insert extends Query
     public function statement(): string
     {
         // Generate the INSERT statement with backticks around the field names
-        $fields = $this->getBindingNames();
-        $fields = array_keys($fields[$this->table]);
-        
+        $fields = array_keys($this->binding_names);
         $fields = '`' . implode('`, `', $fields) . '`';
         $bindings = implode(', ', array_keys($this->bindings()));
 
