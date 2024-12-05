@@ -3,11 +3,10 @@
 namespace HexMakina\Crudites\Grammar\Clause;
 
 use HexMakina\Crudites\Grammar\DeckOrderBy;
-use HexMakina\Crudites\Grammar\Grammar;
 
 class OrderBy extends Clause
 {
-    private Deck $deck;
+    private DeckOrderBy $deck;
 
     public function __construct($selected, string $direction)
     {
@@ -20,7 +19,7 @@ class OrderBy extends Clause
         return $this;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return 'ORDER BY ' . $this->deck;
     }
