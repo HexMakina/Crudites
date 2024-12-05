@@ -12,38 +12,29 @@ use HexMakina\Crudites\Grammar\Grammar;
  */
 class Predicate extends Grammar
 {
-    /**
-     * @var mixed The column involved in the predicate.
-     */
-    protected $column = null;
-
-    /**
-     * @var string The operator used in the predicate.
-     */
-    protected $operator = null;
-
+    protected $left;
+    protected ?string $operator = null;
     protected $right = null;
 
-
-    /**
-     * @var string|null The label used for binding parameters. 
-     */
-    protected $bind_label = null;
-
-    /**
-     * @var array The bindings for the predicate
-     */
-    protected $bindings = [];
+    protected ?string $bind_label = null;
+    
+    protected array $bindings = [];
 
     /**
      * Predicate constructor.
+     * The constructor takes a left side expression, an operator, and a right side expression.
+     * The left and right side expressions can be either strings or arrays.
+     * If an array is provided, the first element is the table name and the second element is the column name.
+     * The constructor also adds backticks to the column names.
+     * 
      *
-     * @param mixed $column The column involved in the predicate.
-     * @param string $operator The operator used in the predicate.
+     * @param mixed $left, left side  expression
+     * @param string $operator, operator to use
+     * @param mixed $right, right side expression
      */
-    public function __construct($column, string $operator = null, string $right = null)
+    public function __construct($left, string $operator = null, $right = null)
     {
-        $this->column = $column;
+        $this->left = $left;
         $this->operator = $operator;
         $this->right = $right;
     }
@@ -55,29 +46,9 @@ class Predicate extends Grammar
      */
     public function __toString()
     {
-        return sprintf('%s %s %s', $this->left(), $this->operator ?? '', $this->right());
-    }
-
-    /**
-     * Gets the left-hand side of the predicate.
-     *
-     * @return string The left-hand side of the predicate.
-     */
-    protected function left(): string
-    {
-        return self::backtick($this->column);
-    }
-
-    /**
-     * Gets the right-hand side of the predicate.
-     * By default, this is the binding label.
-     *
-     * @return string The right-hand side of the predicate.
-     */
-    
-    protected function right(): string
-    {
-        return $this->right ?? $this->bindLabel();
+        $left = is_array($this->left) ? self::identifier($this->left) : ($this->left ?? '');
+        $right = is_array($this->right) ? self::identifier($this->right) : ($this->right ?? '');
+        return trim(sprintf('%s %s %s', $left, $this->operator ?? '', $right));
     }
 
     /**
@@ -97,23 +68,25 @@ class Predicate extends Grammar
      */
     public function bindLabel(string $prefix = null): string
     {
-        if($this->bind_label === null){
-            $label = is_array($this->column) ? $this->column : [$this->column];
-            array_unshift($label, $prefix);
-            $this->bind_label = implode('_', $label);
+        if($this->bind_label !== null)
+            return $this->bind_label;
 
+        if(is_string($this->right))
+            $this->bind_label = $this->right;
+        else{
+            $this->bind_label = is_array($this->left) ? implode('_', $this->left) : $this->left;
         }
-            
+        
+        if($prefix !== null)
+            $this->bind_label = $prefix . '_' . $this->bind_label;
+
         return $this->bind_label;
     }
 
     public function withValue($value, string $bind_prefix = null): self
     {
-        $bind_label = $this->bindLabel($bind_prefix);
-        
-        $this->right = sprintf(':%s', $bind_label);
-        $this->bindings[$bind_label] = $value;
-        
+        $this->bindings[$this->bindLabel($bind_prefix)] = $value;
+        $this->right = ':' . $this->bindLabel($bind_prefix);
         return $this;
     }
 
@@ -123,21 +96,34 @@ class Predicate extends Grammar
             throw new \InvalidArgumentException('PREDICATE_VALUES_ARE_EMPTY');
         }
 
-        $bind_label = $this->bindLabel();
+        $bind_label = $this->bindLabel($bind_prefix);
         foreach ($values as $index => $val) {
-            $this->bindings[sprintf('%s_%s_%d', $bind_prefix, $bind_label, $index)] = $val;
+            $this->bindings[sprintf('%s_%d',$bind_label, $index)] = $val;
         }
-        
+
         $this->operator = 'IN';
-        $this->right = '(:'.implode(',:', array_keys($this->bindings)).')';
+        $this->right = '(:' . implode(',:', array_keys($this->bindings)) . ')';
 
         return $this;
     }
 
-    public function withColumn($column): self
+    public function isNotEmpty(): self
     {
-        $this->right = self::backtick($column);
+        $res = is_array($this->left) ? self::identifier($this->left) : $this->left;
+        $this->left = sprintf("(%s IS NOT NULL AND %s <> '')", $res, $res);
+        $this->operator = null;
+        $this->right = null;
+
         return $this;
     }
 
+    public function isEmpty(): self
+    {
+        $res = is_array($this->left) ? self::identifier($this->left) : $this->left;
+        $this->left = sprintf("(%s IS NULL OR %s = '')", $res, $res);
+        $this->operator = null;
+        $this->right = null;
+
+        return $this;
+    }
 }
