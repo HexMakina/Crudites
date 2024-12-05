@@ -1,8 +1,6 @@
 <?php
 use PHPUnit\Framework\TestCase;
-use HexMakina\Crudites\Grammar\Predicate\Predicate;
-use HexMakina\Crudites\Grammar\Predicate\IsNotEmpty;
-use HexMakina\Crudites\Grammar\Predicate\IsEmpty;
+use HexMakina\Crudites\Grammar\Predicate;
 
 class PredicateTest extends TestCase
 {

@@ -1,8 +1,6 @@
 <?php
 
-namespace HexMakina\Crudites\Grammar\Predicate;
-
-use HexMakina\Crudites\Grammar\Grammar;
+namespace HexMakina\Crudites\Grammar;
 
 /**
  * An abstract class representing a SQL predicate.

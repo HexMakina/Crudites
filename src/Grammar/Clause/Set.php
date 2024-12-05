@@ -2,7 +2,7 @@
 
 namespace HexMakina\Crudites\Grammar\Clause;
 
-use HexMakina\Crudites\Grammar\Predicate\Predicate;
+use HexMakina\Crudites\Grammar\Predicate;
 
 class Set extends Clause
 {
