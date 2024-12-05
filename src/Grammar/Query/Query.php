@@ -99,9 +99,15 @@ abstract class Query implements QueryInterface
 
     public function bindings(): array
     {
-        return $this->bindings;
-    }
+        if(empty($this->clauses)){
+            return $this->bindings;
+        }
 
+        return array_merge($this->bindings, array_reduce($this->clauses, function ($carry, $clause) {
+            return array_merge($carry, $clause->bindings());
+        }, []));
+    }
+    
     public function addBinding($field, $value, $table_name = null, $bind_label = null): string
     {
         $bind_label ??= $this->bindLabel($field, $table_name);
