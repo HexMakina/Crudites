@@ -8,12 +8,10 @@ use HexMakina\Crudites\Grammar\Clause\Clause;
 abstract class Query implements QueryInterface
 {
     protected array $bindings = [];
-    protected array $binding_names = [];
     
     protected string $table;
     protected ?string $alias = null;
     
-    protected $table_alias = null;
     
     protected array $clauses = [];
     
@@ -59,7 +57,7 @@ abstract class Query implements QueryInterface
 
     public function alias(): ?string
     {
-        return $this->alias ?? $this->table;
+        return $this->alias;
     }
 
     public function base(): string
@@ -93,10 +91,10 @@ abstract class Query implements QueryInterface
     public function tableAlias($setter = null): string
     {
         if ($setter !== null) {
-            $this->table_alias = $setter;
+            $this->alias = $setter;
         }
 
-        return $this->table_alias ?? $this->table;
+        return $this->alias ?? $this->table;
     }
 
     public function bindings(): array
@@ -104,18 +102,10 @@ abstract class Query implements QueryInterface
         return $this->bindings;
     }
 
-    public function getBindingNames(): array
-    {
-        return $this->binding_names;
-    }
-
     public function addBinding($field, $value, $table_name = null, $bind_label = null): string
     {
-        $table_label = $this->tableLabel($table_name);
         $bind_label ??= $this->bindLabel($field, $table_name);
 
-        $this->binding_names[$table_label] ??= [];
-        $this->binding_names[$table_label][$field] = $bind_label;
         $this->bindings[$bind_label] = $value;
 
         return $bind_label;
