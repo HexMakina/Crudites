@@ -6,9 +6,6 @@ use HexMakina\Crudites\Grammar\Clause\Where;
 
 class Delete extends Query
 {
-    protected $table;
-    
-
     public function __construct(string $table, array $strict_conditions)
     {
         if (empty($strict_conditions)) {
