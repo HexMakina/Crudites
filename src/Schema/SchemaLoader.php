@@ -3,7 +3,7 @@
 namespace HexMakina\Crudites\Schema;
 
 use HexMakina\BlackBox\Database\SchemaInterface;
-
+use HexMakina\Crudites\CruditesException;
 /**
  * SchemaLoader
  * 
@@ -59,7 +59,7 @@ class SchemaLoader
             throw $e;
         }
 
-        $res = $res->fetchAll();
+        $res = $res->fetchAll(\PDO::FETCH_ASSOC);
         if($res === false){
             throw new CruditesException('SCHEMA_LOAD_FETCHALL');
         }
