@@ -60,11 +60,7 @@ abstract class Clause extends Grammar
     public array $bindings = [];
 
     abstract public function __toString(): string;
-
-    public function name(): string
-    {
-        return static::class;
-    }
+    abstract public function name(): string;
 
     public function bindings(): array
     {
