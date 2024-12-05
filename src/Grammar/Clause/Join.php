@@ -38,9 +38,8 @@ class Join extends Clause
 
     public function on($column, $join_table, $join_column): self
     {
-        $this->on = '' . (new Predicate([$this->alias, $column], '='))->withColumn([$join_table, $join_column]););
+        $this->on = (string)(new Predicate([$this->alias, $column], '=', [$join_table, $join_column]));
         
-
         return $this;
     }
 
