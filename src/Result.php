@@ -119,7 +119,7 @@ class Result
      */
     public function ran(): bool
     {
-        return $this->executed !== null && $this->executed->errorCode() !== \PDO::ERR_NONE;
+        return $this->executed !== null && $this->executed->errorCode() === \PDO::ERR_NONE;
     }
 
     /**
