@@ -164,7 +164,6 @@ class Schema implements SchemaInterface
         if (empty($columns) || in_array('*', $columns)) {
             $filtered_columns = ['*'];
         } else {
-            var_dump($columns, $this->columns($table));
             $filtered_columns = array_intersect($columns, $this->columns($table));
         }
 
