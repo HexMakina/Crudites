@@ -28,7 +28,7 @@ class Where extends Clause
             return '';
         }
 
-        return PHP_EOL . ' WHERE ' . implode(PHP_EOL . ' AND ', $this->and);
+        return 'WHERE ' . implode(' AND ', $this->and);
     }
 
     public function name(): string
