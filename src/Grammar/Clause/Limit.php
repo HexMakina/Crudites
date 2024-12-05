@@ -11,7 +11,7 @@ class Limit extends Clause
         $this->clause = sprintf('LIMIT %s OFFSET %s', $number, $offset);
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->clause;
     }
