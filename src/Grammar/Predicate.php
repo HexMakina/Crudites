@@ -26,7 +26,7 @@ class Predicate extends Grammar
      * The constructor also adds backticks to the column names.
      * 
      *
-     * @param mixed $left, left side  expression
+     * @param mixed $left, left side expression
      * @param string $operator, operator to use
      * @param mixed $right, right side expression
      */
@@ -59,29 +59,6 @@ class Predicate extends Grammar
         return $this->bindings ?? [];
     }
 
-    /**
-     * Gets the binding label for the predicate.
-     *
-     * @return string The binding label for the predicate.
-     */
-    public function bindLabel(string $prefix = null): string
-    {
-        if($this->bind_label !== null)
-            return $this->bind_label;
-
-        if (is_string($this->right)) {
-            $this->bind_label = $this->right;
-        } elseif (is_array($this->left)) {
-            $this->bind_label = implode('_', $this->left);
-        } else {
-            $this->bind_label = $this->left;
-        }
-        
-        if($prefix !== null)
-            $this->bind_label = $prefix . '_' . $this->bind_label;
-
-        return $this->bind_label;
-    }
 
     public function withValue($value, string $bind_prefix = null): self
     {
@@ -125,5 +102,30 @@ class Predicate extends Grammar
         $this->right = null;
 
         return $this;
+    }
+
+
+    /**
+     * Gets the binding label for the predicate.
+     *
+     * @return string The binding label for the predicate.
+     */
+    private function bindLabel(string $prefix = null): string
+    {
+        if ($this->bind_label !== null)
+            return $this->bind_label;
+
+        if (is_string($this->right)) {
+            $this->bind_label = $this->right;
+        } elseif (is_array($this->left)) {
+            $this->bind_label = implode('_', $this->left);
+        } else {
+            $this->bind_label = $this->left;
+        }
+
+        if ($prefix !== null)
+            $this->bind_label = $prefix . '_' . $this->bind_label;
+
+        return $this->bind_label;
     }
 }
