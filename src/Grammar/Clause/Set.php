@@ -19,7 +19,7 @@ class Set extends Clause
 
     public function __toString(): string
     {
-        return 'SET ' . implode(', ', $this->alterations);
+        return 'SET ' . implode(',', $this->alterations);
     }
 
     public function name(): string
