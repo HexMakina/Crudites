@@ -163,7 +163,7 @@ class Row implements RowInterface
 
             // replaces empty strings with null or default value
             if (trim('' . $datass[$field_name]) === '' && $attributes->nullable()) {
-                $datass[$field_name] = $attributes->nullable() ? null : $attributes->default();
+                $datass[$field_name] = null;
             }
 
             // checks for changes with loaded data. using == instead of === is risky but needed
