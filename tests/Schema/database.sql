@@ -1,158 +1,269 @@
--- crudites / d&ujB%Cf}!ze>mM-U?n.8W
--- Create the test database if it doesn't exist
-CREATE DATABASE IF NOT EXISTS `crudites`;
-USE `crudites`;
 
--- Create a table containing each SQL data type (all nullable)
+
 CREATE TABLE `data_types_table` (
-    `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    
-    -- Numeric types
-    `tinyint` TINYINT NULL,
-    `smallint` SMALLINT NULL,
-    `mediumint` MEDIUMINT NULL,
-    `int` INT NULL,
-    `bigint` BIGINT NULL,
-    `float` FLOAT NULL,
-    `double` DOUBLE NULL,
-    `decimal` DECIMAL(10, 2) NULL,
-    `numeric` NUMERIC(10, 2) NULL,
-    
-    -- String types
-    `char` CHAR(10) NULL,
-    `varchar` VARCHAR(255) NULL,
-    `text` TEXT NULL,
-    `tinytext` TINYTEXT NULL,
-    `mediumtext` MEDIUMTEXT NULL,
-    `longtext` LONGTEXT NULL,
-    `blob` BLOB NULL,
-    `tinyblob` TINYBLOB NULL,
-    `mediumblob` MEDIUMBLOB NULL,
-    `longblob` LONGBLOB NULL,
-    
-    -- Date and Time types
-    `date` DATE NULL,
-    `datetime` DATETIME NULL,
-    `timestamp` TIMESTAMP NULL,
-    `time` TIME NULL,
-    `year` YEAR NULL,
-    
-    -- Other types
-    `enum_example` ENUM('value1', 'value2', 'value3') NULL,
-    `set_example` SET('a', 'b', 'c') NULL,
-    `json_example` JSON NULL,
-    `bit_example` BIT(1) NULL,
-    
-    -- Spatial types
-    `geometry_example` GEOMETRY NULL,
-    `point_example` POINT NULL,
-    `linestring_example` LINESTRING NULL,
-    `polygon_example` POLYGON NULL
-);
+  `id` int NOT NULL,
+  `tinyint` tinyint DEFAULT NULL,
+  `smallint` smallint DEFAULT NULL,
+  `mediumint` mediumint DEFAULT NULL,
+  `int` int DEFAULT NULL,
+  `bigint` bigint DEFAULT NULL,
+  `float` float DEFAULT NULL,
+  `double` double DEFAULT NULL,
+  `decimal` decimal(10,2) DEFAULT NULL,
+  `numeric` decimal(10,2) DEFAULT NULL,
+  `char` char(10) DEFAULT NULL,
+  `varchar` varchar(255) DEFAULT NULL,
+  `text` text,
+  `tinytext` tinytext,
+  `mediumtext` mediumtext,
+  `longtext` longtext,
+  `blob` blob,
+  `tinyblob` tinyblob,
+  `mediumblob` mediumblob,
+  `longblob` longblob,
+  `date` date DEFAULT NULL,
+  `datetime` datetime DEFAULT NULL,
+  `timestamp` timestamp NULL DEFAULT NULL,
+  `time` time DEFAULT NULL,
+  `year` year DEFAULT NULL,
+  `enum_example` enum('value1','value2','value3') DEFAULT NULL,
+  `set_example` set('a','b','c') DEFAULT NULL,
+  `json_example` json DEFAULT NULL,
+  `bit_example` bit(1) DEFAULT NULL,
+  `geometry_example` geometry DEFAULT NULL,
+  `point_example` point DEFAULT NULL,
+  `linestring_example` linestring DEFAULT NULL,
+  `polygon_example` polygon DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Insert some test data into `data_types_table`
-INSERT INTO `data_types_table` (
-    `tinyint`, `smallint`, `mediumint`, `int`, `bigint`, `float`, `double`, 
-    `decimal`, `numeric`, `char`, `varchar`, `text`, `tinytext`, `mediumtext`, 
-    `longtext`, `blob`, `tinyblob`, `mediumblob`, `longblob`, `date`, `datetime`, 
-    `timestamp`, `time`, `year`, `enum_example`, `set_example`, `json_example`, 
-    `bit_example`, `geometry_example`, `point_example`, `linestring_example`, `polygon_example`
-) VALUES 
-(
-    1, 100, 5000, 100000, 1000000000, 3.14, 3.1415926535, 123.45, 678.90, 'A', 'Test String', 
-    'This is a long text', 'Tiny Text', 'Medium Text', 'Long Text Example', 
-    'binary data', 'tiny binary', 'medium binary', 'long binary', '2024-01-01', '2024-01-01 12:00:00',
-    '2024-01-01 12:00:00', '12:30:00', 2024, 'value1', 'a,b,c', '{"key": "value"}', b'1',
-    ST_GeomFromText('POINT(1 1)'), ST_GeomFromText('POINT(2 2)'), ST_GeomFromText('LINESTRING(0 0, 1 1)'), ST_GeomFromText('POLYGON((0 0, 1 1, 1 0, 0 0))')
-);
+--
+-- Dumping data for table `data_types_table`
+--
 
+INSERT INTO `data_types_table` (`id`, `tinyint`, `smallint`, `mediumint`, `int`, `bigint`, `float`, `double`, `decimal`, `numeric`, `char`, `varchar`, `text`, `tinytext`, `mediumtext`, `longtext`, `blob`, `tinyblob`, `mediumblob`, `longblob`, `date`, `datetime`, `timestamp`, `time`, `year`, `enum_example`, `set_example`, `json_example`, `bit_example`, `geometry_example`, `point_example`, `linestring_example`, `polygon_example`) VALUES
+(1, 1, 100, 5000, 100000, 1000000000, 3.14, 3.1415926535, '123.45', '678.90', 'A', 'Test String', 'This is a long text', 'Tiny Text', 'Medium Text', 'Long Text Example', 0x62696e6172792064617461, 0x74696e792062696e617279, 0x6d656469756d2062696e617279, 0x6c6f6e672062696e617279, '2024-01-01', '2024-01-01 12:00:00', '2024-01-01 11:00:00', '12:30:00', 2024, 'value1', 'a,b,c', '{\"key\": \"value\"}', b'1', 0x000000000101000000000000000000f03f000000000000f03f, 0x00000000010100000000000000000000400000000000000040, 0x0000000001020000000200000000000000000000000000000000000000000000000000f03f000000000000f03f, 0x000000000103000000010000000400000000000000000000000000000000000000000000000000f03f000000000000f03f000000000000f03f000000000000000000000000000000000000000000000000);
 
--- Create `users` table with some columns
-CREATE TABLE `users` (
-    `id` INT NOT NULL AUTO_INCREMENT,
-    `username` VARCHAR(50) NOT NULL,
-    `email` VARCHAR(100) NOT NULL,
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `username_unique` (`username`),
-    UNIQUE KEY `email_unique` (`email`)
-);
+-- --------------------------------------------------------
 
--- Create `orders` table with some columns
+--
+-- Table structure for table `orders`
+--
+
 CREATE TABLE `orders` (
-    `order_id` INT NOT NULL AUTO_INCREMENT,
-    `user_id` INT NOT NULL,
-    `amount` DECIMAL(10, 2) NOT NULL,
-    `status` ENUM('pending', 'completed', 'cancelled') DEFAULT 'pending',
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`order_id`),
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE NO ACTION ON UPDATE CASCADE
-);
+  `order_id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `status` enum('pending','completed','cancelled') DEFAULT 'pending',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `is_paid` tinyint(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Create `products` table with some columns
-CREATE TABLE `products` (
-    `product_id` INT NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(255) NOT NULL,
-    `price` DECIMAL(10, 2) NOT NULL,
-    `category` VARCHAR(100) NOT NULL,
-    `stock_quantity` INT DEFAULT 0,
-    PRIMARY KEY (`product_id`)
-);
+--
+-- Dumping data for table `orders`
+--
 
--- Create `order_items` table with foreign key references to `orders` and `products`
+INSERT INTO `orders` (`order_id`, `user_id`, `amount`, `status`, `created_at`, `is_paid`) VALUES
+(1, 1, '100.50', 'completed', '2024-11-25 21:23:46', NULL),
+(2, 2, '50.75', 'pending', '2024-11-25 21:23:46', NULL),
+(3, 3, '30.00', 'cancelled', '2024-11-25 21:23:46', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `order_items`
+--
+
 CREATE TABLE `order_items` (
-    `order_item_id` INT NOT NULL AUTO_INCREMENT,
-    `order_id` INT NOT NULL,
-    `product_id` INT NOT NULL,
-    `quantity` INT NOT NULL,
-    `price_at_purchase` DECIMAL(10, 2) NOT NULL,
-    PRIMARY KEY (`order_item_id`),
-    FOREIGN KEY (`order_id`) REFERENCES `orders`(`order_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (`product_id`) REFERENCES `products`(`product_id`) ON DELETE CASCADE ON UPDATE CASCADE
-);
+  `order_item_id` int NOT NULL,
+  `order_id` int NOT NULL,
+  `product_id` int NOT NULL,
+  `quantity` int NOT NULL,
+  `price_at_purchase` decimal(10,2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Insert test data into `users`
-INSERT INTO `users` (`username`, `email`) VALUES
-('john_doe', 'john@example.com'),
-('alice_smith', 'alice@example.com'),
-('bob_jones', 'bob@example.com');
+--
+-- Dumping data for table `order_items`
+--
 
--- Insert test data into `orders`
-INSERT INTO `orders` (`user_id`, `amount`, `status`) VALUES
-(1, 100.50, 'completed'),
-(2, 50.75, 'pending'),
-(3, 30.00, 'cancelled');
+INSERT INTO `order_items` (`order_item_id`, `order_id`, `product_id`, `quantity`, `price_at_purchase`) VALUES
+(1, 1, 1, 2, '20.00'),
+(2, 1, 3, 1, '30.00'),
+(3, 2, 2, 3, '15.00'),
+(4, 3, 1, 1, '20.00');
 
--- Insert test data into `products`
-INSERT INTO `products` (`name`, `price`, `category`, `stock_quantity`) VALUES
-('Product A', 20.00, 'Category 1', 100),
-('Product B', 15.00, 'Category 2', 50),
-('Product C', 30.00, 'Category 1', 200);
+-- --------------------------------------------------------
 
--- Insert test data into `order_items`
-INSERT INTO `order_items` (`order_id`, `product_id`, `quantity`, `price_at_purchase`) VALUES
-(1, 1, 2, 20.00),
-(1, 3, 1, 30.00),
-(2, 2, 3, 15.00),
-(3, 1, 1, 20.00);
+--
+-- Table structure for table `products`
+--
 
--- Add a nullable column to `orders` to test the nullable behavior
-ALTER TABLE `orders` ADD `is_paid` BOOLEAN DEFAULT NULL;
+CREATE TABLE `products` (
+  `product_id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `category` varchar(100) NOT NULL,
+  `stock_quantity` int DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Dumping data for table `products`
+--
 
--- Create another table to test ENUM data types and constraints
+INSERT INTO `products` (`product_id`, `name`, `price`, `category`, `stock_quantity`) VALUES
+(1, 'Product A', '20.00', 'Category 1', 100),
+(2, 'Product B', '15.00', 'Category 2', 50),
+(3, 'Product C', '30.00', 'Category 1', 200);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `product_reviews`
+--
+
 CREATE TABLE `product_reviews` (
-    `review_id` INT NOT NULL AUTO_INCREMENT,
-    `product_id` INT NOT NULL,
-    `rating` INT NOT NULL CHECK (`rating` BETWEEN 1 AND 5),
-    `review` TEXT,
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`review_id`),
-    FOREIGN KEY (`product_id`) REFERENCES `products`(`product_id`) ON DELETE CASCADE
-);
+  `review_id` int NOT NULL,
+  `product_id` int NOT NULL,
+  `rating` int NOT NULL,
+  `review` text,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ;
 
--- Insert some test data into `product_reviews`
-INSERT INTO `product_reviews` (`product_id`, `rating`, `review`) VALUES
-(1, 5, 'Excellent product, highly recommend!'),
-(2, 3, 'Good product, but could be better.'),
-(3, 1, 'Not satisfied, it broke after a week.');
+--
+-- Dumping data for table `product_reviews`
+--
+
+INSERT INTO `product_reviews` (`review_id`, `product_id`, `rating`, `review`, `created_at`) VALUES
+(1, 1, 5, 'Excellent product, highly recommend!', '2024-11-25 21:25:44'),
+(2, 2, 3, 'Good product, but could be better.', '2024-11-25 21:25:44'),
+(3, 3, 1, 'Not satisfied, it broke after a week.', '2024-11-25 21:25:44');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `id` int NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `username`, `email`, `created_at`) VALUES
+(1, 'john_doe', 'john@example.com', '2024-11-25 21:23:46'),
+(2, 'alice_smith', 'alice@example.com', '2024-11-25 21:23:46'),
+(3, 'bob_jones', 'bob@example.com', '2024-11-25 21:23:46');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `data_types_table`
+--
+ALTER TABLE `data_types_table`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `orders`
+--
+ALTER TABLE `orders`
+  ADD PRIMARY KEY (`order_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `order_items`
+--
+ALTER TABLE `order_items`
+  ADD PRIMARY KEY (`order_item_id`),
+  ADD KEY `order_id` (`order_id`),
+  ADD KEY `product_id` (`product_id`);
+
+--
+-- Indexes for table `products`
+--
+ALTER TABLE `products`
+  ADD PRIMARY KEY (`product_id`);
+
+--
+-- Indexes for table `product_reviews`
+--
+ALTER TABLE `product_reviews`
+  ADD PRIMARY KEY (`review_id`),
+  ADD KEY `product_id` (`product_id`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `username_unique` (`username`),
+  ADD UNIQUE KEY `email_unique` (`email`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `data_types_table`
+--
+ALTER TABLE `data_types_table`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `orders`
+--
+ALTER TABLE `orders`
+  MODIFY `order_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `order_items`
+--
+ALTER TABLE `order_items`
+  MODIFY `order_item_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `products`
+--
+ALTER TABLE `products`
+  MODIFY `product_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `product_reviews`
+--
+ALTER TABLE `product_reviews`
+  MODIFY `review_id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `orders`
+--
+ALTER TABLE `orders`
+  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `order_items`
+--
+ALTER TABLE `order_items`
+  ADD CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `product_reviews`
+--
+ALTER TABLE `product_reviews`
+  ADD CONSTRAINT `product_reviews_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE;
