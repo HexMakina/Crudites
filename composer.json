@@ -34,7 +34,8 @@
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
-            "HexMakina\\Crudites\\": "/src"
+            "HexMakina\\Crudites\\": "./src",
+            "HexMakina\\BlackBox\\": "../BlackBox"
         }
     }
 }
