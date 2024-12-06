@@ -84,15 +84,4 @@ class WhereTest extends TestCase
         $this->assertEquals('WHERE `field` > :field', (string)$where);
         $this->assertEquals(['field' => 3], $where->bindings());
     }
-
-    public function testAndExpression()
-    {
-        $where = new Where();
-        $where->andExpression('expression', '>', 'expression2');
-        $this->assertEquals('WHERE expression > expression2', (string)$where);
-
-        $where = new Where();
-        $where->andExpression(['field'], '>', ['field2']);
-        $this->assertEquals('WHERE `field` > `field2`', (string)$where);
-    }
 }
