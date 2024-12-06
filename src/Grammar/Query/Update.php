@@ -18,7 +18,7 @@ class Update extends Query
         
         $this->add(new Set($alterations));
 
-        $clause = new Where($table);
+        $clause = new Where();
         $clause->andFields($conditions, $table, '=');
         $this->add($clause);
     }

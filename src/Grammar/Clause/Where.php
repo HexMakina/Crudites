@@ -6,20 +6,18 @@ use HexMakina\Crudites\Grammar\Predicate;
 
 class Where extends Clause
 {
-    protected string $default_table;
     protected array $and = [];
 
-    public function __construct(string $default_table, array $predicates = [])
+    public function __construct(array $predicates = null)
     {
-        $this->default_table = $default_table;
-        foreach ($predicates as $predicate) {
-            $this->andPredicate($predicate);
+        if ($predicates !== null){
+            foreach ($predicates as $predicate) {
+                if (is_string($predicate))
+                    $this->and($predicate);
+                else
+                    $this->and($predicate, $predicate->bindings());
+            }
         }
-    }
-
-    public function bindings(): array
-    {
-        return $this->bindings;
     }
 
     public function __toString(): string
@@ -36,9 +34,9 @@ class Where extends Clause
         return self::WHERE;
     }
 
-    public function andRaw(string $condition, $bindings = [])
+    public function and(string $predicate, $bindings = [])
     {
-        $this->and[] = $condition;
+        $this->and[] = $predicate;
 
         if (!empty($bindings)) {
             $this->bindings = array_merge($this->bindings, $bindings);
@@ -49,34 +47,29 @@ class Where extends Clause
 
     public function andPredicate(Predicate $predicate)
     {
-        return $this->andRaw($predicate->__toString(), $predicate->bindings());
+        return $this->and($predicate->__toString(), $predicate->bindings());
     }
 
 
-
-    public function andIsNull(string $field, $table_name = null)
+    public function andIsNull($expression)
     {
-        $table = $table_name ?: $this->default_table;
-        return $this->andRaw(new Predicate([$table, $field], 'IS NULL'));
+        return $this->and(new Predicate($expression, 'IS NULL'));
     }
 
     public function andFields(array $assoc_data, $table_name = null, $operator = '=')
     {
         foreach ($assoc_data as $field => $value) {
-            $column = $table_name === null ? $field : [$table_name, $field];
+            $column = $table_name === null ? [$field] : [$table_name, $field];
             $predicate = (new Predicate($column, $operator))->withValue($value, __FUNCTION__);
 
-            $this->andPredicate($predicate);
+            $this->and($predicate, $predicate->bindings());
         }
 
         return $this;
     }
 
-    public function andIn(string $field, array $values, $table_name = null)
+    public function andIn($expression, array $values)
     {
-        return $this->andPredicate(
-            (new Predicate($table_name === null ? $field : [$table_name, $field]))
-                ->withValues($values, __FUNCTION__)
-        );
+        return $this->andPredicate((new Predicate($expression, 'IN'))->withValues($values, __FUNCTION__));
     }
 }

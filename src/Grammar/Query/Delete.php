@@ -13,7 +13,7 @@ class Delete extends Query
         }
 
         $this->table = $table;
-        $this->add((new Where($table))->andFields($strict_conditions, $table, '='));
+        $this->add((new Where())->andFields($strict_conditions, $table, '='));
     }
 
     public function statement(): string
