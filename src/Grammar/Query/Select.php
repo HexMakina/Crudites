@@ -19,11 +19,12 @@ class Select extends Query
         $this->selectAlso($selection);
     }
 
+
     public function statement(): string
     {
-        $schema = Grammar::identifier($this->table);
-        if (!empty($this->alias)) {
-            $schema .= ' ' . Grammar::identifier($this->alias);
+        $schema = Grammar::identifier($this->table());
+        if (!empty($this->alias())) {
+            $schema .= ' ' . Grammar::identifier($this->alias());
         }
 
         $ret = sprintf('SELECT %s FROM %s', $this->deck, $schema);
