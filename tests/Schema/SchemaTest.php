@@ -16,7 +16,7 @@ class SchemaTest extends TestCase
         // code to execute before each test
 
         $dsn = 'mysql:host=localhost;dbname=crudites;charset=utf8';
-        $this->connection = new Connection($dsn, 'root', 'changeme0');
+        $this->connection = new Connection($dsn, 'crudites', '2ce!fNe8(weVz3k4TN#');
         $this->schema = $this->connection->schema();
     }
 
