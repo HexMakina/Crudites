@@ -72,4 +72,9 @@ class Where extends Clause
     {
         return $this->andPredicate((new Predicate($expression, 'IN'))->withValues($values, __FUNCTION__));
     }
+
+    public function andLike($expression, string $value)
+    {
+        return $this->andPredicate((new Predicate($expression, 'LIKE'))->withValue($value, __FUNCTION__));
+    }
 }
