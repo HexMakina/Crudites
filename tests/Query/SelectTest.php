@@ -61,15 +61,35 @@ class SelectTest extends TestCase
         $columns = ['id', 'name'];
         $table = 'users';
         $select = new Select($columns, $table);
-        $predicate = new Predicate('id', '=', 1);
-        $where = new Where($select->base(), [$predicate]);
+
+        $where = new Where([new Predicate('id', '=', 1)]);
         $select->add($where);
 
         $expected = 'SELECT id,name FROM `users` WHERE id = 1';
         $this->assertEquals($expected, (string)$select);
+        $this->assertEmpty($select->bindings());
+
 
         $where->andPredicate((new Predicate('name', 'LIKE'))->withValue('John%'));
-        $expected = 'SELECT id,name FROM `users` WHERE id = 1 AND name LIKE :name';
+        $expected_bindings = ['name' => 'John%'];
+        $expected .= ' AND name LIKE :name';
         $this->assertEquals($expected, (string)$select);
+        $this->assertEquals($expected_bindings, $where->bindings());
+        $this->assertEquals($expected_bindings, $select->bindings());
+
+
+        $where->andIsNull(['email']);
+        $expected .= ' AND `email` IS NULL';
+
+        $this->assertEquals($expected, (string)$select);
+        $this->assertEquals($expected_bindings, $where->bindings());
+        $this->assertEquals($expected_bindings, $select->bindings());
+
+        $where->andFields(['age' => 23]);
+        $expected_bindings['andFields_age'] = 23;
+        $expected .= ' AND `age` = :andFields_age';
+        $this->assertEquals($expected, (string)$select);
+        $this->assertEquals($expected_bindings, $where->bindings());
+        $this->assertEquals($expected_bindings, $select->bindings());
     }
 }

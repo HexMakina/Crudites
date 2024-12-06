@@ -7,65 +7,64 @@ class WhereTest extends TestCase
 {
     public function testConstructor()
     {
-        $where = new Where('default_table');
+        $where = new Where();
         $this->assertInstanceOf(Where::class, $where);
-    }
-
-    public function testBindings()
-    {
-        $where = new Where('default_table');
-        $this->assertIsArray($where->bindings());
-        $this->assertEmpty($where->bindings());
-
-        $where->andPredicate((new Predicate(['table', 'field'], '='))->withValue(3));
-        $this->assertNotEmpty($where->bindings());
-        $this->assertArrayHasKey('table_field', $where->bindings());
-    }
-
-    public function testToString()
-    {
-        $where = new Where('default_table');
         $this->assertEquals('', $where->__toString());
 
-        $predicate = new Predicate('1', '=', '1');
-        $where->andPredicate($predicate);
-        $this->assertEquals('WHERE 1 = 1', $where->__toString());
     }
 
-    public function testAndRaw()
+    public function testAnd()
     {
-        $where = new Where('default_table');
-        $where->andRaw('1=1');
-        $this->assertEquals('WHERE 1=1', $where->__toString());
+        $where = new Where();
+        $where->and('1 = 1');
+        $this->assertEquals('WHERE 1 = 1', (string)$where);
+        $this->assertEquals([], $where->bindings());
+
+
+        $where = new Where();
+        $where->and(new Predicate('1', '=', '1'));
+        $this->assertEquals('WHERE 1 = 1', (string)$where);
+        $this->assertEquals([], $where->bindings());
+
     }
 
     public function testAndPredicate()
     {
-        $where = new Where('default_table');
-        $where->andPredicate(new Predicate('1', '=', '1'));
-
-        $this->assertEquals('WHERE 1 = 1', (string)$where);
+        $where = new Where();
         $this->assertEquals([], $where->bindings());
+
+        $where->andPredicate((new Predicate(['table', 'field'], '='))->withValue(3));
+        $this->assertEquals(['table_field' => 3], $where->bindings());
     }
 
     public function testAndIsNull()
     {
-        $where = new Where('default_table');
-        $where->andIsNull('field');
-        $this->assertStringContainsString('IS NULL', $where->__toString());
+        $where = new Where();
+        $where->andIsNull('expression');
+        $this->assertEquals('WHERE expression IS NULL', (string)$where);
+
+        $where = new Where();
+        $where->andIsNull(['field']);
+        $this->assertEquals('WHERE `field` IS NULL', (string)$where);
+
+        $where = new Where();
+        $where->andIsNull(['table', 'field']);
+        $this->assertEquals('WHERE `table`.`field` IS NULL', (string)$where);
     }
 
     public function testAndFields()
     {
-        $where = new Where('default_table');
+        $where = new Where();
         $where->andFields(['field' => 'value']);
-        $this->assertStringContainsString('=', $where->__toString());
+        $this->assertEquals('WHERE `field` = :andFields_field', (string)$where);
+        $this->assertEquals(['andFields_field' => 'value'], $where->bindings());
     }
 
     public function testAndIn()
     {
-        $where = new Where('default_table');
+        $where = new Where();
         $where->andIn('field', ['value1', 'value2']);
-        $this->assertStringContainsString('IN', $where->__toString());
+        $this->assertEquals('WHERE field IN (:andIn_field_0,:andIn_field_1)', (string)$where);
+        
     }
 }
