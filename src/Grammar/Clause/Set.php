@@ -11,7 +11,7 @@ class Set extends Clause
     public function __construct(array $alterations)
     {
         foreach ($alterations as $field_name => $value) {
-            $predicate = (new Predicate([$field_name], '='))->withValue($value, 'set');
+            $predicate = (new Predicate([$field_name], '='))->withValue($value, 'set_'.$field_name);
             
             $this->alterations .= $predicate->__toString().',';
             $this->bindings += $predicate->bindings();

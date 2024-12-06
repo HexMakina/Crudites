@@ -10,7 +10,7 @@ class Where extends Clause
 
     public function __construct(array $predicates = null)
     {
-        if ($predicates !== null){
+        if ($predicates !== null) {
             foreach ($predicates as $predicate) {
                 if (is_string($predicate))
                     $this->and($predicate);
@@ -60,12 +60,17 @@ class Where extends Clause
     {
         foreach ($assoc_data as $field => $value) {
             $column = $table_name === null ? [$field] : [$table_name, $field];
-            $predicate = (new Predicate($column, $operator))->withValue($value, __FUNCTION__);
+            $predicate = (new Predicate($column, $operator))->withValue($value, __FUNCTION__ .'_'.implode('_', $column));
 
             $this->and($predicate, $predicate->bindings());
         }
 
         return $this;
+    }
+
+    public function andValue($expression, $operator, $value, $bind_label = null)
+    {
+        return $this->andPredicate((new Predicate($expression, $operator))->withValue($value, $bind_label), $bind_label);
     }
 
     public function andIn($expression, array $values)

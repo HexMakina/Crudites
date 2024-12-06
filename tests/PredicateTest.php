@@ -50,32 +50,32 @@ class PredicateTest extends TestCase
     {
         $predicate = new Predicate(['table', 'column'], '=', 'placeholder');
         $predicate->withValue(3);
-        $this->assertEquals('`table`.`column` = :placeholder', (string)$predicate);
-        $this->assertEquals(['placeholder' => 3], $predicate->bindings());
+        $this->assertEquals('`table`.`column` = :table_column', (string)$predicate);
+        $this->assertEquals(['table_column' => 3], $predicate->bindings());
 
         $predicate = new Predicate(['table', 'column'], '=', 'placeholder');
-        $predicate->withValue(3, 'prefix');
-        $this->assertEquals('`table`.`column` = :prefix_placeholder', (string)$predicate);
-        $this->assertEquals(['prefix_placeholder' => 3], $predicate->bindings());
+        $predicate->withValue(3, 'withValue_placeholder');
+        $this->assertEquals('`table`.`column` = :withValue_placeholder', (string)$predicate);
+        $this->assertEquals(['withValue_placeholder' => 3], $predicate->bindings());
         
         $predicate = new Predicate(['table', 'column'], '=');
-        $predicate->withValue(3, 'prefix');
-        $this->assertEquals('`table`.`column` = :prefix_table_column', (string)$predicate);
-        $this->assertEquals(['prefix_table_column' => 3], $predicate->bindings());
+        $predicate->withValue(3, 'withValue_placeholder');
+        $this->assertEquals('`table`.`column` = :withValue_placeholder', (string)$predicate);
+        $this->assertEquals(['withValue_placeholder' => 3], $predicate->bindings());
     }
 
     public function testWithValues()
     {
         $predicate = new Predicate('column');
-        $predicate->withValues(['value1', 'value2'], 'prefix');
+        $predicate->withValues(['value1', 'value2'], 'withValues_placeholder');
 
-        $this->assertEquals('column IN (:prefix_column_0,:prefix_column_1)', (string)$predicate);
-        $this->assertEquals(['prefix_column_0' => 'value1', 'prefix_column_1' => 'value2'], $predicate->bindings());
+        $this->assertEquals('column IN (:withValues_placeholder_0,:withValues_placeholder_1)', (string)$predicate);
+        $this->assertEquals(['withValues_placeholder_0' => 'value1', 'withValues_placeholder_1' => 'value2'], $predicate->bindings());
 
         $predicate = new Predicate('column', 'IN', 'placeholder');
-        $predicate->withValues(['value1', 'value2'], 'prefix');
-        $this->assertEquals('column IN (:prefix_placeholder_0,:prefix_placeholder_1)', (string)$predicate);
-        $this->assertEquals(['prefix_placeholder_0' => 'value1', 'prefix_placeholder_1' => 'value2'], $predicate->bindings());
+        $predicate->withValues(['value1', 'value2'], 'withValues_placeholder');
+        $this->assertEquals('column IN (:withValues_placeholder_0,:withValues_placeholder_1)', (string)$predicate);
+        $this->assertEquals(['withValues_placeholder_0' => 'value1', 'withValues_placeholder_1' => 'value2'], $predicate->bindings());
     }
 
     public function testIsNotEmpty()

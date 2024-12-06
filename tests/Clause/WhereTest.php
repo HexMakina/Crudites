@@ -1,4 +1,5 @@
 <?php
+
 use PHPUnit\Framework\TestCase;
 use HexMakina\Crudites\Grammar\Clause\Where;
 use HexMakina\Crudites\Grammar\Predicate;
@@ -10,7 +11,6 @@ class WhereTest extends TestCase
         $where = new Where();
         $this->assertInstanceOf(Where::class, $where);
         $this->assertEquals('', $where->__toString());
-
     }
 
     public function testAnd()
@@ -25,7 +25,6 @@ class WhereTest extends TestCase
         $where->and(new Predicate('1', '=', '1'));
         $this->assertEquals('WHERE 1 = 1', (string)$where);
         $this->assertEquals([], $where->bindings());
-
     }
 
     public function testAndPredicate()
@@ -64,7 +63,36 @@ class WhereTest extends TestCase
     {
         $where = new Where();
         $where->andIn('field', ['value1', 'value2']);
-        $this->assertEquals('WHERE field IN (:andIn_field_0,:andIn_field_1)', (string)$where);
+        $this->assertEquals('WHERE field IN (:andIn_0,:andIn_1)', (string)$where);
+    }
+
+    public function testAndValue()
+    {
+        $where = new Where();
         
+        $expression = 'expression + expression';
+        $expected_bind_label = 'andValue_expression_bind_label';
+        
+        $where->andValue($expression, '>', 3, $expected_bind_label);
+        $this->assertEquals('WHERE ' . $expression . ' > :' . $expected_bind_label, (string)$where);
+        $this->assertEquals([$expected_bind_label => 3], $where->bindings());
+
+        
+        $where = new Where();
+        
+        $where->andValue(['field'], '>', 3);
+        $this->assertEquals('WHERE `field` > :field', (string)$where);
+        $this->assertEquals(['field' => 3], $where->bindings());
+    }
+
+    public function testAndExpression()
+    {
+        $where = new Where();
+        $where->andExpression('expression', '>', 'expression2');
+        $this->assertEquals('WHERE expression > expression2', (string)$where);
+
+        $where = new Where();
+        $where->andExpression(['field'], '>', ['field2']);
+        $this->assertEquals('WHERE `field` > `field2`', (string)$where);
     }
 }

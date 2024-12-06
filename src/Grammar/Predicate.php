@@ -15,7 +15,7 @@ class Predicate extends Grammar
     protected $right = null;
 
     protected ?string $bind_label = null;
-    
+
     protected array $bindings = [];
 
     /**
@@ -60,22 +60,22 @@ class Predicate extends Grammar
     }
 
 
-    public function withValue($value, string $bind_prefix = null): self
+    public function withValue($value, string $bind_label = null): self
     {
-        $this->bindings[$this->bindLabel($bind_prefix)] = $value;
-        $this->right = ':' . $this->bindLabel($bind_prefix);
+        $this->bindings[$this->bindLabel($bind_label)] = $value;
+        $this->right = ':' . $this->bindLabel($bind_label);
         return $this;
     }
 
-    public function withValues(array $values, string $bind_prefix)
+    public function withValues(array $values, string $bind_label)
     {
         if (empty($values)) {
             throw new \InvalidArgumentException('PREDICATE_VALUES_ARE_EMPTY');
         }
 
-        $bind_label = $this->bindLabel($bind_prefix);
+        
         foreach ($values as $index => $val) {
-            $this->bindings[sprintf('%s_%d',$bind_label, $index)] = $val;
+            $this->bindings[sprintf('%s_%d', $bind_label, $index)] = $val;
         }
 
         $this->operator = 'IN';
@@ -110,23 +110,23 @@ class Predicate extends Grammar
      *
      * @return string The binding label for the predicate.
      */
-    private function bindLabel(string $prefix = null): string
+    private function bindLabel(string $bind_label = null): string
     {
-        if ($this->bind_label !== null)
+        // setter
+        if ($bind_label !== null) {
+            $this->bind_label = $bind_label;
+            return $this->bind_label;
+        }
+        // getter
+        else if ($this->bind_label !== null)
             return $this->bind_label;
 
-        $this->bind_label = '';
-        if (is_string($this->right)) {
-            $this->bind_label .= $this->right;
-        } elseif (is_array($this->left)) {
-            $this->bind_label .= implode('_', $this->left);
-        } else {
-            $this->bind_label .= $this->left;
+        // generator
+        else if (is_array($this->left)) {
+            $this->bind_label = implode('_', $this->left);
+            return $this->bind_label;
         }
 
-        if ($prefix !== null)
-            $this->bind_label = $prefix . '_' . $this->bind_label;
-
-        return $this->bind_label;
+        throw new \InvalidArgumentException('PREDICATE_REQUIRES_A_BIND_LABEL');
     }
 }

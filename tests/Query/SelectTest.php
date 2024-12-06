@@ -69,8 +69,11 @@ class SelectTest extends TestCase
         $this->assertEquals($expected, (string)$select);
         $this->assertEmpty($select->bindings());
 
-
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('PREDICATE_REQUIRES_A_BIND_LABEL');
         $where->andPredicate((new Predicate('name', 'LIKE'))->withValue('John%'));
+
+        $where->andPredicate((new Predicate('name', 'LIKE'))->withValue('John%'), 'search_name');
         $expected_bindings = ['name' => 'John%'];
         $expected .= ' AND name LIKE :name';
         $this->assertEquals($expected, (string)$select);
