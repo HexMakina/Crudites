@@ -5,13 +5,40 @@ namespace HexMakina\Crudites;
 use HexMakina\BlackBox\Database\QueryInterface;
 
 /**
- * Provides a simple interface to run statements, string or PDOStatements
+ * Provides a simple interface to run sql statements
+ * Main methods: run, ran, ret
  * 
- * It encapsulates a PDOStatement instance and provides methods for fetching results.
- * All PDOStatement methods are available through the magic __call method.
+ * Constructor
+ *      allows statement as string, PDOStatements or QueryInterface
+ *      calls run() with provided bindings (optionals)
  * 
+ * All PDOStatement methods are available by encapsluation through the magic __call method.
  * 
+ * Fetching:
+ *      ret     wrapper for fetchAll()
+ *      retOne  wrapper for fetch()
+ *      retObject  fetchAll(\PDO::FETCH_OBJ) unless a class name is provided then fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE)
+ * 
+ * Here is a list of all the PDO fetch constants:
+ *
+ * PDO::FETCH_ASSOC     : Returns rows as an associative array, with column names as keys.
+ * PDO::FETCH_NUM       : Returns rows as a numeric array, with column indexes as keys.
+ * PDO::FETCH_BOTH      : Default fetch style; returns rows as both an associative and numeric array.
+ * PDO::FETCH_OBJ       : Returns rows as an object with property names corresponding to column names.
+ * PDO::FETCH_LAZY      : Combines PDO::FETCH_BOTH, PDO::FETCH_OBJ, and PDO::FETCH_BOUND. Allows accessing columns in multiple ways.
+ * PDO::FETCH_BOUND     : Assigns columns to PHP variables using bindColumn().
+ * PDO::FETCH_CLASS     : Maps rows to a specified class, optionally calling a constructor.
+ * PDO::FETCH_INTO      : Updates an existing object with column values.
+ * PDO::FETCH_GROUP     : Groups rows by the first column's values.
+ * PDO::FETCH_UNIQUE    : Uses the first column's values as keys, ensuring unique rows.
+ * PDO::FETCH_COLUMN    : Returns a single column from each row.
+ * PDO::FETCH_KEY_PAIR  : Fetches rows as key-value pairs, using the first two columns.
+ * PDO::FETCH_FUNC      : Passes each row's data to a user-defined function and returns the result.
+ * PDO::FETCH_NAMED     : Similar to PDO::FETCH_ASSOC, but handles duplicate column names by returning an array of values for each name.
+ * PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE : Used with PDO::FETCH_CLASS, delays property population until after the constructor has been called.
+ * PDO::FETCH_SERIALIZE : Serializes the returned data (requires specific driver support).
  */
+
 class Result
 {
     private \PDO $pdo;
@@ -137,9 +164,9 @@ class Result
      */
     public function ret($mode = \PDO::FETCH_ASSOC, $fetch_argument = null, $ctor_args = null)
     {
-        if($mode === \PDO::FETCH_CLASS)
+        if ($mode === \PDO::FETCH_CLASS)
             return $this->executed->fetchAll($mode, $fetch_argument, $ctor_args);
-        
+
         return $this->executed->fetchAll($mode);
     }
 
@@ -158,11 +185,16 @@ class Result
         return $this->executed->fetch($mode, $orientation, $offset);
     }
 
+    public function retObject(string $class = null)
+    {
+        return $class === null ? $this->ret(\PDO::FETCH_OBJ) : $this->ret(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, $class);
+    }
+
     /**
      * Returns the number of rows affected by the last SQL statement
      * A wrapper for PDOStatement::rowCount()
      * 
-     * @return int
+     * @return int, -1 if the statement has not been executed
      */
     public function count(): int
     {
@@ -178,7 +210,7 @@ class Result
      */
     public function lastInsertId($name = null)
     {
-        $id = $this->pdo->lastInsertId($name);
+        return $this->pdo->lastInsertId($name);
     }
 
     /** 
@@ -189,13 +221,8 @@ class Result
      */
     public function errorInfo(): array
     {
-        if ($this->executed !== null)
-            return $this->executed->errorInfo();
-
-        if ($this->prepared !== null)
-            return $this->prepared->errorInfo();
-
-        return $this->pdo->errorInfo();
+        $source = $this->executed ?? $this->prepared ?? $this->pdo;
+        return $source->errorInfo();
     }
 
     /**
@@ -208,40 +235,5 @@ class Result
     {
         list($state, $code, $message) = $this->errorInfo();
         return sprintf('%s (state: %s, code: %s)', $message, $state, $code);
-    }
-
-
-    // a few shorthands for ret() parameters
-
-    public function retObj($c = null)
-    {
-        return $c === null ? $this->ret(\PDO::FETCH_OBJ) : $this->ret(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, $c);
-    }
-
-    public function retNum()
-    {
-        return $this->ret(\PDO::FETCH_NUM);
-    }
-
-    public function retAss()
-    {
-        return $this->ret(\PDO::FETCH_ASSOC);
-    }
-
-    //ret: array indexed by column name
-    public function retCol()
-    {
-        return $this->ret(\PDO::FETCH_COLUMN);
-    }
-
-    //ret: all values of a single column from the result set
-    public function retPar()
-    {
-        return $this->ret(\PDO::FETCH_KEY_PAIR);
-    }
-
-    public function retKey()
-    {
-        return $this->ret(\PDO::FETCH_UNIQUE);
     }
 }
