@@ -2,6 +2,8 @@
 
 namespace HexMakina\Crudites;
 
+use HexMakina\BlackBox\Database\QueryInterface;
+
 /**
  * Provides a simple interface to run statements, string or PDOStatements
  * 
@@ -14,7 +16,7 @@ class Result
 {
     private \PDO $pdo;
     private \PDOStatement $prepared;
-    private \PDOStatement $executed;
+    private ?\PDOStatement $executed;
 
     // string or PDOStatement
     private $statement;
@@ -33,11 +35,16 @@ class Result
     public function __construct(\PDO $pdo, $statement, array $bindings = [])
     {
         $this->pdo = $pdo;
-        $this->statement = $statement;
-        $this->bindings = $bindings;
 
-        if ($statement instanceof \PDOStatement)
-            $this->prepared = $statement;
+        if ($statement instanceof QueryInterface) {
+            $this->statement = (string)$statement;
+            $bindings = $statement->bindings();
+        } else {
+            $this->statement = $statement;
+        }
+
+        if ($this->statement instanceof \PDOStatement)
+            $this->prepared = $this->statement;
 
         $this->run($bindings);
     }
@@ -49,14 +56,15 @@ class Result
 
     public function __call($method, $args)
     {
+        // first use the executed instance, then the prepared one
+        // make senses for chronology and error handling
         $pdo_statement = $this->executed ?? $this->prepared;
 
         if ($pdo_statement === null)
-            throw new CruditesException('RUN_OR_PREPARE_QUERY_BEFORE_CALLING_METHOD');
+            throw new CruditesException('both executed and prepared instances are null, cannot call PDOStatement method ' . $method);
 
         if (!method_exists($pdo_statement, $method))
-            throw new \BadMethodCallException(__FUNCTION__ . " method $method() does not exist in PDOStatement class");
-
+            throw new \BadMethodCallException("method $method not found in PDOStatement instance");
 
         return call_user_func_array([$pdo_statement, $method], $args);
     }
@@ -75,13 +83,14 @@ class Result
         // (re)set the executed PDOStatement instance
         $this->executed = null;
         $this->bindings = $bindings;
-
         try {
 
             // is prepared, execute it with bindings
-            if ($this->prepared !== null) {
+            if (isset($this->prepared)) {
                 if ($this->prepared->execute($bindings) !== false) {
                     $this->executed = $this->prepared;
+                    $this->bindings = $bindings;
+
                     return $this;
                 }
 
@@ -90,7 +99,7 @@ class Result
 
             // not prepared, no bindings, PDO::query the statement
             if (empty($bindings)) {
-                if (($res = $this->pdo->query($this->statement)) !== false) {
+                if (($res = $this->pdo->query((string)$this->statement)) !== false) {
                     $this->executed = $res;
                     return $this;
                 }
@@ -99,13 +108,12 @@ class Result
             }
 
             // PDO::prepare it and recursively call run() with bindings
-            if (($res = $this->pdo->prepare($this->statement)) !== false) {
+            if (($res = $this->pdo->prepare((string)$this->statement)) !== false) {
                 $this->prepared = $res;
                 return $this->run($bindings);
             }
 
             throw new CruditesException('PDO_PREPARE_STRING');
-            
         } catch (\PDOException $e) {
             throw new CruditesException('PDO_EXCEPTION: ' . $e->getMessage(), $e->getCode(), $e);
         }
@@ -129,7 +137,10 @@ class Result
      */
     public function ret($mode = \PDO::FETCH_ASSOC, $fetch_argument = null, $ctor_args = null)
     {
-        return $this->executed->fetchAll($mode, $fetch_argument, $ctor_args);
+        if($mode === \PDO::FETCH_CLASS)
+            return $this->executed->fetchAll($mode, $fetch_argument, $ctor_args);
+        
+        return $this->executed->fetchAll($mode);
     }
 
     /**
