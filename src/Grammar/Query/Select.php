@@ -3,8 +3,6 @@
 namespace HexMakina\Crudites\Grammar\Query;
 
 
-use HexMakina\Crudites\CruditesException;
-
 use HexMakina\Crudites\Grammar\Deck;
 use HexMakina\Crudites\Grammar\Clause\Clause;
 use HexMakina\Crudites\Grammar\Grammar;

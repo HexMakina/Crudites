@@ -2,8 +2,7 @@
 
 namespace HexMakina\Crudites\Grammar\Query;
 
-use HexMakina\BlackBox\Database\QueryInterface;
-use HexMakina\Crudites\Grammar\Clause\Clause;
+use HexMakina\BlackBox\Database\{QueryInterface, ClauseInterface};
 
 abstract class Query implements QueryInterface
 {
@@ -65,18 +64,18 @@ abstract class Query implements QueryInterface
         return $this->alias ?? $this->table;
     }
 
-    public function clause(string $name): ?Clause
+    public function clause(string $name): ?ClauseInterface
     {
         return $this->clauses[$name] ?? null;
     }
 
-    public function add(Clause $clause): self
+    public function add(ClauseInterface $clause): self
     {
         $this->clauses[$clause->name()] = $clause;
         return $this;
     }
 
-    public function set(Clause $clause): self
+    public function set(ClauseInterface $clause): self
     {
         unset($this->clauses[$clause->name()]);
         return $this->add($clause);
