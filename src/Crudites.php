@@ -3,7 +3,14 @@
 namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\{ConnectionInterface, SchemaAttributeInterface};
+
+use HexMakina\Crudites\Result;
 use HexMakina\Crudites\CruditesException;
+
+use HexMakina\Crudites\Grammar\Query\Select;
+use HexMakina\Crudites\Grammar\Clause\Where;
+use HexMakina\Crudites\Grammar\Clause\OrderBy;
+use HexMakina\Crudites\Grammar\Predicate;
 
 
 /**
@@ -33,15 +40,14 @@ class Crudites
     public static function connect($dsn = null, $user = null, $pass = null): ConnectionInterface
     {
         // no props, assumes connection made, verify and return
-        if (!isset($dsn, $user, $pass)) {
-            if (self::$connection === null) {
-                throw new CruditesException('NO_DATABASE');
-            }
-
-            return self::$connection;
+        if (isset($dsn, $user, $pass)) {
+            self::$connection = new Connection($dsn, $user, $pass);
         }
-        
-        return new Connection($dsn, $user, $pass);
+        elseif (self::$connection === null) {
+            throw new CruditesException('NO_DATABASE');
+        }
+
+        return self::$connection;
     }
 
     //------------------------------------------------------------  DataRetrieval
@@ -50,10 +56,11 @@ class Crudites
      * @param QueryInterface $select  Select instance
      * @return int|null  Number of records
      */
-    public static function count(QueryInterface $select): ?int
+    public static function count(Select $select): ?int
     {
         $select->selectAlso(['count' => ['COUNT(*)']]);
-        $res = $select->retCol();
+        $res = new Result(self::$connection->pdo(), (string)$select, $select->bindings());
+        $res = $res->retCol();
         if (is_array($res)) {
             return (int) current($res);
         }
@@ -67,15 +74,18 @@ class Crudites
      * 
      * @return array<int|string, mixed>
      */
-    public static function retrieve(QueryInterface $select): array
+    public static function retrieve(Select $select): array
     {
-        $primary_keys = self::$connection->schema()->primaryKeys($select->table());
-        $pk_name = implode('_', $primary_keys);
-
         $ret = [];
 
-        if ($select->run()->isSuccess()) {
-            foreach ($select->retAss() as $rec) {
+        $res = new Result(self::$connection->pdo(), (string)$select, $select->bindings());
+        if($res->ran()) {
+
+            $primary_keys = self::$connection->schema()->primaryKeys($select->table());
+            $pk_name = implode('_', $primary_keys);
+
+            // returns an associative array with the primary key value as the index
+            foreach ($res->retAss() as $rec) {
                 $ret[$rec[$pk_name]] = $rec;
             }
         }
@@ -87,41 +97,41 @@ class Crudites
      * Executes a custom SQL statement and returns a PDOStatement object, 
      * optionally binding variables to the statement.
      */
-    public static function raw($sql, $dat_ass = []): ?\PDOStatement
+    public static function raw($sql, $dat_ass = []): Result
     {
-        if (empty($dat_ass)) {
-            $res = self::$connection->query($sql);
-        } else {
-            $res = self::$connection->prepare($sql);
-            $res->execute($dat_ass);
-        }
-        
-        return $res instanceof \PDOStatement? $res : null;
+        return new Result($sql, $dat_ass);
     }
 
     public static function distinctFor(string $table, string $column_name, string $filter_by_value = null)
     {
         $query = self::$connection->schema()->select($table, [sprintf('DISTINCT `%s`', $column_name)]);
-        $query->whereNotEmpty($column_name);
-        $query->orderBy([$column_name, 'ASC']);
-
+        
+        $clause = new Where([(new Predicate([$table, $column_name]))->isNotEmpty()]);
         if ($filter_by_value !== null) {
-            $query->whereLike($column_name, sprintf('%%%s%%', $filter_by_value));
+            $clause->andLike([$table, $column_name], $filter_by_value);
         }
+        $query->add($clause);
+        
+        $clause = new OrderBy([$table, $column_name], 'ASC');
+        $query->add($clause);
 
-        return $query->retCol();
+        return (new Result(self::$connection->pdo(), $query, $query->bindings()))->retCol();
     }
 
     public static function distinctForWithId(string $table, string $column_name, string $filter_by_value = null)
     {
-        $Query = self::$connection->schema()->select($table [sprintf('DISTINCT `id`,`%s`', $column_name)])
-          ->whereNotEmpty($column_name)->orderBy([$column_name, 'ASC', $table]);
-
+        $Query = self::$connection->schema()->select($table [sprintf('DISTINCT `id`,`%s`', $column_name)]);
+        
+        $clause = new Where([(new Predicate([$table, $column_name]))->isNotEmpty()]);
         if ($filter_by_value !== null) {
-            $Query->whereLike($column_name, sprintf('%%%s%%', $filter_by_value));
+            $clause->andLike([$table, $column_name], $filter_by_value);
         }
+        $Query->add($clause);
 
-        return $Query->retPar();
+        $clause = new OrderBy([$table, $column_name], 'ASC');
+        $Query->add($clause);
+
+        return (new Result(self::$connection->pdo(), $Query, $Query->bindings()))->retPar();
     }
 
     //------------------------------------------------------------  DataManipulation Helpers
@@ -140,18 +150,24 @@ class Crudites
             throw new CruditesException('NO_MATCH_TO_UNIQUE_RECORD');
         }
 
+        $where = (new Where())->andFields($unique_match, $table);
 
+        $query = "UPDATE $table SET $boolean_column = COALESCE(!$boolean_column, 1) WHERE $where";
+        $res = new Result(self::$connection->pdo(), $query, $where->bindings());
+
+        return $res->ran();
+        
         // TODO: not using the QueryInterface Way of binding stuff
-        $where = [];
-        $bindings = [];
-        foreach ($unique_match as $column_name => $value) {
-            $binding_label = sprintf(':%s', $column_name);
-            $where[] = sprintf('`%s` = %s', $column_name, $binding_label);
-            $bindings[$binding_label] = $value;
-        }
+        // $where = [];
+        // $bindings = [];
+        // foreach ($unique_match as $column_name => $value) {
+        //     $binding_label = sprintf(':%s', $column_name);
+        //     $where[] = sprintf('`%s` = %s', $column_name, $binding_label);
+        //     $bindings[$binding_label] = $value;
+        // }
 
-        $where = implode(' AND ', $where);
-        $Query = self::raw("UPDATE $table SET $boolean_column = COALESCE(!$boolean_column, 1) WHERE $where", $bindings);
-        return $Query->errorCode() === '00000';
+        // $where = implode(' AND ', $where);
+
+
     }
 }
