@@ -115,12 +115,13 @@ class Predicate extends Grammar
         if ($this->bind_label !== null)
             return $this->bind_label;
 
+        $this->bind_label = '';
         if (is_string($this->right)) {
-            $this->bind_label = $this->right;
+            $this->bind_label .= $this->right;
         } elseif (is_array($this->left)) {
-            $this->bind_label = implode('_', $this->left);
+            $this->bind_label .= implode('_', $this->left);
         } else {
-            $this->bind_label = $this->left;
+            $this->bind_label .= $this->left;
         }
 
         if ($prefix !== null)
