@@ -10,6 +10,7 @@ class Set extends Clause
 
     public function __construct(array $alterations)
     {
+        parent::__construct();
         foreach ($alterations as $field_name => $value) {
             $predicate = (new Predicate([$field_name], '='))->withValue($value, 'set_'.$field_name);
             

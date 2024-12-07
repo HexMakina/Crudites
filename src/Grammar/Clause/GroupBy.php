@@ -15,6 +15,7 @@ class GroupBy extends Clause
      */
     public function __construct($selected)
     {
+        parent::__construct();
         $this->deck = new Deck($selected);
     }
 

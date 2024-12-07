@@ -10,6 +10,8 @@ class Where extends Clause
 
     public function __construct(?array $predicates = null)
     {
+        parent::__construct();
+
         if ($predicates !== null) {
             foreach ($predicates as $predicate) {
                 if (is_string($predicate))
