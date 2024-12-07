@@ -19,6 +19,7 @@
 namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\ConnectionInterface;
+use HexMakina\BlackBox\Database\ResultInterface;
 use HexMakina\BlackBox\Database\SchemaInterface;
 use HexMakina\Crudites\Schema\SchemaLoader;
 
@@ -76,7 +77,7 @@ class Connection extends \PDO implements ConnectionInterface
         return $this->schema;
     }
 
-    public function result($statement, $bindings = []): Result
+    public function result($statement, $bindings = []): ResultInterface
     {
         return new Result($this, $statement, $bindings);
     }
