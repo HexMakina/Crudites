@@ -1,7 +1,7 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use HexMakina\Crudites\Table\Row;
+use HexMakina\Crudites\Row;
 use HexMakina\Crudites\Connection;
 
 
