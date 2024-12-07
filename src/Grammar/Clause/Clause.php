@@ -7,7 +7,12 @@ use HexMakina\Crudites\Grammar\Grammar;
 
 abstract class Clause extends Grammar implements ClauseInterface
 {
-    public array $bindings = [];
+    public array $bindings;
+
+    public function __construct()
+    {
+        $this->bindings = [];
+    }
 
     public function bindings(): array
     {
