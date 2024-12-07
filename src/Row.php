@@ -1,13 +1,11 @@
 <?php
 
-namespace HexMakina\Crudites\Table;
+namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\RowInterface;
-use HexMakina\BlackBox\Database\QueryInterface;
 
 use HexMakina\Crudites\CruditesException;
-use HexMakina\Crudites\Result;
 use HexMakina\Crudites\Grammar\Clause\Where;
 
 class Row implements RowInterface
@@ -24,9 +22,6 @@ class Row implements RowInterface
 
     /** @var array<int|string,mixed> $alterations during lifecycle */
     private array $alterations = [];
-
-    private ?QueryInterface $last_query = null;
-    private ?QueryInterface $last_alter_query = null;
 
     private ?Result $last_result = null;
     private ?Result $last_alter_result = null;
@@ -62,8 +57,6 @@ class Row implements RowInterface
             'load' => $this->load,
             'fresh' => $this->fresh,
             'alterations' => $this->alterations,
-            'last_query' => $this->last_query,
-            'last_alter_query' => $this->last_alter_query,
             'last_result' => $this->last_result,
             'last_alter_result' => $this->last_alter_result,
         ];
@@ -85,16 +78,6 @@ class Row implements RowInterface
     public function table(): string
     {
         return $this->table;
-    }
-
-    public function lastQuery(): ?QueryInterface
-    {
-        return $this->last_query;
-    }
-
-    public function lastAlterQuery(): ?QueryInterface
-    {
-        return $this->last_alter_query;
     }
 
     public function isNew(): bool
@@ -127,8 +110,8 @@ class Row implements RowInterface
 
         $where = (new Where())->andFields($unique_match, $this->table, '=');
 
-        $this->last_query = $this->connection->schema()->select($this->table)->add($where);
-        $this->last_result = new Result($this->connection->pdo(), $this->last_query);
+        $query = $this->connection->schema()->select($this->table)->add($where);
+        $this->last_result = new Result($this->connection->pdo(), $query);
         
         $res = $this->last_result->ret(\PDO::FETCH_ASSOC);
         $this->load = (is_array($res) && count($res) === 1) ? current($res) : null;
@@ -193,8 +176,6 @@ class Row implements RowInterface
             } else {
                 $this->update();
             }
-            $this->last_query = $this->lastAlterQuery();
-
         } catch (CruditesException $cruditesException) {
             return [$this->table => $cruditesException->getMessage()];
         }
@@ -204,8 +185,8 @@ class Row implements RowInterface
 
     private function create(): void
     {
-        $this->last_alter_query = $this->connection->schema()->insert($this->table, $this->export());
-        $this->last_alter_result = new Result($this->connection->pdo(), $this->last_alter_query);
+        $query = $this->connection->schema()->insert($this->table, $this->export());
+        $this->last_result = $this->last_alter_result = new Result($this->connection->pdo(), $query);
 
         // creation might lead to auto_incremented changes
         // recovering auto_incremented value and pushing it in alterations tracker
@@ -224,8 +205,8 @@ class Row implements RowInterface
             throw new CruditesException('UNIQUE_MATCH_NOT_FOUND');
         }
 
-        $this->last_alter_query = $this->connection->schema()->update($this->table, $this->alterations, $unique_match);
-        $this->last_alter_result = new Result($this->connection->pdo(), $this->last_alter_query);
+        $query = $this->connection->schema()->update($this->table, $this->alterations, $unique_match);
+        $this->last_result = $this->last_alter_result = new Result($this->connection->pdo(), $query);
     }
 
     public function wipe(): bool
@@ -234,12 +215,10 @@ class Row implements RowInterface
 
         // need The Primary key, then you can wipe at ease
         if (!empty($pk_match = $this->connection->schema()->matchPrimaryKeys($this->table, $datass))) {
-            $this->last_alter_query = $this->connection->schema()->delete($this->table, $pk_match);
+            $query = $this->connection->schema()->delete($this->table, $pk_match);
             
             try {
-                
-                $this->last_alter_result = new Result($this->connection->pdo(), $this->last_alter_query);
-                $this->last_query = $this->lastAlterQuery();
+                $this->last_result = $this->last_alter_result = new Result($this->connection->pdo(), $query);
 
             } catch (CruditesException $cruditesException) {
                 return false;
