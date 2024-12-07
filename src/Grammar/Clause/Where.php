@@ -8,7 +8,7 @@ class Where extends Clause
 {
     protected array $and = [];
 
-    public function __construct(array $predicates = null)
+    public function __construct(?array $predicates = null)
     {
         if ($predicates !== null) {
             foreach ($predicates as $predicate) {
@@ -70,7 +70,7 @@ class Where extends Clause
 
     public function andValue($expression, $operator, $value, $bind_label = null)
     {
-        return $this->andPredicate((new Predicate($expression, $operator))->withValue($value, $bind_label), $bind_label);
+        return $this->andPredicate((new Predicate($expression, $operator))->withValue($value, $bind_label));
     }
 
     public function andIn($expression, array $values)
