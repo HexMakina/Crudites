@@ -4,6 +4,7 @@ namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\ConnectionInterface;
 use HexMakina\BlackBox\Database\RowInterface;
+use HexMakina\BlackBox\Database\ResultInterface;
 
 use HexMakina\Crudites\CruditesException;
 use HexMakina\Crudites\Grammar\Clause\Where;
@@ -23,8 +24,8 @@ class Row implements RowInterface
     /** @var array<int|string,mixed> $alterations during lifecycle */
     private array $alterations = [];
 
-    /** @var Result|null $result the result from the last executed query */
-    private ?Result $result = null;
+    /** @var ResultInterface|null $result the result from the last executed query */
+    private ?ResultInterface $result = null;
 
 
     /** @param array<string,mixed> $datass */
@@ -189,7 +190,7 @@ class Row implements RowInterface
     private function create(): void
     {
         $query = $this->connection->schema()->insert($this->table, $this->export());
-        $this->result = new Result($this->connection->pdo(), $query);
+        $this->result = $this->connection->result($query);
 
         // creation might lead to auto_incremented changes
         // recovering auto_incremented value and pushing it in alterations tracker
@@ -225,7 +226,7 @@ class Row implements RowInterface
             $query = $this->connection->schema()->delete($this->table, $pk_match);
             
             try {
-                $this->result = new Result($this->connection->pdo(), $query);
+                $this->result = $this->connection->result($query);
 
             } catch (CruditesException $cruditesException) {
                 return false;
