@@ -7,56 +7,67 @@ use HexMakina\Crudites\Connection;
 
 class RowTest extends TestCase
 {
-    private Row $row;
+    private Connection $connection;
+
+    private string $table = 'users';
+    private array $data_pk_match = ['id' => 1];
+    private array $data_form = ['name' => 'Test', 'username' => 'john_doe'];
+    private array $data_form_with_id = ['name' => 'Test', 'username' => 'john_doe'] + ['id' => 1];
     
     // setup
     public function setUp(): void
     {
         // code to execute before each test
-        $connection = new Connection('mysql:host=localhost;dbname=crudites;charset=utf8', 'crudites', '2ce!fNe8(weVz3k4TN#');
-        
-        $this->row = new Row($connection, 'users', ['id' => 1, 'name' => 'Test']);
+        $this->connection = new Connection('mysql:host=localhost;dbname=crudites;charset=utf8', 'crudites', '2ce!fNe8(weVz3k4TN#');
     }
 
     public function testConstructor()
     {
-        $this->assertEquals('users', $this->row->table());
-        $this->assertEquals(['id' => 1, 'name' => 'Test'], $this->row->export());
+        $row = new Row($this->connection, $this->table, $this->data_form_with_id);
+        $this->assertEquals('users', $row->table());
+        $this->assertEquals(['id' => 1, 'username' => 'john_doe'], $row->export());
     }
 
     public function testGet()
     {
-        $this->assertEquals('Test', $this->row->get('name'));
-        $this->assertNull($this->row->get('non_existing'));
+        $row = new Row($this->connection, $this->table, $this->data_form_with_id);
+        $this->assertEquals('Test', $row->get('name'));
+        $this->assertNull($row->get('non_existing'));
     }
 
     public function testSet()
     {
-        $this->row->set('name', 'New Name');
-        $this->assertEquals('New Name', $this->row->get('name'));
+
+        $row = new Row($this->connection, $this->table, $this->data_form_with_id);
+        $row->set('name', 'New Name');
+        $this->assertEquals('New Name', $row->get('name'));
     }
 
     public function testIsNew()
     {
-        $this->assertTrue($this->row->isNew());
-        $this->row->load();
+        $row = new Row($this->connection, $this->table, $this->data_form);
+        $this->assertTrue($row->isNew());
+        $row->load();
     }
 
     public function testIsAltered()
     {
-        $this->assertFalse($this->row->isAltered());
-        $this->row->set('name', 'New Name');
-        $this->assertTrue($this->row->isAltered());
+        $row = new Row($this->connection, $this->table, $this->data_form_with_id);
+        $this->assertFalse($row->isAltered());
+        $row->set('name', 'New Name');
+        $this->assertTrue($row->isAltered());
     }
     public function testExport()
     {
-        $this->row->set('name', 'New Name');
-        $this->assertEquals(['id' => 1, 'name' => 'New Name'], $this->row->export());
+        $row = new Row($this->connection, $this->table, $this->data_form_with_id);
+        $row->set('name', 'New Name');
+        $this->assertEquals(['id' => 1, 'name' => 'New Name'], $row->export());
     }
 
     public function testLoad()
     {
-        $this->row->set('name', 'New Name');
+        $row = new Row($this->connection, $this->table, $this->data_form_with_id);
+        $row->set('name', 'New Name');
 
         $expected = [
             'id' => 1,
@@ -65,13 +76,26 @@ class RowTest extends TestCase
             'email' => 'john@example.com'
         ];
         
-        $this->row->load();
+        $row->load();
 
         foreach ($expected as $key => $value) {
-            $this->assertEquals($value, $this->row->get($key));
+            $this->assertEquals($value, $row->get($key));
         }
 
-        $this->assertFalse($this->row->isNew());
+        $this->assertFalse($row->isNew());
+    }
 
+    public function testAlter()
+    {
+        $row = new Row($this->connection, $this->table, $this->data_form_with_id);
+        $row->alter(['name' => 'New Name']);
+        $this->assertFalse($row->isAltered());
+        $this->assertEquals('Test', $row->get('name'));
+        
+        $row->alter(['username' => __FUNCTION__, 'email' => __FUNCTION__, 'invalid' => __FUNCTION__]);
+        $this->assertTrue($row->isAltered());
+        $this->assertEquals(__FUNCTION__, $row->get('username'));
+        $this->assertEquals(__FUNCTION__, $row->get('email'));
+        $this->assertNull($row->get('invalid'));
     }
 }
