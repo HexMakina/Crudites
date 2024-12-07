@@ -4,7 +4,6 @@ namespace HexMakina\Crudites;
 
 use HexMakina\BlackBox\Database\{ConnectionInterface, SchemaAttributeInterface};
 
-use HexMakina\Crudites\Result;
 use HexMakina\Crudites\CruditesException;
 
 use HexMakina\Crudites\Grammar\Query\Select;
@@ -59,8 +58,8 @@ class Crudites
     public static function count(Select $select): ?int
     {
         $select->selectAlso(['count' => ['COUNT(*)']]);
-        $res = new Result(self::$connection->pdo(), (string)$select, $select->bindings());
-        $res = $res->retCol();
+        $res = self::$connection->result($select);
+        $res = $res->ret(\PDO::FETCH_COLUMN);
         if (is_array($res)) {
             return (int) current($res);
         }
@@ -78,28 +77,19 @@ class Crudites
     {
         $ret = [];
 
-        $res = new Result(self::$connection->pdo(), (string)$select, $select->bindings());
+        $res = self::$connection->result($select);
         if($res->ran()) {
 
             $primary_keys = self::$connection->schema()->primaryKeys($select->table());
             $pk_name = implode('_', $primary_keys);
 
             // returns an associative array with the primary key value as the index
-            foreach ($res->retAss() as $rec) {
+            foreach ($res->ret() as $rec) {
                 $ret[$rec[$pk_name]] = $rec;
             }
         }
 
         return $ret;
-    }
-
-    /**
-     * Executes a custom SQL statement and returns a PDOStatement object, 
-     * optionally binding variables to the statement.
-     */
-    public static function raw($sql, $dat_ass = []): Result
-    {
-        return new Result($sql, $dat_ass);
     }
 
     public static function distinctFor(string $table, string $column_name, string $filter_by_value = null)
@@ -115,7 +105,7 @@ class Crudites
         $clause = new OrderBy([$table, $column_name], 'ASC');
         $query->add($clause);
 
-        return (new Result(self::$connection->pdo(), $query, $query->bindings()))->retCol();
+        return self::$connection->result($query)->ret(\PDO::FETCH_COLUMN);
     }
 
     public static function distinctForWithId(string $table, string $column_name, string $filter_by_value = null)
@@ -131,7 +121,7 @@ class Crudites
         $clause = new OrderBy([$table, $column_name], 'ASC');
         $Query->add($clause);
 
-        return (new Result(self::$connection->pdo(), $Query, $Query->bindings()))->retPar();
+        return self::$connection->result($Query)->ret(\PDO::FETCH_KEY_PAIR);
     }
 
     //------------------------------------------------------------  DataManipulation Helpers
@@ -153,7 +143,7 @@ class Crudites
         $where = (new Where())->andFields($unique_match, $table);
 
         $query = "UPDATE $table SET $boolean_column = COALESCE(!$boolean_column, 1) WHERE $where";
-        $res = new Result(self::$connection->pdo(), $query, $where->bindings());
+        $res = self::$connection->result($query);
 
         return $res->ran();
         
