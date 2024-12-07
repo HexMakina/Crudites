@@ -8,6 +8,11 @@ class GroupBy extends Clause
 {
     private Deck $deck;
 
+    /**
+     * GroupBy constructor.
+     *
+     * @param mixed $selected The selected columns or expressions for the GROUP BY clause.
+     */
     public function __construct($selected)
     {
         $this->deck = new Deck($selected);
