@@ -19,13 +19,28 @@ class Join extends Clause
     protected string $table;
     protected string $alias;
 
-    protected ?string $on = null;
-    
+    protected ?string $column;
+    protected ?string $referenced_table;
+    protected ?string $referenced_column;
+
     public function __construct(string $table, string $alias = null)
     {
         $this->type = '';
         $this->table = $table;
         $this->alias = $alias ?? $table;
+        
+        $this->column = null;
+        $this->referenced_table = null;
+        $this->referenced_column = null;
+    }
+
+    public function on(string $column, string $join_table, string $join_column): self
+    {
+        $this->column = $column;
+        $this->referenced_table = $join_table;
+        $this->referenced_column = $join_column;
+
+        return $this;
     }
 
     public function type(string $join_type): self
@@ -35,30 +50,52 @@ class Join extends Clause
         return $this;
     }
 
-    public function on($column, $join_table, $join_column): self
+    public function __toString(): string
     {
-        $this->on = (string)(new Predicate([$this->alias, $column], '=', [$join_table, $join_column]));
+        if(isset($this->column, $this->referenced_table, $this->referenced_column)) {
+            $on = (string)(new Predicate([$this->alias, $this->column], '=', [$this->referenced_table, $this->referenced_column]));
+        }
         
-        return $this;
+        return trim(sprintf('%s JOIN `%s` %s ON %s', $this->type, $this->table, $this->alias, $on ?? ''));
     }
 
+    /**
+     * @return string the name of the clause
+     */
+    public function name(): string
+    {
+        return self::JOIN;
+    }
+
+    /**
+     * @return string the alias of the table
+     */
     public function alias(): string
     {
         return $this->alias;
     }
 
+    /**
+     * @return string the table name
+     */
     public function table(): string
     {
         return $this->table;
     }
 
-    public function __toString(): string
+    public function column(): ?string
     {
-        return trim(sprintf('%s JOIN `%s` %s ON %s', $this->type, $this->table, $this->alias, $this->on));
+        return $this->column;
     }
-
-    public function name(): string
+    /**
+     * @return array [table, column] the referenced table and column
+     */
+    public function referenced(): ?array
     {
-        return self::JOIN;
+        if(isset($this->referenced_table, $this->referenced_column)) {
+            return [$this->referenced_table, $this->referenced_column];
+        }
+
+        return null;
     }
 }
