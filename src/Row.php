@@ -46,9 +46,9 @@ class Row implements RowInterface
     public function __toString()
     {
         return PHP_EOL . 'load: '
-        . json_encode($this->load)
-        . PHP_EOL . 'alterations: '
-        . json_encode(array_keys($this->alterations));
+            . json_encode($this->load)
+            . PHP_EOL . 'alterations: '
+            . json_encode(array_keys($this->alterations));
     }
 
     public function __debugInfo()
@@ -103,7 +103,7 @@ class Row implements RowInterface
     public function load(array $datass = null): Rowinterface
     {
         $unique_match = $this->connection->schema()->matchUniqueness($this->table, $datass ?? $this->export());
-        
+
         if (empty($unique_match)) {
             return $this;
         }
@@ -112,7 +112,7 @@ class Row implements RowInterface
 
         $query = $this->connection->schema()->select($this->table)->add($where);
         $this->result = $this->connection->result($query);
-        
+
         $res = $this->result->retOne(\PDO::FETCH_ASSOC);
         $this->load = $res === false ? null : $res;
 
@@ -133,6 +133,11 @@ class Row implements RowInterface
     public function alter(array $datass): RowInterface
     {
         foreach (array_keys($datass) as $field_name) {
+
+            if($datass[$field_name] === $this->get($field_name)) {
+                continue;
+            }
+            
             // Skip non-existing field names and auto-increment columns
             if (!$this->connection->schema()->hasColumn($this->table, $field_name)) {
                 continue;
@@ -159,8 +164,8 @@ class Row implements RowInterface
     }
 
     /**
-      * @return array<string,string> an array of errors, column name => message
-      */
+     * @return array<string,string> an array of errors, column name => message
+     */
     public function persist(): array
     {
         if (!$this->isNew() && !$this->isAltered()) { // existing record with no alterations
@@ -199,7 +204,7 @@ class Row implements RowInterface
             $this->set($aipk, $this->result->lastInsertId());
         }
     }
-    
+
     /**
      * Updates the existing record in the database with the current alterations.
      *
@@ -209,7 +214,7 @@ class Row implements RowInterface
     {
         $unique_match = $this->connection->schema()->matchUniqueness($this->table, $this->load);
 
-        if(empty($unique_match)){
+        if (empty($unique_match)) {
             throw new CruditesException('UNIQUE_MATCH_NOT_FOUND');
         }
 
@@ -217,6 +222,12 @@ class Row implements RowInterface
         $this->result = new Result($this->connection->pdo(), $query);
     }
 
+    /**
+     * Deletes the current record from the database.
+     * 
+     * @return bool true if the record was deleted, false otherwise.
+     * @throws CruditesException if a unique match is not found.
+     */
     public function wipe(): bool
     {
         $datass = $this->load ?? $this->fresh ?? $this->alterations;
@@ -224,14 +235,8 @@ class Row implements RowInterface
         // need The Primary key, then you can wipe at ease
         if (!empty($pk_match = $this->connection->schema()->matchPrimaryKeys($this->table, $datass))) {
             $query = $this->connection->schema()->delete($this->table, $pk_match);
-            
-            try {
-                $this->result = $this->connection->result($query);
 
-            } catch (CruditesException $cruditesException) {
-                return false;
-            }
-
+            $this->result = $this->connection->result($query);
             return $this->result->ran();
         }
 
