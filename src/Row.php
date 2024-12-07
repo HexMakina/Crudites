@@ -23,6 +23,7 @@ class Row implements RowInterface
     /** @var array<int|string,mixed> $alterations during lifecycle */
     private array $alterations = [];
 
+    /** @var Result|null $result the result from the last executed query */
     private ?Result $result = null;
 
 
@@ -109,7 +110,7 @@ class Row implements RowInterface
         $where = (new Where())->andFields($unique_match, $this->table, '=');
 
         $query = $this->connection->schema()->select($this->table)->add($where);
-        $this->result = new Result($this->connection->pdo(), $query);
+        $this->result = $this->connection->result($query);
         
         $res = $this->result->ret(\PDO::FETCH_ASSOC);
         $this->load = (is_array($res) && count($res) === 1) ? current($res) : null;
