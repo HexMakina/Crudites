@@ -14,7 +14,7 @@ class Set extends Clause
             $predicate = (new Predicate([$field_name], '='))->withValue($value, 'set_'.$field_name);
             
             $this->alterations .= $predicate->__toString().',';
-            $this->bindings += $predicate->bindings();
+            $this->bindings = array_merge($this->bindings, $predicate->bindings());
         }
     }
 
