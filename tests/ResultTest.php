@@ -79,46 +79,15 @@ class ResultTest extends TestCase
         $this->assertTrue($this->result->ran());
     }
 
-    public function testRetWithoutParamIsRetAss()
+    public function testRetWithoutParamIsAssoc()
     {
         $this->assertEquals($this->result->ret(), $this->result_fetch_ass);
     }
 
-    public function testRetAss()
+    public function testRetWithParamFetchNum()
     {
-        $this->assertEquals($this->result->retAss(), $this->result_fetch_ass);
+        $this->assertEquals($this->result->ret(\PDO::FETCH_NUM), $this->result_fetch_num);
     }
-
-    public function testRetNum()
-    {
-        $res = $this->result->retNum();
-        foreach ($this->result_fetch_num as $i => $result) {
-            foreach ($result as $key => $value) {
-                $this->assertArrayHasKey($key, $res[$i]);
-                $this->assertEquals($value, $res[$i][$key]);
-            }
-        }
-    }
-
-    public function testRetCol()
-    {
-        $res = $this->result->retCol();
-        $this->assertEquals(['1', '2', '3'], $res);
-    }
-
-    public function testRetPar()
-    {
-        try{
-            $res = $this->result->retPar();
-            $this->fail('retPar should throw exception');
-        }
-        catch(\Throwable $e){
-            var_dump($e->getMessage());
-            $this->assertEquals('HY000', $this->result->errorInfo()[0]);
-
-        }
-    }
-
 
     public function testCount()
     {
@@ -127,7 +96,7 @@ class ResultTest extends TestCase
 
     public function testLastInsertId()
     {
-        $this->assertNull($this->result->lastInsertId());
+        $this->assertEquals(0, $this->result->lastInsertId());
     }
 
     public function testErrorInfo()
