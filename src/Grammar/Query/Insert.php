@@ -12,9 +12,18 @@ class Insert extends Query
         if (empty($dat_ass)) {
             throw new \InvalidArgumentException('EMPTY_DATA');
         }
-        
         $this->table = $table;
-        $this->binding_names = $this->addBindings($dat_ass);
+        $this->binding_names = [];
+        // $this->binding_names = $this->addBindings($dat_ass);
+
+        $this->values($dat_ass);
+    }
+
+    public function values(array $dat_ass): self
+    {
+        $this->binding_names []= $this->addBindings($dat_ass);
+
+        return $this;
     }
 
     /**
@@ -25,10 +34,18 @@ class Insert extends Query
     public function statement(): string
     {
         // Generate the INSERT statement with backticks around the field names
-        $fields = array_keys($this->binding_names);
-        $fields = '`' . implode('`, `', $fields) . '`';
-        $bindings = implode(', ', array_keys($this->bindings()));
 
-        return sprintf('INSERT INTO `%s` (%s) VALUES (%s)', $this->table, $fields, $bindings);
+        $fields_labels = array_shift($this->binding_names);
+        $fields = array_keys($fields_labels);
+        $fields = '`' . implode('`,`', $fields) . '`';
+
+        $bindings = implode(',:', $fields_labels);
+
+        $statement = sprintf('INSERT INTO `%s` (%s) VALUES (:%s)', $this->table, $fields, $bindings);
+        foreach($this->binding_names as $bindings){
+            $statement .= sprintf(',(:%s)', implode(',:', $bindings));
+        }
+
+        return $statement;
     }
 }

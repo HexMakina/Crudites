@@ -20,13 +20,28 @@ class InsertTest extends TestCase
 
         $this->assertInstanceOf(Insert::class, $insert);
     }
+    public function testValues()
+    {
+        $data = ['field1' => 'value1', 'field2' => 'value2'];
+        $insert = new Insert('test_table', $data);
 
+        $insert->values(['field1' => 'value1-2', 'field2' => 'value2-2']);
+
+        $expectedBindings = [
+            'test_table_field1_0' => 'value1',
+            'test_table_field2_1' => 'value2',
+            'test_table_field1_2' => 'value1-2',
+            'test_table_field2_3' => 'value2-2'
+        ];
+        $this->assertEquals($expectedBindings, $insert->bindings());
+        $this->assertEquals('INSERT INTO `test_table` (`field1`,`field2`) VALUES (:test_table_field1_0,:test_table_field2_1),(:test_table_field1_2,:test_table_field2_3)', $insert->statement());
+    }
     public function testStatement()
     {
         $data = ['field1' => 'value1', 'field2' => 'value2'];
         $insert = new Insert('test_table', $data);
 
-        $expectedStatement = 'INSERT INTO `test_table` (`field1`, `field2`) VALUES (:test_table_field1, :test_table_field2)';
+        $expectedStatement = 'INSERT INTO `test_table` (`field1`,`field2`) VALUES (:test_table_field1_0,:test_table_field2_1)';
         $this->assertEquals($expectedStatement, $insert->statement());
     }
 }

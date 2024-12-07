@@ -121,11 +121,15 @@ abstract class Query implements QueryInterface
         return ':' . $this->tableLabel($table_name) . '_' . $field;
     }
 
-    public function addBindings($assoc_data): array
+    public function addBindings($assoc_data, $binding_label = null): array
     {
         $ret = [];
+        
+        $binding_label ??= $this->base();
+        $index = count($this->bindings);
+        
         foreach ($assoc_data as $column_name => $value) {
-            $ret[$column_name] = $this->addBinding($column_name, $value, $this->table);
+            $ret[$column_name] = $this->addBinding($column_name, $value, $this->table, $binding_label.'_'.$column_name.'_'.($index++));
         }
         return $ret;
     }
