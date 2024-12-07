@@ -113,8 +113,8 @@ class Row implements RowInterface
         $query = $this->connection->schema()->select($this->table)->add($where);
         $this->result = $this->connection->result($query);
         
-        $res = $this->result->ret(\PDO::FETCH_ASSOC);
-        $this->load = (is_array($res) && count($res) === 1) ? current($res) : null;
+        $res = $this->result->retOne(\PDO::FETCH_ASSOC);
+        $this->load = $res === false ? null : $res;
 
         return $this;
     }
@@ -130,10 +130,10 @@ class Row implements RowInterface
      *
      * @param  array<int|string,mixed> $datass an associative array containing the new data
      */
-    public function alter(array $datass): Rowinterface
+    public function alter(array $datass): RowInterface
     {
         foreach (array_keys($datass) as $field_name) {
-            // skips non existing field name and A_I column
+            // Skip non-existing field names and auto-increment columns
             if (!$this->connection->schema()->hasColumn($this->table, $field_name)) {
                 continue;
             }
@@ -144,13 +144,13 @@ class Row implements RowInterface
                 continue;
             }
 
-            // replaces empty strings with null or default value
+            // Replace empty strings with null if the column is nullable
             if (trim('' . $datass[$field_name]) === '' && $attributes->nullable()) {
                 $datass[$field_name] = null;
             }
 
             // checks for changes with loaded data. using == instead of === is risky but needed
-            if (!is_array($this->load) || $this->load[$field_name] != $datass[$field_name]) {
+            if ($this->isNew() || $this->load[$field_name] != $datass[$field_name]) {
                 $this->set($field_name, $datass[$field_name]);
             }
         }
@@ -232,7 +232,7 @@ class Row implements RowInterface
                 return false;
             }
 
-            return $this->result->isSuccess();
+            return $this->result->ran();
         }
 
         return false;
