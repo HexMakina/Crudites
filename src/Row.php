@@ -23,8 +23,7 @@ class Row implements RowInterface
     /** @var array<int|string,mixed> $alterations during lifecycle */
     private array $alterations = [];
 
-    private ?Result $last_result = null;
-    private ?Result $last_alter_result = null;
+    private ?Result $result = null;
 
 
     /** @param array<string,mixed> $datass */
@@ -57,8 +56,7 @@ class Row implements RowInterface
             'load' => $this->load,
             'fresh' => $this->fresh,
             'alterations' => $this->alterations,
-            'last_result' => $this->last_result,
-            'last_alter_result' => $this->last_alter_result,
+            'result' => $this->result,
         ];
     }
 
@@ -70,7 +68,7 @@ class Row implements RowInterface
             ?? null;
     }
 
-    public function set($name, $value) : void
+    public function set($name, $value)
     {
         $this->alterations[$name] = $value;
     }
@@ -111,9 +109,9 @@ class Row implements RowInterface
         $where = (new Where())->andFields($unique_match, $this->table, '=');
 
         $query = $this->connection->schema()->select($this->table)->add($where);
-        $this->last_result = new Result($this->connection->pdo(), $query);
+        $this->result = new Result($this->connection->pdo(), $query);
         
-        $res = $this->last_result->ret(\PDO::FETCH_ASSOC);
+        $res = $this->result->ret(\PDO::FETCH_ASSOC);
         $this->load = (is_array($res) && count($res) === 1) ? current($res) : null;
 
         return $this;
@@ -134,7 +132,7 @@ class Row implements RowInterface
     {
         foreach (array_keys($datass) as $field_name) {
             // skips non existing field name and A_I column
-            if ($this->connection->schema()->hasColumn($this->table, $field_name)) {
+            if (!$this->connection->schema()->hasColumn($this->table, $field_name)) {
                 continue;
             }
 
@@ -183,22 +181,30 @@ class Row implements RowInterface
         return [];
     }
 
+    /**
+     * Creates a new record in the database.
+     * Executes an insert query with the current data and updates the alterations tracker with the auto-incremented primary key value if applicable.
+     */
     private function create(): void
     {
         $query = $this->connection->schema()->insert($this->table, $this->export());
-        $this->last_result = $this->last_alter_result = new Result($this->connection->pdo(), $query);
+        $this->result = new Result($this->connection->pdo(), $query);
 
         // creation might lead to auto_incremented changes
         // recovering auto_incremented value and pushing it in alterations tracker
         $aipk = $this->connection->schema()->autoIncrementedPrimaryKey($this->table);
         if ($aipk !== null) {
-            $this->alterations[$aipk] = $this->connection->lastInsertId();
+            $this->set($aipk, $this->result->lastInsertId());
         }
     }
-
+    
+    /**
+     * Updates the existing record in the database with the current alterations.
+     *
+     * @throws CruditesException if a unique match is not found.
+     */
     private function update(): void
     {
-        
         $unique_match = $this->connection->schema()->matchUniqueness($this->table, $this->load);
 
         if(empty($unique_match)){
@@ -206,7 +212,7 @@ class Row implements RowInterface
         }
 
         $query = $this->connection->schema()->update($this->table, $this->alterations, $unique_match);
-        $this->last_result = $this->last_alter_result = new Result($this->connection->pdo(), $query);
+        $this->result = new Result($this->connection->pdo(), $query);
     }
 
     public function wipe(): bool
@@ -218,13 +224,13 @@ class Row implements RowInterface
             $query = $this->connection->schema()->delete($this->table, $pk_match);
             
             try {
-                $this->last_result = $this->last_alter_result = new Result($this->connection->pdo(), $query);
+                $this->result = new Result($this->connection->pdo(), $query);
 
             } catch (CruditesException $cruditesException) {
                 return false;
             }
 
-            return $this->last_alter_result->isSuccess();
+            return $this->result->isSuccess();
         }
 
         return false;
@@ -242,10 +248,10 @@ class Row implements RowInterface
         foreach ($this->connection->schema()->columns($this->table) as $column_name) {
 
             $attribute = $this->connection->schema()->attributes($this->table, $column_name);
-            $errors = $attribute->validateValue($datass[$column_name] ?? null);
+            $column_errors = $attribute->validateValue($datass[$column_name] ?? null);
 
-            if (!empty($errors)) {
-                $errors[$column_name] = $errors;
+            if (!empty($column_errors)) {
+                $errors[$column_name] = $column_errors;
             }
         }
 
