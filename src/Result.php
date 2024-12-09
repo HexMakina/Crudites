@@ -9,7 +9,7 @@
  *      allows statement as string, PDOStatements or QueryInterface
  *      calls run() with provided bindings (optionals)
  * 
- * All PDOStatement methods are available by encapsluation through the magic __call method.
+ * All PDOStatement methods are available by encapsulation through the magic __call method.
  * 
  * Fetching:
  *      ret     wrapper for fetchAll()
@@ -45,20 +45,20 @@ class Result implements ResultInterface
 {
     private \PDO $pdo;
     private \PDOStatement $prepared;
-    private ?\PDOStatement $executed;
+    private ?\PDOStatement $executed = null;
 
     // string or PDOStatement
     private $statement;
 
-    private array $bindings;
+    private array $bindings = [];
 
 
-    public const STATE_SUCCESS = '00000'; //PDO "error" code for "all is fine"
+    public const PDO_STATE_SUCCESS = '00000'; //PDO "error" code for "all is fine"
 
 
     /**
      * @param \PDO $pdo
-     * @param string|\PDOStatement $statement, the SQL statement to run, raw or prepared
+     * @param string|\PDOStatement|QueryInterface $statement, the SQL statement to run, raw or prepared
      * @param array $bindings, optional bindings for the prepared statement's execution
      */
     public function __construct(\PDO $pdo, $statement, array $bindings = [])
@@ -79,86 +79,68 @@ class Result implements ResultInterface
     }
 
     /**
-     * Magic method, transfers calls to the executed PDOStatement instance
-     * fetch(), fetchAll(), fetchColumn(), fetchObject(), bindColumn(), bindParam(), bindValue(), rowCount(), columnCount(), errorCode(), errorInfo()
+     * transfers calls to the executed (or prepared) PDOStatement instance, if the method exists
+     * if no statements are available, it is transferred to the PDO instance, if the method exists
+     * if no call is possible, a BadMethodCallException is thrown
+     * @param string $method
+     * @param array $args
+     * @return mixed
+     * @throws \BadMethodCallException
      */
-
     public function __call($method, $args)
     {
         // first use the executed instance, then the prepared one
         // make senses for chronology and error handling
-        $pdo_statement = $this->executed ?? $this->prepared;
+        $pdo_cascade = $this->executed ?? $this->prepared;
 
-        if ($pdo_statement === null)
-            throw new CruditesException('both executed and prepared instances are null, cannot call PDOStatement method ' . $method);
+        if ($pdo_cascade === null || !method_exists($pdo_cascade, $method)) {
+            $pdo_cascade = $this->pdo;
+        }
+        // two time testing is necessary, f.i. lastInsertId is a PDO method, not a PDOStatement method
+        if ($pdo_cascade === null || !method_exists($pdo_cascade, $method))
+            throw new \BadMethodCallException("__call($method) not possible in PDO or PDOStatement");
 
-        if (!method_exists($pdo_statement, $method))
-            throw new \BadMethodCallException("method $method not found in PDOStatement instance");
-
-        return call_user_func_array([$pdo_statement, $method], $args);
+        return call_user_func_array([$pdo_cascade, $method], $args);
     }
-
 
     public function run(array $bindings = [])
     {
         // (re)set the executed PDOStatement instance
         $this->executed = null;
         $this->bindings = $bindings;
-        try {
-
-            // is prepared, execute it with bindings
-            if (isset($this->prepared)) {
-                if ($this->prepared->execute($bindings) !== false) {
-                    $this->executed = $this->prepared;
-                    $this->bindings = $bindings;
-
-                    return $this;
-                }
-
-                throw new CruditesException('PDOSTATEMENT_EXECUTE');
-            }
-
-            // not prepared, no bindings, PDO::query the statement
-            if (empty($bindings)) {
-                if (($res = $this->pdo->query((string)$this->statement)) !== false) {
-                    $this->executed = $res;
-                    return $this;
-                }
-
-                throw new CruditesException('PDO_QUERY_STRING');
-            }
-
-            // PDO::prepare it and recursively call run() with bindings
-            if (($res = $this->pdo->prepare((string)$this->statement)) !== false) {
-                $this->prepared = $res;
-                return $this->run($bindings);
-            }
-
-            throw new CruditesException('PDO_PREPARE_STRING');
-        } catch (\PDOException $e) {
-            throw new CruditesException('PDO_EXCEPTION: ' . $e->getMessage(), $e->getCode(), $e);
+        if (isset($this->prepared)) {
+            return $this->executePrepared($bindings);
         }
 
-        return $this;
-    }
+        if (empty($bindings)) {
+            return $this->queryStatement();
+        }
 
+        return $this->prepareAndRun($bindings);
+    }
 
     public function ran(): bool
     {
-        return $this->executed !== null && $this->executed->errorCode() === \PDO::ERR_NONE;
+        return $this->executed !== null && $this->executed->errorCode() === self::PDO_STATE_SUCCESS;
     }
 
     public function ret($mode = \PDO::FETCH_ASSOC, $fetch_argument = null, $ctor_args = null)
     {
+        if (!$this->ran()) {
+            throw new CruditesException('No executed statement available for fetching results');
+        }
+
         if ($mode === \PDO::FETCH_CLASS)
             return $this->executed->fetchAll($mode, $fetch_argument, $ctor_args);
 
         return $this->executed->fetchAll($mode);
     }
 
-
     public function retOne($mode = \PDO::FETCH_ASSOC, $orientation = null, $offset = null)
     {
+        if (!$this->ran()) {
+            throw new CruditesException('No executed statement available for fetching');
+        }
         return $this->executed->fetch($mode, $orientation, $offset);
     }
 
@@ -167,34 +149,18 @@ class Result implements ResultInterface
         return $class === null ? $this->ret(\PDO::FETCH_OBJ) : $this->ret(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, $class);
     }
 
-
+    // wrapper for rowCount()
     public function count(): int
     {
-        return $this->ran() ? $this->executed->rowCount() : -1;
+        if (!$this->ran()) {
+            throw new CruditesException('No executed statement available for counting results');
+        }
+        return $this->executed->rowCount();
     }
 
-    /**
-     * Returns the last inserted ID
-     * A wrapper for PDO::lastInsertId()
-     * 
-     * @param string $name
-     * @return string
-     */
-    public function lastInsertId($name = null)
-    {
-        return $this->pdo->lastInsertId($name);
-    }
-
-    /** 
-     * Returns the error info of the last operation (execution, preparation or query)
-     * A wrapper for PDOStatement::errorInfo() and PDO::errorInfo()
-     * 
-     * @return array
-     */
     public function errorInfo(): array
     {
-        $source = $this->executed ?? $this->prepared ?? $this->pdo;
-        return $source->errorInfo();
+        return ($this->executed ?? $this->prepared ?? $this->pdo)->errorInfo();
     }
 
     /**
@@ -205,7 +171,40 @@ class Result implements ResultInterface
      */
     public function errorMessageWithCodes(): string
     {
+        // magic call to errorInfo()
         list($state, $code, $message) = $this->errorInfo();
         return sprintf('%s (state: %s, code: %s)', $message, $state, $code);
+    }
+
+
+    private function executePrepared(array $bindings): self
+    {
+        if ($this->prepared->execute($bindings) !== false) {
+            $this->executed = $this->prepared;
+            $this->bindings = $bindings;
+            return $this;
+        }
+
+        throw new CruditesException('PDOSTATEMENT_EXECUTE');
+    }
+
+    private function queryStatement(): self
+    {
+        if (($res = $this->pdo->query((string)$this->statement)) !== false) {
+            $this->executed = $res;
+            return $this;
+        }
+
+        throw new CruditesException('PDO_QUERY_STRING');
+    }
+
+    private function prepareAndRun(array $bindings): self
+    {
+        if (($res = $this->pdo->prepare((string)$this->statement)) !== false) {
+            $this->prepared = $res;
+            return $this->run($bindings);
+        }
+
+        throw new CruditesException('PDO_PREPARE_STRING');
     }
 }
