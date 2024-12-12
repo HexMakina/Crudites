@@ -70,7 +70,7 @@ class Row implements RowInterface
             ?? null;
     }
 
-    public function set($name, $value)
+    public function set(string $name, $value = null)
     {
         $this->alterations[$name] = $value;
     }
