@@ -29,7 +29,7 @@ class Joins extends Clause
 
     public function __toString(): string
     {
-        return implode(PHP_EOL, $this->joins);
+        return implode(' ', $this->joins);
     }
 
     public function name(): string
