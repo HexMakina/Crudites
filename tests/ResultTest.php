@@ -94,7 +94,7 @@ class ResultTest extends TestCase
         $this->assertEquals(3, $this->result->count());
     }
 
-    public function testLastInsertId()
+    public function testCallLastInsertId()
     {
         $this->assertEquals(0, $this->result->lastInsertId());
     }
