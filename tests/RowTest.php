@@ -25,7 +25,7 @@ class RowTest extends TestCase
     {
         $row = new Row($this->connection, $this->table, $this->data_form_with_id);
         $this->assertEquals('users', $row->table());
-        $this->assertEquals(['id' => 1, 'username' => 'john_doe'], $row->export());
+        $this->assertEquals($this->data_form_with_id, $row->export());
     }
 
     public function testGet()
@@ -35,12 +35,23 @@ class RowTest extends TestCase
         $this->assertNull($row->get('non_existing'));
     }
 
-    public function testSet()
+    public function testSetGet()
     {
-
         $row = new Row($this->connection, $this->table, $this->data_form_with_id);
         $row->set('name', 'New Name');
         $this->assertEquals('New Name', $row->get('name'));
+
+        $row->set('non_existing', 'New Value');
+        $this->assertEquals('New Value', $row->get('non_existing'));
+
+        $row->set('no_param');
+        $this->assertNull($row->get('no_param'));
+
+        $row->set('null_param', null);
+        $this->assertNull($row->get('null_param'));
+
+        $row->set('empty_string', '');
+        $this->assertEquals('', $row->get('empty_string'));
     }
 
     public function testIsNew()
@@ -57,11 +68,13 @@ class RowTest extends TestCase
         $row->set('name', 'New Name');
         $this->assertTrue($row->isAltered());
     }
+
     public function testExport()
     {
         $row = new Row($this->connection, $this->table, $this->data_form_with_id);
         $row->set('name', 'New Name');
-        $this->assertEquals(['id' => 1, 'name' => 'New Name'], $row->export());
+        $expected_export = ['id' => 1, 'name' => 'New Name', 'username' => 'john_doe'];
+        $this->assertEquals($expected_export, $row->export());
     }
 
     public function testLoad()
