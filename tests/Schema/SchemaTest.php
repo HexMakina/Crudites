@@ -129,4 +129,31 @@ class SchemaTest extends TestCase
         $res = $this->schema->uniqueKeys('products');
         $this->assertEquals([], $res);
     }
+
+    public function testInsertValidData()
+    {
+        $valid_data = ['username' => 'test', 'email' => 'test@test.com'];
+        $expected_bindings = ['users_username_0' => 'test', 'users_email_1' => 'test@test.com'];
+
+        $insert = $this->schema->insert('users', $valid_data);
+        $this->assertEquals('INSERT INTO `users` (`username`,`email`) VALUES (:users_username_0,:users_email_1)', (string)$insert);
+        $this->assertEquals($expected_bindings, $insert->bindings());
+
+    }
+
+    public function testInsertEmptyOrInvalidData()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('EMPTY_DATA');
+        $this->schema->insert('users', []);
+        
+        // this is not ok as a test, some table might no require data for insert
+        // need a new table with all automated fields (auto_increment, current timestamp or nullable)
+        
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('EMPTY_DATA');
+        $this->schema->insert('users', ['non_existent_column' => 'test']);
+
+    }
 }
