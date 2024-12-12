@@ -3,20 +3,28 @@
 namespace HexMakina\Crudites\Grammar\Query;
 
 
-use HexMakina\Crudites\Grammar\Deck;
-use HexMakina\Crudites\Grammar\Clause\Clause;
 use HexMakina\Crudites\Grammar\Grammar;
+use HexMakina\Crudites\Grammar\Deck;
+
+use HexMakina\Crudites\Grammar\Clause\Clause;
+use HexMakina\Crudites\Grammar\Clause\Where;
+use HexMakina\Crudites\Grammar\Clause\Joins;
+use HexMakina\Crudites\Grammar\Clause\Join;
+use HexMakina\Crudites\Grammar\Clause\GroupBy;
+use HexMakina\Crudites\Grammar\Clause\OrderBy;
+use HexMakina\Crudites\Grammar\Clause\Limit;
 
 class Select extends Query
 {
+    // decks handle the list of columns and expressions to be selected
     private ?Deck $deck = null;
+
     public function __construct(array $selection, string $table, $table_alias = null)
     {
         $this->table = $table;
         $this->alias = $table_alias;
         $this->selectAlso($selection);
     }
-
 
     public function statement(): string
     {
@@ -30,6 +38,7 @@ class Select extends Query
         foreach (
             [
                 Clause::JOINS,
+                Clause::JOIN,
                 Clause::WHERE,
                 Clause::GROUP,
                 Clause::HAVING,
@@ -85,5 +94,48 @@ class Select extends Query
         }
 
         return $this;
+    }
+
+    public function where(array $predicates): Where
+    {
+        $where = new Where($predicates);
+        $this->add($where);
+        return $where;
+    }
+
+    public function join(string $table, ?string $alias=null): Join
+    {
+        $join = new Join($table, $alias);
+
+        if($this->clause(Clause::JOINS) === null){
+            $joins = new Joins([$join]);
+            $this->add($joins);
+        }
+        else{
+            $this->clause(Clause::JOINS)->add($join);
+        }
+
+        return $join;
+    }
+
+    public function groupBy($selected): GroupBy
+    {
+        $group = new GroupBy($selected);
+        $this->add($group);
+        return $group;
+    }
+
+    public function orderBy($selected, string $direction): OrderBy
+    {
+        $order = new OrderBy($selected, $direction);
+        $this->add($order);
+        return $order;
+    }
+
+    public function limit(int $number, int $offset = 0): Limit
+    {
+        $limit = new Limit($number, $offset);
+        $this->add($limit);
+        return $limit;
     }
 }
