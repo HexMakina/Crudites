@@ -24,21 +24,21 @@ class JoinTest extends TestCase
     {
         $join = new Join('cbx_order', 'Orders');
         $join->type('LEFT');
-        $this->assertEquals('LEFT JOIN `cbx_order` Orders ON', (string)$join);
+        $this->assertEquals('LEFT JOIN `cbx_order` `Orders` ON', (string)$join);
     }
 
     public function testOn()
     {
         $join = new Join('cbx_order', 'Orders');
         $join->on('user_id', 'User', 'id');
-        $this->assertEquals('JOIN `cbx_order` Orders ON `Orders`.`user_id` = `User`.`id`', (string)$join);
+        $this->assertEquals('JOIN `cbx_order` `Orders` ON `Orders`.`user_id` = `User`.`id`', (string)$join);
     }
 
-    public function testToString()
+    public function testChainingTypeAndOn()
     {
         $join = new Join('cbx_order', 'Orders');
         $join->type('LEFT')->on('user_id', 'User', 'id');
-        $expectedString = sprintf('LEFT JOIN `%s` %s ON %s', 'cbx_order', 'Orders', (string)(new Predicate(['Orders', 'user_id'], '=', ['User', 'id'])));
+        $expectedString = sprintf('LEFT JOIN `%s` `%s` ON `Orders`.`user_id` = `User`.`id`', 'cbx_order', 'Orders');
         $this->assertEquals($expectedString, (string)$join);
     }
 

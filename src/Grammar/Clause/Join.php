@@ -56,7 +56,7 @@ class Join extends Clause
             $on = (string)(new Predicate([$this->alias, $this->column], '=', [$this->referenced_table, $this->referenced_column]));
         }
         
-        return trim(sprintf('%s JOIN `%s` %s ON %s', $this->type, $this->table, $this->alias, $on ?? ''));
+        return trim(sprintf('%s JOIN `%s` `%s` ON %s', $this->type, $this->table, $this->alias, $on ?? ''));
     }
 
     /**
