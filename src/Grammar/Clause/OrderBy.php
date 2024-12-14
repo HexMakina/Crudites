@@ -20,6 +20,16 @@ class OrderBy extends Clause
         return $this;
     }
 
+    public function asc($selected): self
+    {
+        return $this->add([$selected, 'ASC']);
+    }
+
+    public function desc($selected): self
+    {
+        return $this->add([$selected, 'DESC']);
+    }
+
     public function __toString(): string
     {
         return 'ORDER BY ' . $this->deck;

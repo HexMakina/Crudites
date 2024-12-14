@@ -26,6 +26,19 @@ class Join extends Clause
         $this->type = '';
         $this->table = $table;
         $this->alias = $alias ?? $table;
+        
+        $this->column = null;
+        $this->referenced_table = null;
+        $this->referenced_column = null;
+    }
+
+    public function on(string $column, string $join_table, string $join_column): self
+    {
+        $this->column = $column;
+        $this->referenced_table = $join_table;
+        $this->referenced_column = $join_column;
+
+        return $this;
     }
 
     public function type(string $join_type): self
