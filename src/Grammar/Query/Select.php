@@ -91,4 +91,47 @@ class Select extends Query
 
         return $this;
     }
+
+    public function where(?array $predicates = null): Where
+    {
+        $where = new Where($predicates);
+        $this->add($where);
+        return $where;
+    }
+
+    public function join(string $table, ?string $alias=null): Join
+    {
+        $join = new Join($table, $alias);
+
+        if($this->clause(Clause::JOINS) === null){
+            $joins = new Joins([$join]);
+            $this->add($joins);
+        }
+        else{
+            $this->clause(Clause::JOINS)->add($join);
+        }
+
+        return $join;
+    }
+
+    public function groupBy($selected): GroupBy
+    {
+        $group = new GroupBy($selected);
+        $this->add($group);
+        return $group;
+    }
+
+    public function orderBy($selected, string $direction): OrderBy
+    {
+        $order = new OrderBy($selected, $direction);
+        $this->add($order);
+        return $order;
+    }
+
+    public function limit(int $number, int $offset = 0): Limit
+    {
+        $limit = new Limit($number, $offset);
+        $this->add($limit);
+        return $limit;
+    }
 }
