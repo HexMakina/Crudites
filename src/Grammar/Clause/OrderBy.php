@@ -13,10 +13,21 @@ class OrderBy extends Clause
         $this->deck = new DeckOrderBy($selected, $direction);
     }
 
-    public function add($selected, string $direction): self
+    public function add($selected_and_direction): self
     {
+        list($selected, $direction) = $selected_and_direction;
         $this->deck->add($selected, $direction);
         return $this;
+    }
+
+    public function asc($selected): self
+    {
+        return $this->add([$selected, 'ASC']);
+    }
+
+    public function desc($selected): self
+    {
+        return $this->add([$selected, 'DESC']);
     }
 
     public function __toString(): string
