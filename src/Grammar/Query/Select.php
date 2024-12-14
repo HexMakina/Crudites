@@ -96,7 +96,7 @@ class Select extends Query
         return $this;
     }
 
-    public function where(array $predicates): Where
+    public function where(?array $predicates = null): Where
     {
         $where = new Where($predicates);
         $this->add($where);
