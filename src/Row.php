@@ -110,7 +110,7 @@ class Row implements RowInterface
 
         $where = (new Where())->andFields($unique_match, $this->table, '=');
 
-        $query = $this->connection->schema()->select($this->table)->add($where);
+        $query = $this->connection->schema()->select($this->table)->where()->andFields($unique_match, $this->table, '=');
         $this->result = $this->connection->result($query);
 
         $res = $this->result->retOne(\PDO::FETCH_ASSOC);

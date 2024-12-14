@@ -78,15 +78,8 @@ class Crudites
         $ret = [];
 
         $res = self::$connection->result($select);
-        if($res->ran()) {
-
-            $primary_keys = self::$connection->schema()->primaryKeys($select->table());
-            $pk_name = implode('_', $primary_keys);
-
-            // returns an associative array with the primary key value as the index
-            foreach ($res->ret() as $rec) {
-                $ret[$rec[$pk_name]] = $rec;
-            }
+        if ($res->ran()) {
+            $ret = $res->ret(\PDO::FETCH_UNIQUE | \PDO::FETCH_ASSOC);
         }
 
         return $ret;
@@ -95,15 +88,13 @@ class Crudites
     public static function distinctFor(string $table, string $column_name, string $filter_by_value = null)
     {
         $query = self::$connection->schema()->select($table, [sprintf('DISTINCT `%s`', $column_name)]);
-        
-        $clause = new Where([(new Predicate([$table, $column_name]))->isNotEmpty()]);
+        $where = $query->where([(new Predicate([$table, $column_name]))->isNotEmpty()]);
+
         if ($filter_by_value !== null) {
-            $clause->andLike([$table, $column_name], $filter_by_value);
+            $where->andLike([$table, $column_name], $filter_by_value);
         }
-        $query->add($clause);
         
-        $clause = new OrderBy([$table, $column_name], 'ASC');
-        $query->add($clause);
+        $query->orderBy([$table, $column_name], 'ASC');
 
         return self::$connection->result($query)->ret(\PDO::FETCH_COLUMN);
     }
