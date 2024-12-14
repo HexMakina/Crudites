@@ -36,7 +36,13 @@ class Where extends Clause
         return self::WHERE;
     }
 
-    public function and(string $predicate, $bindings = [])
+    public function add($predicate): self
+    {
+        return $this->andPredicate($predicate);
+    }
+
+
+    public function and(string $predicate, $bindings = []): self
     {
         $this->and[] = $predicate;
 

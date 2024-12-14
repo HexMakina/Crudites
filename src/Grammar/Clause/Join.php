@@ -34,6 +34,11 @@ class Join extends Clause
         $this->referenced_column = null;
     }
 
+    public function add($nothing): self
+    {
+        return $this;
+    }
+
     public function on(string $column, string $join_table, string $join_column): self
     {
         $this->column = $column;

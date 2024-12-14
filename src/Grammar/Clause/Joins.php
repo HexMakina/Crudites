@@ -14,7 +14,8 @@ class Joins extends Clause
         }
     }
 
-    public function add(Join $join): self
+    // add a Join object to the list of joins
+    public function add($join): self
     {
         if (isset($this->joined_tables[$join->alias()]) && $this->joined_tables[$join->alias()] !== $join->table()) {
             $res = sprintf('JOIN %s WITH ALIAS %s ALREADY ALLOCATED FOR TABLE %s', $join->table(), $join->alias(), $this->joined_tables[$join->alias()]);
