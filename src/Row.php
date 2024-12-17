@@ -7,7 +7,6 @@ use HexMakina\BlackBox\Database\RowInterface;
 use HexMakina\BlackBox\Database\ResultInterface;
 
 use HexMakina\Crudites\CruditesException;
-use HexMakina\Crudites\Grammar\Clause\Where;
 
 class Row implements RowInterface
 {
@@ -43,6 +42,56 @@ class Row implements RowInterface
         $this->fresh = $fresh;
     }
 
+    // property overloading
+    public function __get($name)
+    {
+        return $this->alterations[$name]
+            ?? $this->fresh[$name]
+            ?? $this->load[$name]
+            ?? null;
+    }
+
+    public function __isset($name)
+    {
+        return isset($this->alterations[$name])
+            || isset($this->fresh[$name])
+            || isset($this->load[$name]);
+    }
+
+    public function __set(string $name, $value = null)
+    {
+        if (
+            $value === $this->$name
+            || !$this->connection->schema()->hasColumn($this->table, $name)
+        ) {
+            return;
+        }
+
+        $attributes = $this->connection->schema()->attributes($this->table, $name);
+
+        // skip auto_incremented columns
+        if ($attributes->isAuto()) {
+            return;
+        }
+
+        // Replace empty strings with null if the column is nullable
+        if (trim((string)$value) === '' && $attributes->nullable()) {
+            $value = null;
+        }
+
+        // checks for changes with loaded data. using == instead of === is risky but needed
+        if ($this->isNew() || $this->load[$name] != $value) {
+            $this->alterations[$name] = $value;
+        }
+
+    }
+
+    public function __unset($name)
+    {
+        unset($this->alterations[$name]);
+    }
+
+    // output
     public function __toString()
     {
         return PHP_EOL . 'load: '
@@ -62,18 +111,22 @@ class Row implements RowInterface
         ];
     }
 
-    public function get($name)
+    public function import(array $dat_ass): RowInterface
     {
-        return $this->alterations[$name]
-            ?? $this->fresh[$name]
-            ?? $this->load[$name]
-            ?? null;
+        foreach ($dat_ass as $k => $v) {
+            $this->$k = $v;
+        }
+
+        return $this;
     }
 
-    public function set(string $name, $value = null)
+    
+    public function export(): array
     {
-        $this->alterations[$name] = $value;
+        return array_merge((array)$this->load, $this->fresh, $this->alterations);
     }
+
+
 
     public function table(): string
     {
@@ -90,28 +143,21 @@ class Row implements RowInterface
         return !empty($this->alterations);
     }
 
-    /**
-     * @return array<int|string,mixed>
-     * merges the initial database load with the constructor and the alterations
-     * the result is an associative array containing all data, all up-to-date
-     */
-    public function export(): array
-    {
-        return array_merge((array)$this->load, $this->fresh, $this->alterations);
-    }
-
-    public function load(array $datass = null): Rowinterface
+    public function load(?array $datass = null): Rowinterface
     {
         $unique_match = $this->connection->schema()->matchUniqueness($this->table, $datass ?? $this->export());
-
         if (empty($unique_match)) {
             return $this;
         }
 
-        $where = (new Where())->andFields($unique_match, $this->table, '=');
+        $query = $this->connection->schema()->select($this->table);
+        $query->where()->andFields($unique_match, $this->table, '=');
 
-        $query = $this->connection->schema()->select($this->table)->where()->andFields($unique_match, $this->table, '=');
-        $this->result = $this->connection->result($query);
+        try{
+            $this->result = $this->connection->result($query);
+        }
+        catch(\Throwable $t){
+        }
 
         $res = $this->result->retOne(\PDO::FETCH_ASSOC);
         $this->load = $res === false ? null : $res;
@@ -120,53 +166,9 @@ class Row implements RowInterface
     }
 
     /**
-     * loops the associative data and records changes vis-à-vis loaded data
-     * 
-     * 1. skips non existing field name and A_I column
-     * 2. replaces empty strings with null or default value
-     * 3. checks for changes with loaded data. using == instead of === is risky but needed
-     * 4. pushes the changes in the alterations tracker
-     *
-     *
-     * @param  array<int|string,mixed> $datass an associative array containing the new data
-     */
-    public function alter(array $datass): RowInterface
-    {
-        foreach (array_keys($datass) as $field_name) {
-
-            if($datass[$field_name] === $this->get($field_name)) {
-                continue;
-            }
-            
-            // Skip non-existing field names and auto-increment columns
-            if (!$this->connection->schema()->hasColumn($this->table, $field_name)) {
-                continue;
-            }
-
-            $attributes = $this->connection->schema()->attributes($this->table, $field_name);
-
-            if ($attributes->isAuto()) {
-                continue;
-            }
-
-            // Replace empty strings with null if the column is nullable
-            if (trim('' . $datass[$field_name]) === '' && $attributes->nullable()) {
-                $datass[$field_name] = null;
-            }
-
-            // checks for changes with loaded data. using == instead of === is risky but needed
-            if ($this->isNew() || $this->load[$field_name] != $datass[$field_name]) {
-                $this->set($field_name, $datass[$field_name]);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
      * @return array<string,string> an array of errors, column name => message
      */
-    public function persist(): array
+    public function save(): array
     {
         if (!$this->isNew() && !$this->isAltered()) { // existing record with no alterations
             return [];
@@ -177,9 +179,9 @@ class Row implements RowInterface
         }
         try {
             if ($this->isNew()) {
-                $this->create();
+                $this->create($this->connection);
             } else {
-                $this->update();
+                $this->update($this->connection);
             }
         } catch (CruditesException $cruditesException) {
             return [$this->table => $cruditesException->getMessage()];
@@ -188,39 +190,6 @@ class Row implements RowInterface
         return [];
     }
 
-    /**
-     * Creates a new record in the database.
-     * Executes an insert query with the current data and updates the alterations tracker with the auto-incremented primary key value if applicable.
-     */
-    private function create(): void
-    {
-        $query = $this->connection->schema()->insert($this->table, $this->export());
-        $this->result = $this->connection->result($query);
-
-        // creation might lead to auto_incremented changes
-        // recovering auto_incremented value and pushing it in alterations tracker
-        $aipk = $this->connection->schema()->autoIncrementedPrimaryKey($this->table);
-        if ($aipk !== null) {
-            $this->set($aipk, $this->result->lastInsertId());
-        }
-    }
-
-    /**
-     * Updates the existing record in the database with the current alterations.
-     *
-     * @throws CruditesException if a unique match is not found.
-     */
-    private function update(): void
-    {
-        $unique_match = $this->connection->schema()->matchUniqueness($this->table, $this->load);
-
-        if (empty($unique_match)) {
-            throw new CruditesException('UNIQUE_MATCH_NOT_FOUND');
-        }
-
-        $query = $this->connection->schema()->update($this->table, $this->alterations, $unique_match);
-        $this->result = new Result($this->connection->pdo(), $query);
-    }
 
     /**
      * Deletes the current record from the database.
@@ -242,6 +211,42 @@ class Row implements RowInterface
 
         return false;
     }
+
+
+    /**
+     * Creates a new record in the database.
+     * Executes an insert query with the current data and updates the alterations tracker with the auto-incremented primary key value if applicable.
+     */
+    private function create(): void
+    {
+        $query = $this->connection->schema()->insert($this->table, $this->export());
+        $this->result = $this->connection->result($query);
+
+        // creation might lead to auto_incremented changes
+        // recovering auto_incremented value and pushing it in alterations tracker
+        $aipk = $this->connection->schema()->autoIncrementedPrimaryKey($this->table);
+        if ($aipk !== null) {
+            $this->$aipk = $this->result->lastInsertId();
+        }
+    }
+
+    /**
+     * Updates the existing record in the database with the current alterations.
+     *
+     * @throws CruditesException if a unique match is not found.
+     */
+    private function update(): void
+    {
+        $unique_match = $this->connection->schema()->matchUniqueness($this->table, $this->load);
+
+        if (empty($unique_match)) {
+            throw new CruditesException('NO_UNIQUE_MATCH_IN_LOAD_ARRAY');
+        }
+
+        $query = $this->connection->schema()->update($this->table, $this->alterations, $unique_match);
+        $this->result = $this->connection->result($query);
+    }
+
 
     //------------------------------------------------------------  type:data validation
     /**
