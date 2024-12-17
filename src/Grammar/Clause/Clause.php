@@ -50,18 +50,16 @@ abstract class Clause extends Grammar
     public const HAVING = 'HAVING';
     public const LIMIT = 'LIMIT';
 
-    public const UPDATE = 'UPDATE';
-    public const SET = 'SET';
+    public function __construct()
+    {
+        $this->bindings = [];
+    }
 
-    public const INSERT = 'INSERT INTO';
-    public const VALUES = 'VALUES';
-    public const DELETE = 'DELETE FROM';
-
-    public array $bindings = [];
-
-    abstract public function __toString(): string;
-    abstract public function name(): string;
-
+    public function add(...$args): self
+    {
+        return $this;
+    }
+    
     public function bindings(): array
     {
         return $this->bindings;
