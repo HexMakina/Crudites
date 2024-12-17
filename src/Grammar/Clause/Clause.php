@@ -14,7 +14,7 @@ abstract class Clause extends Grammar implements ClauseInterface
         $this->bindings = [];
     }
 
-    public function add($nothing): self
+    public function add(...$args): self
     {
         return $this;
     }

@@ -19,9 +19,9 @@ class GroupBy extends Clause
         $this->deck = new Deck($selected);
     }
 
-    public function add($selected): self
+    public function add(...$selected): self
     {
-        $this->deck->add($selected);
+        $this->deck->add(array_pop($selected));
         return $this;
     }
 

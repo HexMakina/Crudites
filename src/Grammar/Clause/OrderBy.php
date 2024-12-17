@@ -13,9 +13,9 @@ class OrderBy extends Clause
         $this->deck = new DeckOrderBy($selected, $direction);
     }
 
-    public function add($selected_and_direction): self
+    public function add(...$args): self
     {
-        list($selected, $direction) = $selected_and_direction;
+        list($selected, $direction) = $args;
         $this->deck->add($selected, $direction);
         return $this;
     }

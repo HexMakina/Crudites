@@ -36,9 +36,9 @@ class Where extends Clause
         return self::WHERE;
     }
 
-    public function add($predicate): self
+    public function add(...$predicate): self
     {
-        return $this->andPredicate($predicate);
+        return $this->andPredicate(array_pop($predicate));
     }
 
 
