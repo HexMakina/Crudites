@@ -101,9 +101,9 @@ class OneToMany extends AbstractRelation
             $query->run();
 
             if (!$query->isSuccess()) {
-                $errors[] = $query->error();
-
-                if($query->error()->getCode() !== 1062){
+                $_ = $query->errorInfo();
+                $errors[] = $_;
+                if($_[0] !== 1062){
                     throw CruditesExceptionFactory::make($query);
                 }
             }
