@@ -1,10 +1,8 @@
 <?php
 
-
 namespace HexMakina\Crudites;
 
-use DateTimeInterface;
-use HexMakina\BlackBox\Database\{DatabaseInterface, ConnectionInterface, TableInterface, SelectInterface};
+use HexMakina\BlackBox\Database\{DatabaseInterface, ConnectionInterface, SelectInterface};
 use HexMakina\Crudites\CruditesException;
 
 
@@ -174,7 +172,7 @@ class Crudites
         );
         $Query->statement($statement);
         $Query->setBindings([':id' => $id]);
-        $query->prepare();
+        $Query->prepare();
         $Query->run();
 
         return $Query->isSuccess();
