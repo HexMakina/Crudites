@@ -12,14 +12,14 @@ class Row implements RowInterface
 {
     private TableInterface $table;
 
+    /** @var array<int|string,mixed> $fresh from the constructor */
+    private array $fresh = [];
+
     /** @var array<int|string,mixed>|null $load from database */
     private ?array $load = null;
 
     /** @var array<int|string,mixed> $alterations during lifecycle */
     private array $alterations = [];
-
-    /** @var array<int|string,mixed> $fresh from the constructor */
-    private array $fresh = [];
 
     private ?QueryInterface $last_query = null;
 
@@ -152,17 +152,21 @@ class Row implements RowInterface
                 continue;
             }
 
+            // int cast, for bool too (actually tinyint(1) values)
+            if($column->type()->isBoolean() || $column->type()->isInteger()){
+                $datass[$field_name] = (int) $datass[$field_name];
+            }
+
             // replaces empty strings with null or default value
             if (trim('' . $datass[$field_name]) === '') {
                 $datass[$field_name] = $column->isNullable() ? null : $column->default();
             }
-
+     
             // checks for changes with loaded data. using == instead of === is risky but needed
-            if (!is_array($this->load) || $this->load[$field_name] != $datass[$field_name]) {
+            if (!is_array($this->load) || $this->load[$field_name] !== $datass[$field_name]) {
                 $this->set($field_name, $datass[$field_name]);
             }
         }
-
         return $this;
     }
 
