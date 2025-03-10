@@ -9,7 +9,7 @@ class Where extends Clause
     protected string $default_table;
     protected array $and = [];
 
-    public function __construct(string $default_table, array $predicates = [])
+    public function __construct(?array $predicates = null)
     {
         $this->default_table = $default_table;
         foreach ($predicates as $predicate) {
@@ -74,9 +74,16 @@ class Where extends Clause
 
     public function andIn(string $field, array $values, $table_name = null)
     {
-        return $this->andPredicate(
-            (new Predicate($table_name === null ? $field : [$table_name, $field]))
-                ->withValues($values, __FUNCTION__)
-        );
+        return $this->andPredicate((new Predicate($expression, $operator))->withValue($value, $bind_label));
+    }
+
+    public function andIn($expression, array $values)
+    {
+        return $this->andPredicate((new Predicate($expression, 'IN'))->withValues($values, __FUNCTION__));
+    }
+
+    public function andLike($expression, string $value)
+    {
+        return $this->andPredicate((new Predicate($expression, 'LIKE'))->withValue($value, __FUNCTION__));
     }
 }
