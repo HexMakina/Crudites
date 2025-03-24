@@ -1,10 +1,8 @@
 <?php
 
-
 namespace HexMakina\Crudites;
 
-use DateTimeInterface;
-use HexMakina\BlackBox\Database\{DatabaseInterface, ConnectionInterface, TableInterface, SelectInterface};
+use HexMakina\BlackBox\Database\{DatabaseInterface, ConnectionInterface, SelectInterface};
 use HexMakina\Crudites\CruditesException;
 
 
