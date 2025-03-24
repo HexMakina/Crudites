@@ -24,7 +24,12 @@ class Schema implements SchemaInterface
     /** @var array<string,TableInterface> The cache of table objects */
     private array $table_cache = [];
 
+    /** @var array<string,array> The cache of foreign keys by table */
+    private array $fk_by_table = [];
+
+    /** @var Introspector The introspector to fetch schema information */
     private Introspector $introspector;
+
     private ConnectionInterface $connection;
 
     /**
