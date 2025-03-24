@@ -52,9 +52,9 @@ abstract class PreparedQuery extends BaseQuery
 
     public function addBinding($field, $value, $table_name = null, $bind_label = null): string
     {
+        $table_name = (string)$table_name;
         $table_label = $this->tableLabel($table_name);
         $bind_label ??= $this->bindLabel($field, $table_name);
-
         $this->binding_names[$table_label] ??= [];
         $this->binding_names[$table_label][$field] = $bind_label;
         $this->bindings[$bind_label] = $value;
