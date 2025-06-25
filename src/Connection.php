@@ -170,7 +170,7 @@ class Connection implements ConnectionInterface
                 $res = $this->pdo->query($sql_statement, $fetch_mode, $fetch_col_num);
             }
         }catch(\PDOException $e){
-            throw new CruditesException($e->getMessage(), $e->getCode());   
+            throw new CruditesException($e->getMessage(), 0, $e);   
         }
 
         return $res instanceof \PDOStatement ? $res : null;
