@@ -48,9 +48,8 @@ class DatabaseRelations
                 $res = new OneToManyQualified($table, array_reverse($join), $this->db);
                 $relations["$res"] = $res;
             }
-            else
-            {
-                vd($join, 'skipping '.$table);
+            else {
+                continue;
             }
             
         }

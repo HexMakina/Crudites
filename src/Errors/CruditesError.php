@@ -18,14 +18,31 @@ class CruditesError
 
     public function __toString(){
         $ret = $this->message;
-        
-        if(!empty($this->table))
-            $ret .= sprintf(' on table "%s"', $this->table);
-        if(!empty($this->columns))
-            $ret .= sprintf(' on column(s) "%s"', implode('", "', $this->columns));
+        if ($this->message !== 'ERR_REQUIRED_VALUE') {
+            if (!empty($this->table))
+                $ret .= sprintf(' on table "%s"', $this->table);
+            if (!empty($this->columns))
+                $ret .= sprintf(' on column(s) "%s"', implode('", "', $this->columns));
 
-        return $ret;
+            return $ret;
+        }
+
+        $table = ucfirst($this->table);
+        $column = $this->columns[0]->name();
+        
+        $fieldMap = [
+            'stops' => 'stop date',
+            'starts' => 'start date',
+            'label' => 'title',
+            'slug' => 'slug',
+            'type_id' => 'category'
+        ];
+
+        $fieldName = $fieldMap[$column] ?? $column;
+
+        return "{$table} doit avoir un {$fieldName}";
     }
+
 
     public function import($something_PDO): self
     {

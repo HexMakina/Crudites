@@ -16,7 +16,7 @@ use HexMakina\BlackBox\Database\QueryInterface;
 
 class CruditesExceptionFactory
 {
-    public static function make(QueryInterface $query, \PDOException $exception = null): CruditesException
+    public static function make(QueryInterface $query, ?\PDOException $exception = null): CruditesException
     {
         $errorInfo = null;
 

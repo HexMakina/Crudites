@@ -57,7 +57,7 @@ class Table extends TableMeta implements TableInterface
         return $delete;
     }
 
-    public function select(array $columns = null, string $table_alias = null): SelectInterface
+    public function select(?array $columns = null, ?string $table_alias = null): SelectInterface
     {
         $table_alias ??= $this->name();
         $columns ??= ['*'];

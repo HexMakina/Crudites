@@ -141,7 +141,7 @@ abstract class TableMeta implements TableMetaInterface
     }
 
     //getsetter of AIPK, default get is null, cant set to null
-    public function autoIncrementedPrimaryKey(ColumnInterface $tableColumn = null): ?ColumnInterface
+    public function autoIncrementedPrimaryKey(?ColumnInterface $tableColumn = null): ?ColumnInterface
     {
         return is_null($tableColumn) ? $this->aipk : ($this->aipk = $tableColumn);
     }

@@ -18,7 +18,7 @@ class Select extends PreparedQuery implements SelectInterface
     protected $limit_offset = 0;
 
 
-    public function __construct($columns = null, TableInterface $table = null, $table_alias = null)
+    public function __construct($columns = null, ?TableInterface $table = null, $table_alias = null)
     {
         $this->table = $table;
         $this->table_alias = $table_alias;
@@ -92,7 +92,7 @@ class Select extends PreparedQuery implements SelectInterface
         return $this;
     }
 
-    public function addColumn(string $name, string $alias = null, string $table = null)
+    public function addColumn(string $name, ?string $alias = null, ?string $table = null)
     {
         if(empty($table))
             $table = -1;
@@ -149,6 +149,15 @@ class Select extends PreparedQuery implements SelectInterface
             $table      = $clause[2] ?? $this->tableLabel();
             
             $clause =  sprintf('%s %s', $this->backTick($column, $table), $direction);
+        }
+        elseif (is_string($clause)) {
+            $clause = trim($clause);
+
+            if (empty($clause))
+                throw new \InvalidArgumentException('ORDER_BY_INVALID_CLAUSE');
+
+            if (preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $clause))
+                $clause = sprintf('%s ASC', $this->backTick($clause));
         }
 
         $this->addClause('orderBy', $clause);

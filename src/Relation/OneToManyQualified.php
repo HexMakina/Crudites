@@ -74,7 +74,11 @@ class OneToManyQualified extends OneToMany
 
     public function unlink(int $source, $targetWithQualifier): array
     {
-        return $this->query($source, $targetWithQualifier, 'delete');
+        // this was change to an array to fix movie-org unlink
+        // as you were debugging, it felt.. strange.
+        // like some functions are using unlink with an arrya of arrays, othjer dont
+        // if this makes sense after 2025-05-19, you gotta dig further and wider
+        return $this->query($source, [$targetWithQualifier], 'delete');
     }
 
     private function query(int $source, array $targetWithQualifier, string $method): array
@@ -91,11 +95,9 @@ class OneToManyQualified extends OneToMany
         $errors = [];
 
         try {
-            vd($targetWithQualifier, $this->pivot_table);
             $pivot_table = $this->db->table($this->pivot_table);
 
             foreach ($targetWithQualifier as [$qualified_id, $qualifier_id]) {
-
                 if (empty($qualified_id) || empty($qualifier_id)) {
                     throw new \InvalidArgumentException('MANY_IDS_MISSING_A_QUALIFYING_ID');
                 }

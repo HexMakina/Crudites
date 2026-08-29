@@ -89,23 +89,28 @@ class OneToMany extends AbstractRelation
         $pivot_table = $this->db->table($this->pivot_table);
 
         foreach ($target_ids as $target) {
+            try{
 
-            $query = call_user_func_array([$pivot_table, $method], 
-            [
+                $query = call_user_func_array([$pivot_table, $method], 
                 [
-                    $this->pivot_primary => $source, 
-                    $this->pivot_secondary => $target
-                ]
-            ]);
-            $query->prepare();
-            $query->run();
+                    [
+                        $this->pivot_primary => $source, 
+                        $this->pivot_secondary => $target
+                    ]
+                ]);
+                $query->prepare();
+                $query->run();
 
-            if (!$query->isSuccess()) {
-                $_ = $query->errorInfo();
-                $errors[] = $_;
-                if($_[0] !== 1062){
-                    throw CruditesExceptionFactory::make($query);
+                if (!$query->isSuccess()) {
+                    $_ = $query->errorInfo();
+                    $errors[] = $_;
+                    if($_[0] !== 1062){
+                        throw CruditesExceptionFactory::make($query);
+                    }
                 }
+            }
+            catch(\Exception $e){
+                $errors[] = $e->getMessage();
             }
         }
 

@@ -35,7 +35,7 @@ trait ClauseWhere
 
     protected $where;
 
-    abstract public function table(TableInterface $table = null): TableInterface;
+    abstract public function table(?TableInterface $table = null): TableInterface;
 
     abstract public function tableLabel($table_name = null);
 
@@ -238,14 +238,23 @@ trait ClauseWhere
                 $search_mode = self::$WHERE_LIKE_BOTH;
             }
 
-            $search_field = $this->backTick($search_field, $search_table);
+            $search_field_name = $search_field;
+            $bind_label = sprintf(
+                ':%s_%s_content_filter_%d',
+                preg_replace('/[^a-zA-Z0-9_]/', '_', (string)$this->tableLabel($search_table)),
+                preg_replace('/[^a-zA-Z0-9_]/', '_', (string)$search_field_name),
+                count($content_wc)
+            );
+            $search_field = $this->backTick($search_field_name, $search_table);
 
             if ($search_mode === self::$OP_EQ) {
-                $content_wc[] = sprintf('%s = \'%s\' ', $search_field, $search_term); // TODO bindthis
+                $bind_name = $this->addBinding($search_field_name, $search_term, $search_table, $bind_label);
+                $content_wc[] = sprintf('%s = %s ', $search_field, $bind_name);
             } else // %%
             {
                 $pattern = str_replace('TERM', $search_term, $search_mode);
-                $content_wc[] = sprintf(' %s LIKE \'%s\' ', $search_field, $pattern); // TODO bindthis
+                $bind_name = $this->addBinding($search_field_name, $pattern, $search_table, $bind_label);
+                $content_wc[] = sprintf(' %s LIKE %s ', $search_field, $bind_name);
             }
         }
 
@@ -255,6 +264,8 @@ trait ClauseWhere
 
             $this->where(sprintf(' (%s) ', $content_wc));
         }
+
+        return $this;
     }
 
     // //------------------------------------------------------------  FIELDS

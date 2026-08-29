@@ -56,7 +56,7 @@ abstract class BaseQuery implements QueryInterface
 
 
     //------------------------------------------------------------  GET/SETTERS
-    public function connection(ConnectionInterface $connection = null): ConnectionInterface
+    public function connection(?ConnectionInterface $connection = null): ConnectionInterface
     {
         if (!is_null($connection)) {
             $this->connection = $connection;
@@ -67,7 +67,7 @@ abstract class BaseQuery implements QueryInterface
         return $this->connection;
     }
 
-    public function table(TableInterface $table = null): TableInterface
+    public function table(?TableInterface $table = null): TableInterface
     {
         return is_null($table) ? $this->table : ($this->table = $table);
     }
@@ -161,6 +161,8 @@ abstract class BaseQuery implements QueryInterface
         return $this->executed()->fetchAll($mode, $option);
     }
 
+
+
     //------------------------------------------------------------ Return:count
     public function count(): int
     {
@@ -199,12 +201,12 @@ abstract class BaseQuery implements QueryInterface
         return sprintf('%s (state: %s, code: %s)', $message, $state, $code);
     }
 
-    public function compare(QueryInterface $query)
-    {
-        if ($this->statement() !== $query->statement()) {
-            return 'statement';
-        }
+    // public function compare(QueryInterface $query)
+    // {
+    //     if ($this->statement() !== $query->statement()) {
+    //         return 'statement';
+    //     }
 
-        return true;
-    }
+    //     return true;
+    // }
 }
